@@ -1,4 +1,4 @@
-package edu.cmu.sv.isstac.sampling.mcts;
+package edu.cmu.sv.isstac.sampling.montecarlo;
 
 import edu.cmu.sv.isstac.sampling.AnalysisEventObserver;
 import edu.cmu.sv.isstac.sampling.SamplingResult;
@@ -19,36 +19,30 @@ import gov.nasa.jpf.JPFShell;
 
 /**
  * @author Kasper Luckow
- * There is a lot of redundancy between this class and MonteCarloShell.
+ * There is a lot of redundancy between this class and MCTSShell.
  * We can maybe generalize this shell later if we experiment with more
  * techniques for sampling
  */
-class MCTSShell implements JPFShell, AnalysisEventObserver {
-  
-  public static final String MCTS_CONF_PRFX = "symbolic.security.sampling.mcts";
+public class MonteCarloShell implements JPFShell, AnalysisEventObserver {
+ public static final String MC_CONF_PRFX = "symbolic.security.sampling.montecarlo";
   
   //This setting can be used to disable sampling to exhaustively explore the tree (mostly for debugging...)
-  public static final String EXHAUSTIVE_ANALYSIS = MCTS_CONF_PRFX + ".exhaustive";
+  public static final String EXHAUSTIVE_ANALYSIS = MC_CONF_PRFX + ".exhaustive";
   
-  public static final String REWARD_FUNCTION = MCTS_CONF_PRFX + ".rewardfunc"; 
+  public static final String REWARD_FUNCTION = MC_CONF_PRFX + ".rewardfunc"; 
 
-  public static final String SELECTION_POLICY = MCTS_CONF_PRFX + ".selectionpol";
-  public static final String SIM_POLICY = MCTS_CONF_PRFX + ".simulationpol";
+  public static final String SIM_POLICY = MC_CONF_PRFX + ".simulationpol";
   
-  //Policies conf
-  public static final String UCT_BIAS = MCTS_CONF_PRFX + ".uct.bias";
-  public static final double DEFAULT_UCT_BIAS = Math.sqrt(2); // Is this an appropriate value?
-  
-  public static final String RNG_SEED = MCTS_CONF_PRFX + ".seed";
+  //Policies conf  
+  public static final String RNG_SEED = MC_CONF_PRFX + ".seed";
   public static final long DEFAULT_RNG_SEED = 15485863;
-  
-  public static final String RNG_RANDOM_SEED = MCTS_CONF_PRFX + ".random";
+  public static final String RNG_RANDOM_SEED = MC_CONF_PRFX + ".random";
   public static final boolean DEFAULT_RANDOM_SEED = false;
   
   //Pruning and termination conf
-  public static final String PRUNING = MCTS_CONF_PRFX + ".pruning";
+  public static final String PRUNING = MC_CONF_PRFX + ".pruning";
   public static final boolean DEFAULT_USE_PRUNING = true;
-  public static final String TERMINATION_STRAT = MCTS_CONF_PRFX + ".termination";
+  public static final String TERMINATION_STRAT = MC_CONF_PRFX + ".termination";
   public static final String MAX_SAMPLES_TERMINATION_STRAT = TERMINATION_STRAT + ".maxsamples";
   public static final int DEFAULT_MAX_SAMPLES = 1000;
   
@@ -56,7 +50,7 @@ class MCTSShell implements JPFShell, AnalysisEventObserver {
   private final JPF jpf;
   
   //ctor required for jpf shell
-  public MCTSShell(Config config) {
+  public MonteCarloShell(Config config) {
     this.jpfConfig = config;
     
     if(!jpfConfig.getBoolean(EXHAUSTIVE_ANALYSIS, false)) {
@@ -66,23 +60,14 @@ class MCTSShell implements JPFShell, AnalysisEventObserver {
     
     this.jpf = new JPF(jpfConfig);
     
-    double uctBias = config.getDouble(UCT_BIAS, DEFAULT_UCT_BIAS);
     boolean useRandomSeed = config.getBoolean(RNG_RANDOM_SEED, DEFAULT_RANDOM_SEED);
-    SelectionPolicy defaultSelectionPolicy = null;
     SimulationPolicy defaultSimulationPolicy = null;
     if(useRandomSeed) {
-      defaultSelectionPolicy = new UCBPolicy(uctBias);
       defaultSimulationPolicy = new RandomizedPolicy();
     } else {
       long seed = config.getLong(RNG_SEED, DEFAULT_RNG_SEED);
-      defaultSelectionPolicy = new UCBPolicy(seed, uctBias);
       defaultSimulationPolicy = new RandomizedPolicy(seed);
     }
-    
-    SelectionPolicy selPol = getInstanceOrDefault(config, 
-        SELECTION_POLICY, 
-        SelectionPolicy.class, 
-        defaultSelectionPolicy);
     
     SimulationPolicy simPol = getInstanceOrDefault(config, 
         SIM_POLICY, 
@@ -115,8 +100,7 @@ class MCTSShell implements JPFShell, AnalysisEventObserver {
         RewardFunction.class, 
         new DepthRewardFunction());
     
-    MCTSListener mcts = new MCTSListener(selPol, 
-        simPol, 
+    MonteCarloListener mcListener = new MonteCarloListener(simPol, 
         rewardFunc, 
         choicesStrat, 
         terminationStrategy);
@@ -124,9 +108,9 @@ class MCTSShell implements JPFShell, AnalysisEventObserver {
     // We add the shell as an observer of the mcts events.
     // It will notify the shell when it is done according to
     // the termination strategy
-    mcts.addEventObserver(this);
+    mcListener.addEventObserver(this);
     
-    jpf.addListener(mcts);
+    jpf.addListener(mcListener);
   }
 
   @Override
@@ -136,7 +120,7 @@ class MCTSShell implements JPFShell, AnalysisEventObserver {
   
   @Override
   public void analysisDone(SamplingResult result) {
-    // When MCTS terminates, this event is called with the result.
+    // When Monte Carlo sampling terminates, this event is called with the result.
     // Process result here...
     
     // For now just output the state of the result objects

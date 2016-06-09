@@ -5,7 +5,6 @@ import java.util.concurrent.TimeUnit;
 import com.google.common.base.Stopwatch;
 
 import edu.cmu.sv.isstac.sampling.SamplingResult;
-import edu.cmu.sv.isstac.sampling.mcts.TerminationStrategy;
 import edu.cmu.sv.isstac.sampling.structure.Node;
 import gov.nasa.jpf.vm.VM;
 
@@ -28,7 +27,8 @@ public class TimeBoundedTerminationStrategy implements TerminationStrategy {
   }
   
   @Override
-  public boolean terminate(VM vm, Node root, SamplingResult currentResult) {
+  public boolean terminate(VM vm, SamplingResult currentResult) {
+    // Ugly that we rely on deprecated api because of messy guava dependencies
     return stopwatch.elapsedTime(timeUnit) >= timeBound;
   }
 }

@@ -6,7 +6,7 @@ import edu.cmu.sv.isstac.sampling.SamplingException;
  * @author Kasper Luckow
  *
  */
-public class MCTSAnalysisException extends SamplingException {
+class MCTSAnalysisException extends SamplingException {
 
   private static final long serialVersionUID = 1L;
   

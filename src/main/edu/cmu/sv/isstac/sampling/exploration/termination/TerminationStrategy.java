@@ -1,4 +1,4 @@
-package edu.cmu.sv.isstac.sampling.mcts;
+package edu.cmu.sv.isstac.sampling.exploration.termination;
 
 import edu.cmu.sv.isstac.sampling.SamplingResult;
 import edu.cmu.sv.isstac.sampling.structure.Node;
@@ -9,5 +9,5 @@ import gov.nasa.jpf.vm.VM;
  *
  */
 public interface TerminationStrategy {
-  public boolean terminate(VM vm, Node root, SamplingResult currentResult);
+  public boolean terminate(VM vm, SamplingResult currentResult);
 }

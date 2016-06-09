@@ -2,8 +2,8 @@ package edu.cmu.sv.isstac.sampling.exploration.termination;
 
 import edu.cmu.sv.isstac.sampling.SamplingResult;
 import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
-import edu.cmu.sv.isstac.sampling.mcts.TerminationStrategy;
 import edu.cmu.sv.isstac.sampling.structure.Node;
+import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.VM;
 
 /**
@@ -19,8 +19,13 @@ public class AllPathsTerminationStrategy implements TerminationStrategy {
   }
   
   @Override
-  public boolean terminate(VM vm, Node root, SamplingResult currentResult) {
-    return this.pruner.isPruned(root);
+  public boolean terminate(VM vm, SamplingResult currentResult) {
+    ChoiceGenerator<?>[] cgs = vm.getChoiceGenerators();
+    if(cgs.length > 0) {
+      ChoiceGenerator<?> rootCg = cgs[0];
+      return this.pruner.isPruned(rootCg);
+    }
+    return false;
   }
 
 }

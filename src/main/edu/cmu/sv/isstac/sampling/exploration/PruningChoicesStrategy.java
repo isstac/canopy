@@ -49,6 +49,11 @@ public class PruningChoicesStrategy extends PropertyListenerAdapter implements C
     return pruned.contains(p);
   }
   
+  public boolean isPruned(ChoiceGenerator<?> cg) {
+    Path p = new Path(cg);
+    return pruned.contains(p);
+  }
+  
   @Override
   public void searchConstraintHit(Search search) {
     ChoiceGenerator<?> cg = search.getVM().getChoiceGenerator();

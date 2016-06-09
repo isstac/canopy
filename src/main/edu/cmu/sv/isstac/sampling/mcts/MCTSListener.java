@@ -3,39 +3,35 @@ package edu.cmu.sv.isstac.sampling.mcts;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import edu.cmu.sv.isstac.sampling.AnalysisEventObserver;
 import edu.cmu.sv.isstac.sampling.SamplingResult;
 import edu.cmu.sv.isstac.sampling.SamplingResult.ResultContainer;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
+import edu.cmu.sv.isstac.sampling.exploration.termination.TerminationStrategy;
+import edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloAnalysisException;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
-import edu.cmu.sv.isstac.sampling.structure.FinalNode;
+import edu.cmu.sv.isstac.sampling.structure.DefaultNodeFactory;
 import edu.cmu.sv.isstac.sampling.structure.Node;
-import edu.cmu.sv.isstac.sampling.structure.NondeterministicNode;
-import edu.cmu.sv.isstac.sampling.structure.PCNode;
+import edu.cmu.sv.isstac.sampling.structure.NodeFactory;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.search.Search;
-import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.util.JPFLogger;
-import gov.nasa.jpf.vm.BooleanChoiceGenerator;
 import gov.nasa.jpf.vm.ChoiceGenerator;
-import gov.nasa.jpf.vm.ChoiceGeneratorBase;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
-import gov.nasa.jpf.vm.choice.IntIntervalGenerator;
-import gov.nasa.jpf.vm.choice.ThreadChoiceFromSet;
 
 /**
  * @author Kasper Luckow
  *
  */
-public class MCTSListener extends PropertyListenerAdapter {
+class MCTSListener extends PropertyListenerAdapter {
   private enum MCTS_STATE {
     SELECTION {
       @Override
@@ -58,6 +54,7 @@ public class MCTSListener extends PropertyListenerAdapter {
   private MCTS_STATE mctsState;
   private Node last = null;
   private Node root = null;
+  private final NodeFactory nodeFactory;
   
   private final SelectionPolicy selectionPolicy;
   private final SimulationPolicy simulationPolicy;
@@ -76,7 +73,7 @@ public class MCTSListener extends PropertyListenerAdapter {
 
   // Observers are notified upon termination. We can add more fine grained 
   // events if necessary, e.g. emit event after each sample.
-  private Set<MCTSEventObserver> observers = new HashSet<>();
+  private Set<AnalysisEventObserver> observers = new HashSet<>();
   
   public MCTSListener(SelectionPolicy selectionPolicy,
       SimulationPolicy simulationPolicy,
@@ -90,26 +87,35 @@ public class MCTSListener extends PropertyListenerAdapter {
     this.terminationStrategy = terminationStrategy;
     
     this.mctsState = MCTS_STATE.SELECTION;
+    
+    //For now we just stick with the default factory
+    this.nodeFactory = new DefaultNodeFactory();
   }
   
-  public void addEventObserver(MCTSEventObserver observer) {
+  public void addEventObserver(AnalysisEventObserver observer) {
     observers.add(observer);
   }
     
   @Override
   public void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> cg) {
-    if(isPCNode(cg) || isNondeterministicChoice(cg)) {
+    if(this.nodeFactory.isSupportedChoiceGenerator(cg)) {
       if(expandedFlag) {
         assert mctsState == MCTS_STATE.SIMULATION;
-        last = createNode(last, cg, expandedChoice);
+        last = this.nodeFactory.create(last, cg, expandedChoice);
         expandedFlag = false;
       }
       
       ArrayList<Integer> eligibleChoices = choicesStrategy.getEligibleChoices(cg);
+      if(eligibleChoices.isEmpty()) {
+        String msg = "Entered invalid state: No eligible choices";
+        logger.severe(msg);
+        throw new MonteCarloAnalysisException(msg);
+      }
+      
       int choice;
       if(mctsState == MCTS_STATE.SELECTION) {
         if(root == null) { // create root
-          root = last = createNode(null, cg, -1); 
+          root = last = this.nodeFactory.create(null, cg, -1); 
         }
         if(isFrontierNode(last)) { // Perform expansion step
           ArrayList<Integer> unexpandedEligibleChoices = getUnexpandedEligibleChoices(last, eligibleChoices);
@@ -167,7 +173,7 @@ public class MCTSListener extends PropertyListenerAdapter {
     // only be created in the event that MCT reaches
     // and actual leaf in the symbolic execution tree
     if(expandedFlag) {
-      last = createFinalNode(last, expandedChoice);
+      last = this.nodeFactory.create(last, null, expandedChoice);
       expandedFlag = false;
     }
     
@@ -198,12 +204,12 @@ public class MCTSListener extends PropertyListenerAdapter {
       bestResult.setPathCondition(pc);
     }
     
-    if(terminationStrategy.terminate(vm, this.root, this.result)) {
+    if(terminationStrategy.terminate(vm, this.result)) {
       vm.getSearch().terminate();
       
       // Notify observers with termination event
-      for(MCTSEventObserver obs : this.observers) {
-        obs.mctsAnalysisDone(result);
+      for(AnalysisEventObserver obs : this.observers) {
+        obs.analysisDone(result);
       }
     }
     
@@ -276,37 +282,5 @@ public class MCTSListener extends PropertyListenerAdapter {
   
   private static boolean isFrontierNode(Node node) {
     return node.getChildren().size() < node.getTotalChoicesNum();
-  }
-
-  private static Node createFinalNode(Node parent, int choice) {
-    return createNode(parent, null, choice);
-  }
-  
-  private static Node createNode(Node parent, ChoiceGenerator<?> currentCG, int choice) {
-    Node newNode = null;
-    if(currentCG == null)
-      newNode = new FinalNode(parent, choice);
-    else if(isPCNode(currentCG))
-      newNode = new PCNode(parent, currentCG, choice);
-    else if(isNondeterministicChoice(currentCG))
-      newNode = new NondeterministicNode(parent, currentCG, choice);
-    else {
-      String msg = "Cannot create node for choicegenerators of type " + currentCG.getClass().getName();
-      logger.severe(msg);
-      throw new IllegalStateException(msg);
-    }
-    if(parent != null)
-      parent.addChild(newNode);
-    return newNode;
-  }
-  
-  private static boolean isPCNode(ChoiceGenerator<?> choiceGenerator) {
-    //More cases?
-    return (choiceGenerator instanceof PCChoiceGenerator);
-  }
-
-  private static boolean isNondeterministicChoice(ChoiceGenerator<?> choiceGenerator) {
-    //More cases?
-    return (choiceGenerator instanceof ThreadChoiceFromSet);
   }
 }

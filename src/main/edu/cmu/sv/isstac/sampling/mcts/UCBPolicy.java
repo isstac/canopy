@@ -10,7 +10,7 @@ import edu.cmu.sv.isstac.sampling.structure.Node;
  * @author Kasper Luckow
  *
  */
-public class UCBPolicy implements SelectionPolicy {
+class UCBPolicy implements SelectionPolicy {
 
   private final Random rng;
   private final double biasParameter;
