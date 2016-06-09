@@ -1,4 +1,4 @@
-package edu.cmu.sv.isstac.sampling.exploration.termination;
+package edu.cmu.sv.isstac.sampling.termination;
 
 import java.util.concurrent.TimeUnit;
 

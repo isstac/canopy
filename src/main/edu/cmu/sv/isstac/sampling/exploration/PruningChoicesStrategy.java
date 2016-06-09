@@ -3,15 +3,9 @@ package edu.cmu.sv.isstac.sampling.exploration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
-import com.google.common.hash.HashCode;
-
 import edu.cmu.sv.isstac.sampling.structure.Node;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.search.Search;
@@ -22,7 +16,7 @@ import gov.nasa.jpf.vm.VM;
 
 /**
  * @author Kasper Luckow
- * We can optimize this pruner if performance is sluggish. This is a quick and (likely very) slow implementation
+ * 
  */
 public class PruningChoicesStrategy extends PropertyListenerAdapter implements ChoicesStrategy {
   
@@ -44,14 +38,18 @@ public class PruningChoicesStrategy extends PropertyListenerAdapter implements C
     return eligibleChoices;
   }
   
+  public boolean isPruned(Path p) {
+    return pruned.contains(p);
+  }
+  
   public boolean isPruned(Node n) {
     Path p = new Path(n);
-    return pruned.contains(p);
+    return isPruned(p);
   }
   
   public boolean isPruned(ChoiceGenerator<?> cg) {
     Path p = new Path(cg);
-    return pruned.contains(p);
+    return isPruned(p);
   }
   
   @Override
@@ -83,31 +81,28 @@ public class PruningChoicesStrategy extends PropertyListenerAdapter implements C
   }
   
   private void propagatePruning(Path currentPath, ChoiceGenerator<?> currentCg) {
-    //This is really expensive :/
+
     ChoiceGenerator<?> backwardsPruningCg = currentCg;
     Path parent = new Path(currentPath);
     while(backwardsPruningCg != null) {
-      Collection<Path> siblings = new HashSet<>();
-      siblings.add(parent);
-      int curChoice = parent.removeLast();
-
+      Collection<Path> children = new HashSet<>();
+      //make one step up in the tree
+      parent.removeLast();
       
       for(int child = 0; child < backwardsPruningCg.getTotalNumberOfChoices(); child++) {
-        if(child == curChoice)
-          continue;
         Path siblingPath = new Path(parent);
         siblingPath.addChoice(child);
         if(!pruned.contains(siblingPath)) {
           return;
         }
-        siblings.add(siblingPath);
+        children.add(siblingPath);
       }
 
       //We only need to keep parent, because all subtrees (children) are pruned
-      for(Path sibling : siblings) {
-        pruned.remove(sibling);
+      for(Path child : children) {
+        pruned.remove(child);
       }
-      pruned.add(parent);
+      pruned.add(parent.copy());
       backwardsPruningCg = backwardsPruningCg.getPreviousChoiceGenerator();
     }
   }

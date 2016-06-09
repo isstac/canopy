@@ -6,13 +6,14 @@ import edu.cmu.sv.isstac.sampling.SamplingSearch;
 import edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
-import edu.cmu.sv.isstac.sampling.exploration.termination.AllPathsTerminationStrategy;
-import edu.cmu.sv.isstac.sampling.exploration.termination.SampleSizeTerminationStrategy;
-import edu.cmu.sv.isstac.sampling.exploration.termination.TerminationStrategy;
 import edu.cmu.sv.isstac.sampling.policies.RandomizedPolicy;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
+import edu.cmu.sv.isstac.sampling.termination.AllPathsTerminationStrategy;
+import edu.cmu.sv.isstac.sampling.termination.RewardBoundedTermination;
+import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
+import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFShell;
@@ -94,7 +95,7 @@ public class MonteCarloShell implements JPFShell, AnalysisEventObserver {
         TERMINATION_STRAT,
         TerminationStrategy.class, 
         defaultTerminationStrategy);
-        
+  //  TerminationStrategy terminationStrategy = new RewardBoundedTermination(2, RewardBoundedTermination.EVENT.SUCC);
     RewardFunction rewardFunc = getInstanceOrDefault(config,
         REWARD_FUNCTION, 
         RewardFunction.class, 

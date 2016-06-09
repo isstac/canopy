@@ -39,6 +39,10 @@ public abstract class Node {
     return children.values();
   }
   
+  public boolean hasChildForChoice(int choice) {
+    return this.children.containsKey(choice);
+  }
+  
   public void addChild(Node child) {
     this.children.put(child.getChoice(), child);
   }

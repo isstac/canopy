@@ -11,13 +11,13 @@ import edu.cmu.sv.isstac.sampling.SamplingResult;
 import edu.cmu.sv.isstac.sampling.SamplingResult.ResultContainer;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
-import edu.cmu.sv.isstac.sampling.exploration.termination.TerminationStrategy;
 import edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloAnalysisException;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
 import edu.cmu.sv.isstac.sampling.structure.DefaultNodeFactory;
 import edu.cmu.sv.isstac.sampling.structure.Node;
 import edu.cmu.sv.isstac.sampling.structure.NodeFactory;
+import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
@@ -109,7 +109,7 @@ class MCTSListener extends PropertyListenerAdapter {
       if(eligibleChoices.isEmpty()) {
         String msg = "Entered invalid state: No eligible choices";
         logger.severe(msg);
-        throw new MonteCarloAnalysisException(msg);
+        throw new MCTSAnalysisException(msg);
       }
       
       int choice;
@@ -117,7 +117,7 @@ class MCTSListener extends PropertyListenerAdapter {
         if(root == null) { // create root
           root = last = this.nodeFactory.create(null, cg, -1); 
         }
-        if(isFrontierNode(last)) { // Perform expansion step
+        if(isFrontierNode(last, eligibleChoices)) { // Perform expansion step
           ArrayList<Integer> unexpandedEligibleChoices = getUnexpandedEligibleChoices(last, eligibleChoices);
           choice = expandedChoice = selectionPolicy.expandChild(last, unexpandedEligibleChoices);
           expandedFlag = true;
@@ -155,7 +155,10 @@ class MCTSListener extends PropertyListenerAdapter {
       if(!childChoices.contains(eligibleChoice))
         unexpandedEligibleChoices.add(eligibleChoice);
     }
-    assert !unexpandedEligibleChoices.isEmpty();
+    if(unexpandedEligibleChoices.isEmpty()) {
+      assert false;
+    }
+    //assert unexpandedEligibleChoices.isEmpty();
     
     return unexpandedEligibleChoices;
   }
@@ -280,7 +283,11 @@ class MCTSListener extends PropertyListenerAdapter {
     this.last = this.root;
   }
   
-  private static boolean isFrontierNode(Node node) {
-    return node.getChildren().size() < node.getTotalChoicesNum();
+  private boolean isFrontierNode(Node node, Collection<Integer> eligibleChoices) {
+    for(int eligibleChoice : eligibleChoices) {
+      if(!node.hasChildForChoice(eligibleChoice))
+          return true;
+    }
+    return false;
   }
 }

@@ -6,13 +6,13 @@ import edu.cmu.sv.isstac.sampling.SamplingSearch;
 import edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
-import edu.cmu.sv.isstac.sampling.exploration.termination.AllPathsTerminationStrategy;
-import edu.cmu.sv.isstac.sampling.exploration.termination.SampleSizeTerminationStrategy;
-import edu.cmu.sv.isstac.sampling.exploration.termination.TerminationStrategy;
 import edu.cmu.sv.isstac.sampling.policies.RandomizedPolicy;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
+import edu.cmu.sv.isstac.sampling.termination.AllPathsTerminationStrategy;
+import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
+import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFShell;
@@ -23,7 +23,7 @@ import gov.nasa.jpf.JPFShell;
  * We can maybe generalize this shell later if we experiment with more
  * techniques for sampling
  */
-class MCTSShell implements JPFShell, AnalysisEventObserver {
+public class MCTSShell implements JPFShell, AnalysisEventObserver {
   
   public static final String MCTS_CONF_PRFX = "symbolic.security.sampling.mcts";
   
@@ -54,6 +54,11 @@ class MCTSShell implements JPFShell, AnalysisEventObserver {
   
   private final Config jpfConfig;
   private final JPF jpf;
+  
+  public static class Builder {
+    
+    
+  }
   
   //ctor required for jpf shell
   public MCTSShell(Config config) {
