@@ -62,14 +62,19 @@ public class MonteCarloListener extends PropertyListenerAdapter {
   public void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> cg) {
     if(isPCNode(cg) || isNondeterministicChoice(cg)) {
       
+      // Get the eligible choices for this CG
+      // based on the exploration strategy (e.g., pruning-based)
       ArrayList<Integer> eligibleChoices = choicesStrategy.getEligibleChoices(cg);
       
+      // If empty, we entered an invalid state
       if(eligibleChoices.isEmpty()) {
         String msg = "Entered invalid state: No eligible choices";
         logger.severe(msg);
         throw new MonteCarloAnalysisException(msg);
       }
       
+      // Select a choice according to the simulation
+      // strategy, e.g., randomized selection
       int choice = simulationPolicy.selectChoice(cg, eligibleChoices);
       cg.select(choice);
     } else {
@@ -81,12 +86,13 @@ public class MonteCarloListener extends PropertyListenerAdapter {
   
   private void finishSample(VM vm, ResultContainer currentBestResult) {
 
-    // Compute reward beased on reward function
+    // Compute reward based on reward function
     long reward = rewardFunction.computeReward(vm);
-    logger.finest("Reward computed: " + reward);
+    logger.info("Reward computed: " + reward);
     
     result.incNumberOfSamples();
-    logger.finest("Sample number: " + result.getNumberOfSamples());
+    logger.info("Sample number: " + result.getNumberOfSamples());
+    
     
     // Check if the reward obtained is greater than
     // previously observed for this event (succ, fail, grey)
@@ -96,11 +102,13 @@ public class MonteCarloListener extends PropertyListenerAdapter {
       currentBestResult.setSampleNumber(result.getNumberOfSamples());
       Path path = new Path(vm.getChoiceGenerator());
       currentBestResult.setPath(path);
+      
       // Supposedly getPC defensively (deep) copies the current PC 
       PathCondition pc = PathCondition.getPC(vm);
       currentBestResult.setPathCondition(pc);
     }
     
+    // Check if we should terminate
     if(terminationStrategy.terminate(vm, this.result)) {
       vm.getSearch().terminate();
       
@@ -117,7 +125,7 @@ public class MonteCarloListener extends PropertyListenerAdapter {
   @Override
   public void stateAdvanced(Search search) {
     if(search.isEndState()) {
-      logger.finest("Successful termination.");
+      logger.fine("Successful termination.");
       finishSample(search.getVM(), this.result.getMaxSuccResult());
     }
   }
@@ -127,7 +135,7 @@ public class MonteCarloListener extends PropertyListenerAdapter {
    */
   @Override
   public void exceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
-    logger.finest("Property violation/exception thrown.");
+    logger.fine("Property violation/exception thrown.");
     finishSample(vm, this.result.getMaxFailResult());
   }
   
@@ -136,7 +144,7 @@ public class MonteCarloListener extends PropertyListenerAdapter {
    */
   @Override
   public void searchConstraintHit(Search search) {
-    logger.finest("Search constraint hit.");
+    logger.fine("Search constraint hit.");
     finishSample(search.getVM(), this.result.getMaxGreyResult());
   }
 }

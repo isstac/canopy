@@ -91,11 +91,11 @@ public class MonteCarloShell implements JPFShell, AnalysisEventObserver {
       int sampleSize = config.getInt(MAX_SAMPLES_TERMINATION_STRAT, DEFAULT_MAX_SAMPLES);
       defaultTerminationStrategy = new SampleSizeTerminationStrategy(sampleSize);
     }
-    TerminationStrategy terminationStrategy = getInstanceOrDefault(config, 
-        TERMINATION_STRAT,
-        TerminationStrategy.class, 
-        defaultTerminationStrategy);
-  //  TerminationStrategy terminationStrategy = new RewardBoundedTermination(2, RewardBoundedTermination.EVENT.SUCC);
+//    TerminationStrategy terminationStrategy = getInstanceOrDefault(config, 
+//        TERMINATION_STRAT,
+//        TerminationStrategy.class, 
+//        defaultTerminationStrategy);
+   TerminationStrategy terminationStrategy = new RewardBoundedTermination(28, RewardBoundedTermination.EVENT.SUCC);
     RewardFunction rewardFunc = getInstanceOrDefault(config,
         REWARD_FUNCTION, 
         RewardFunction.class, 

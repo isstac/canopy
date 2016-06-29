@@ -11,8 +11,10 @@ import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
 import edu.cmu.sv.isstac.sampling.termination.AllPathsTerminationStrategy;
+import edu.cmu.sv.isstac.sampling.termination.RewardBoundedTermination;
 import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
+import edu.cmu.sv.isstac.sampling.termination.RewardBoundedTermination.EVENT;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFShell;
@@ -114,7 +116,7 @@ public class MCTSShell implements JPFShell, AnalysisEventObserver {
         TERMINATION_STRAT,
         TerminationStrategy.class, 
         defaultTerminationStrategy);
-        
+   // TerminationStrategy terminationStrategy = new RewardBoundedTermination(44, EVENT.SUCC);
     RewardFunction rewardFunc = getInstanceOrDefault(config,
         REWARD_FUNCTION, 
         RewardFunction.class, 

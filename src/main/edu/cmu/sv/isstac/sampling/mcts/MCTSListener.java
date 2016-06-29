@@ -99,40 +99,68 @@ class MCTSListener extends PropertyListenerAdapter {
   @Override
   public void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> cg) {
     if(this.nodeFactory.isSupportedChoiceGenerator(cg)) {
+      
+      // If we expanded a child in the previous CG advancement,
+      // we now want to create the node for that child.
+      // We can only do that now, because otherwise the CG
+      // is not available
       if(expandedFlag) {
         assert mctsState == MCTS_STATE.SIMULATION;
         last = this.nodeFactory.create(last, cg, expandedChoice);
         expandedFlag = false;
       }
       
+      // Get the eligible choices for this CG
+      // based on the exploration strategy (e.g., pruning-based)
       ArrayList<Integer> eligibleChoices = choicesStrategy.getEligibleChoices(cg);
+      
+      // If empty, we entered an invalid state
       if(eligibleChoices.isEmpty()) {
         String msg = "Entered invalid state: No eligible choices";
         logger.severe(msg);
         throw new MCTSAnalysisException(msg);
       }
       
-      int choice;
+      int choice = -1;
+      
+      // Check if we are currently in the Selection phase of MCTS
       if(mctsState == MCTS_STATE.SELECTION) {
-        if(root == null) { // create root
+        
+        // create root
+        if(root == null) { 
           root = last = this.nodeFactory.create(null, cg, -1); 
         }
-        if(isFrontierNode(last, eligibleChoices)) { // Perform expansion step
+        
+        // Check if node is a "frontier", i.e. it has eligible, unexpanded children
+        // In this case, we perform the expansion step of MCTS
+        if(isFrontierNode(last, eligibleChoices)) {
           ArrayList<Integer> unexpandedEligibleChoices = getUnexpandedEligibleChoices(last, eligibleChoices);
+          
+          // Select the unexpanded children according to our selection policy, e.g. randomly
           choice = expandedChoice = selectionPolicy.expandChild(last, unexpandedEligibleChoices);
           expandedFlag = true;
-          mctsState = MCTS_STATE.SIMULATION; // Proceed to simulation step
-        } else { // perform selection step
+          
+          // After expansion, we proceed to simulation step of MCTS
+          mctsState = MCTS_STATE.SIMULATION; 
+        } else {
+          
+          // If it was not a frontier node, we perform the selection step of MCTS
+          // A node is selected based on the selection policy, e.g., classic UCB
           last = selectionPolicy.selectBestChild(last, eligibleChoices);
           choice = last.getChoice();
         }
       } else if(mctsState == MCTS_STATE.SIMULATION) {
+        
+        // Select choice according to simulation policy, e.g., randomly
         choice = simulationPolicy.selectChoice(cg, eligibleChoices);
       } else {
         String msg = "Entered invalid MCTS state: " + mctsState;
         logger.severe(msg);
         throw new MCTSAnalysisException(msg);
       }
+      
+      assert choice != -1;
+      
       cg.select(choice);
     } else {
       String msg = "Unexpected CG: " + cg.getClass().getName();
@@ -151,14 +179,21 @@ class MCTSListener extends PropertyListenerAdapter {
       childChoices.add(child.getChoice());
     }
     
+    // We only select the unexpanded children
+    // that are eligible for selection, e.g.,
+    // not pruned.
     for(int eligibleChoice : eligibleChoices) {
       if(!childChoices.contains(eligibleChoice))
         unexpandedEligibleChoices.add(eligibleChoice);
     }
+    
+    // We have hit an illegal state if there
+    // are no choices that can be expanded
     if(unexpandedEligibleChoices.isEmpty()) {
-      assert false;
+      String msg = "No eligible, unexpanded children possible";
+      logger.severe(msg);
+      throw new MCTSAnalysisException(new IllegalStateException(msg));
     }
-    //assert unexpandedEligibleChoices.isEmpty();
     
     return unexpandedEligibleChoices;
   }
@@ -180,12 +215,12 @@ class MCTSListener extends PropertyListenerAdapter {
       expandedFlag = false;
     }
     
-    // Compute reward beased on reward function
+    // Compute reward based on reward function
     long reward = rewardFunction.computeReward(vm);
-    logger.finest("Reward computed: " + reward);
+    logger.info("Reward computed: " + reward);
     
     result.incNumberOfSamples();
-    logger.finest("Sample number: " + result.getNumberOfSamples());
+    logger.info("Sample number: " + result.getNumberOfSamples());
     
     // Perform backup phase
     for(Node n = last; n != null; n = n.getParent()) {
@@ -198,15 +233,20 @@ class MCTSListener extends PropertyListenerAdapter {
     // and update the best result accordingly
     ResultContainer bestResult = updater.getResultStateForEvent();
     if(reward > bestResult.getReward()) {
+      
       bestResult.setReward(reward);
       bestResult.setSampleNumber(result.getNumberOfSamples());
+      
       Path path = new Path(vm.getChoiceGenerator());
       bestResult.setPath(path);
+      
       // Supposedly getPC defensively (deep) copies the current PC 
       PathCondition pc = PathCondition.getPC(vm);
       bestResult.setPathCondition(pc);
     }
     
+    // Check if we should terminate the search
+    // based on the result obtained
     if(terminationStrategy.terminate(vm, this.result)) {
       vm.getSearch().terminate();
       
@@ -216,6 +256,7 @@ class MCTSListener extends PropertyListenerAdapter {
       }
     }
     
+    // Reset exploration to drive a new round of sampling
     resetExploration();
   }
   
@@ -225,7 +266,7 @@ class MCTSListener extends PropertyListenerAdapter {
   @Override
   public void stateAdvanced(Search search) {
     if(search.isEndState()) {
-      logger.finest("Successful termination.");
+      logger.fine("Successful termination.");
       finishSample(search.getVM(), new RewardUpdater() {
         @Override
         public void update(Node n, long reward) {
@@ -245,7 +286,7 @@ class MCTSListener extends PropertyListenerAdapter {
    */
   @Override
   public void exceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
-    logger.finest("Property violation/exception thrown.");
+    logger.fine("Property violation/exception thrown.");
     finishSample(vm, new RewardUpdater() {
       @Override
       public void update(Node n, long reward) {
@@ -264,7 +305,7 @@ class MCTSListener extends PropertyListenerAdapter {
    */
   @Override
   public void searchConstraintHit(Search search) {
-    logger.finest("Search constraint hit.");
+    logger.fine("Search constraint hit.");
     finishSample(search.getVM(), new RewardUpdater() {
       @Override
       public void update(Node n, long reward) {
@@ -286,7 +327,7 @@ class MCTSListener extends PropertyListenerAdapter {
   private boolean isFrontierNode(Node node, Collection<Integer> eligibleChoices) {
     for(int eligibleChoice : eligibleChoices) {
       if(!node.hasChildForChoice(eligibleChoice))
-          return true;
+        return true;
     }
     return false;
   }
