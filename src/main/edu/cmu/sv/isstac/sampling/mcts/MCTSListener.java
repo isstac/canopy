@@ -236,7 +236,7 @@ class MCTSListener extends PropertyListenerAdapter {
     
     // Notify observers with sample done event
     for(AnalysisEventObserver obs : this.observers) {
-      obs.sampleDone(reward, numberOfSamples, bestResult);
+      obs.sampleDone(numberOfSamples, reward, bestResult);
     }
     
     if(reward > bestResult.getReward()) {

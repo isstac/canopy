@@ -1,5 +1,8 @@
 package edu.cmu.sv.isstac.sampling.montecarlo;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import edu.cmu.sv.isstac.sampling.AbstractAnalysisProcessor;
 import edu.cmu.sv.isstac.sampling.AnalysisEventObserver;
 import edu.cmu.sv.isstac.sampling.SamplingResult;
@@ -95,20 +98,15 @@ public class MonteCarloShell implements JPFShell {
       int sampleSize = config.getInt(MAX_SAMPLES_TERMINATION_STRAT, DEFAULT_MAX_SAMPLES);
       defaultTerminationStrategy = new SampleSizeTerminationStrategy(sampleSize);
     }
-//    TerminationStrategy terminationStrategy = getInstanceOrDefault(config, 
-//        TERMINATION_STRAT,
-//        TerminationStrategy.class, 
-//        defaultTerminationStrategy);
-    TerminationStrategy terminationStrategy = new RewardBoundedTermination(28, RewardBoundedTermination.EVENT.SUCC);
+    TerminationStrategy terminationStrategy = getInstanceOrDefault(config, 
+        TERMINATION_STRAT,
+        TerminationStrategy.class, 
+        defaultTerminationStrategy);
+  //  TerminationStrategy terminationStrategy = new RewardBoundedTermination(28, RewardBoundedTermination.EVENT.SUCC);
     RewardFunction rewardFunc = getInstanceOrDefault(config,
         REWARD_FUNCTION, 
         RewardFunction.class, 
         new DepthRewardFunction());
-    
-    AnalysisEventObserver analysisProcessor = getInstanceOrDefault(config,
-        ANALYSIS_PROCESSOR, 
-        AnalysisEventObserver.class, 
-        AbstractAnalysisProcessor.DEFAULT);
     
     MonteCarloListener mcListener = new MonteCarloListener(simPol, 
         rewardFunc, 
@@ -118,8 +116,19 @@ public class MonteCarloShell implements JPFShell {
     // We add the analysis processor as an observer of the monte carlo search events.
     // It will notify the shell when it is done according to
     // the termination strategy
-    mcListener.addEventObserver(analysisProcessor);
+    Collection<AnalysisEventObserver> analysisObservers = new ArrayList<>();
+    if(!config.hasValue(ANALYSIS_PROCESSOR)) {
+      analysisObservers.add(AbstractAnalysisProcessor.DEFAULT);
+    } else {
+      for(AnalysisEventObserver obs : config.getInstances(ANALYSIS_PROCESSOR, AnalysisEventObserver.class)) {
+        analysisObservers.add(obs);
+      }
+    }
     
+    for(AnalysisEventObserver observer : analysisObservers) {
+      mcListener.addEventObserver(observer);
+    }
+
     jpf.addListener(mcListener);
   }
 

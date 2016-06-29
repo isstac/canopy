@@ -1,9 +1,13 @@
 package edu.cmu.sv.isstac.sampling.mcts;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import edu.cmu.sv.isstac.sampling.AbstractAnalysisProcessor;
 import edu.cmu.sv.isstac.sampling.AnalysisEventObserver;
 import edu.cmu.sv.isstac.sampling.SamplingResult;
 import edu.cmu.sv.isstac.sampling.SamplingSearch;
+import edu.cmu.sv.isstac.sampling.analysis.LiveAnalysisStatistics;
 import edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
@@ -126,22 +130,28 @@ public class MCTSShell implements JPFShell {
         RewardFunction.class, 
         new DepthRewardFunction());
     
-    AnalysisEventObserver analysisProcessor = getInstanceOrDefault(config,
-        ANALYSIS_PROCESSOR, 
-        AnalysisEventObserver.class, 
-        AbstractAnalysisProcessor.DEFAULT);
-    
     MCTSListener mcts = new MCTSListener(selPol, 
         simPol, 
         rewardFunc, 
         choicesStrat, 
         terminationStrategy);
     
-    // We add the shell as an observer of the mcts events.
+    // We add the analysis processor as an observer of the mcts events.
     // It will notify the shell when it is done according to
     // the termination strategy
-    mcts.addEventObserver(analysisProcessor);
+    Collection<AnalysisEventObserver> analysisObservers = new ArrayList<>();
+    if(!config.hasValue(ANALYSIS_PROCESSOR)) {
+      analysisObservers.add(AbstractAnalysisProcessor.DEFAULT);
+    } else {
+      for(AnalysisEventObserver obs : config.getInstances(ANALYSIS_PROCESSOR, AnalysisEventObserver.class)) {
+        analysisObservers.add(obs);
+      }
+    }
     
+    for(AnalysisEventObserver observer : analysisObservers) {
+      mcts.addEventObserver(observer);
+    }
+   
     jpf.addListener(mcts);
   }
 

@@ -96,7 +96,7 @@ public class MonteCarloListener extends PropertyListenerAdapter {
     
     // Notify observers with sample done event
     for(AnalysisEventObserver obs : this.observers) {
-      obs.sampleDone(reward, numberOfSamples, currentBestResult);
+      obs.sampleDone(numberOfSamples, reward, currentBestResult);
     }
     
     // Check if the reward obtained is greater than
