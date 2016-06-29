@@ -1,5 +1,6 @@
 package edu.cmu.sv.isstac.sampling.mcts;
 
+import edu.cmu.sv.isstac.sampling.AbstractAnalysisProcessor;
 import edu.cmu.sv.isstac.sampling.AnalysisEventObserver;
 import edu.cmu.sv.isstac.sampling.SamplingResult;
 import edu.cmu.sv.isstac.sampling.SamplingSearch;
@@ -25,7 +26,7 @@ import gov.nasa.jpf.JPFShell;
  * We can maybe generalize this shell later if we experiment with more
  * techniques for sampling
  */
-public class MCTSShell implements JPFShell, AnalysisEventObserver {
+public class MCTSShell implements JPFShell {
   
   public static final String MCTS_CONF_PRFX = "symbolic.security.sampling.mcts";
   
@@ -53,6 +54,9 @@ public class MCTSShell implements JPFShell, AnalysisEventObserver {
   public static final String TERMINATION_STRAT = MCTS_CONF_PRFX + ".termination";
   public static final String MAX_SAMPLES_TERMINATION_STRAT = TERMINATION_STRAT + ".maxsamples";
   public static final int DEFAULT_MAX_SAMPLES = 1000;
+  
+  //Analysis processing
+  public static final String ANALYSIS_PROCESSOR = MCTS_CONF_PRFX + ".analysisprocessor";
   
   private final Config jpfConfig;
   private final JPF jpf;
@@ -122,6 +126,11 @@ public class MCTSShell implements JPFShell, AnalysisEventObserver {
         RewardFunction.class, 
         new DepthRewardFunction());
     
+    AnalysisEventObserver analysisProcessor = getInstanceOrDefault(config,
+        ANALYSIS_PROCESSOR, 
+        AnalysisEventObserver.class, 
+        AbstractAnalysisProcessor.DEFAULT);
+    
     MCTSListener mcts = new MCTSListener(selPol, 
         simPol, 
         rewardFunc, 
@@ -131,7 +140,7 @@ public class MCTSShell implements JPFShell, AnalysisEventObserver {
     // We add the shell as an observer of the mcts events.
     // It will notify the shell when it is done according to
     // the termination strategy
-    mcts.addEventObserver(this);
+    mcts.addEventObserver(analysisProcessor);
     
     jpf.addListener(mcts);
   }
@@ -139,17 +148,6 @@ public class MCTSShell implements JPFShell, AnalysisEventObserver {
   @Override
   public void start(String[] args) {
     jpf.run();
-  }
-  
-  @Override
-  public void analysisDone(SamplingResult result) {
-    // When MCTS terminates, this event is called with the result.
-    // Process result here...
-    
-    // For now just output the state of the result objects
-    System.out.println("Made " + result.getNumberOfSamples() + " samples before terminating");
-    System.out.println("Max rewards observed based on MCTS policies: ");
-    System.out.println(result.toString());
   }
   
   // Instantiation of defInstance is a bit ugly. Just rely on jpf conf api...

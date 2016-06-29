@@ -220,7 +220,8 @@ class MCTSListener extends PropertyListenerAdapter {
     logger.info("Reward computed: " + reward);
     
     result.incNumberOfSamples();
-    logger.info("Sample number: " + result.getNumberOfSamples());
+    long numberOfSamples = result.getNumberOfSamples();
+    logger.info("Sample number: " + numberOfSamples);
     
     // Perform backup phase
     for(Node n = last; n != null; n = n.getParent()) {
@@ -232,6 +233,12 @@ class MCTSListener extends PropertyListenerAdapter {
     // previously observed for this event (succ, fail, grey)
     // and update the best result accordingly
     ResultContainer bestResult = updater.getResultStateForEvent();
+    
+    // Notify observers with sample done event
+    for(AnalysisEventObserver obs : this.observers) {
+      obs.sampleDone(reward, numberOfSamples, bestResult);
+    }
+    
     if(reward > bestResult.getReward()) {
       
       bestResult.setReward(reward);

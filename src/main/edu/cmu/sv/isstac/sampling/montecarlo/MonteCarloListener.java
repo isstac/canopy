@@ -91,8 +91,13 @@ public class MonteCarloListener extends PropertyListenerAdapter {
     logger.info("Reward computed: " + reward);
     
     result.incNumberOfSamples();
-    logger.info("Sample number: " + result.getNumberOfSamples());
+    long numberOfSamples = result.getNumberOfSamples();
+    logger.info("Sample number: " + numberOfSamples);
     
+    // Notify observers with sample done event
+    for(AnalysisEventObserver obs : this.observers) {
+      obs.sampleDone(reward, numberOfSamples, currentBestResult);
+    }
     
     // Check if the reward obtained is greater than
     // previously observed for this event (succ, fail, grey)
