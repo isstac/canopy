@@ -65,11 +65,6 @@ public class MCTSShell implements JPFShell {
   private final Config jpfConfig;
   private final JPF jpf;
   
-  public static class Builder {
-    
-    
-  }
-  
   //ctor required for jpf shell
   public MCTSShell(Config config) {
     this.jpfConfig = config;
@@ -141,17 +136,14 @@ public class MCTSShell implements JPFShell {
     // the termination strategy
     Collection<AnalysisEventObserver> analysisObservers = new ArrayList<>();
     if(!config.hasValue(ANALYSIS_PROCESSOR)) {
-      analysisObservers.add(AbstractAnalysisProcessor.DEFAULT);
+      mcts.addEventObserver(AbstractAnalysisProcessor.DEFAULT);
+      mcts.addEventObserver(new LiveAnalysisStatistics());
     } else {
       for(AnalysisEventObserver obs : config.getInstances(ANALYSIS_PROCESSOR, AnalysisEventObserver.class)) {
-        analysisObservers.add(obs);
+        mcts.addEventObserver(obs);
       }
     }
     
-    for(AnalysisEventObserver observer : analysisObservers) {
-      mcts.addEventObserver(observer);
-    }
-   
     jpf.addListener(mcts);
   }
 

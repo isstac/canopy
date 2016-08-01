@@ -20,8 +20,6 @@ public class LiveAnalysisStatistics extends AbstractAnalysisProcessor {
     chart = new LiveTrackerChart(BUFFER_SIZE);
     
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-
-    //chart.setBounds(0, 0, screenSize.width, 768);
     chart.setPreferredSize(new java.awt.Dimension(screenSize.width, 768));
     chart.pack();    
     chart.setVisible(true);

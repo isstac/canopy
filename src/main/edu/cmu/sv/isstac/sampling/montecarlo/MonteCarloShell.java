@@ -118,15 +118,11 @@ public class MonteCarloShell implements JPFShell {
     // the termination strategy
     Collection<AnalysisEventObserver> analysisObservers = new ArrayList<>();
     if(!config.hasValue(ANALYSIS_PROCESSOR)) {
-      analysisObservers.add(AbstractAnalysisProcessor.DEFAULT);
+      mcListener.addEventObserver(AbstractAnalysisProcessor.DEFAULT);
     } else {
       for(AnalysisEventObserver obs : config.getInstances(ANALYSIS_PROCESSOR, AnalysisEventObserver.class)) {
-        analysisObservers.add(obs);
+        mcListener.addEventObserver(obs);
       }
-    }
-    
-    for(AnalysisEventObserver observer : analysisObservers) {
-      mcListener.addEventObserver(observer);
     }
 
     jpf.addListener(mcListener);
