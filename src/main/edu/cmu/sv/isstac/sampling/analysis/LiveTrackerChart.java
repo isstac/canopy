@@ -101,7 +101,7 @@ public class LiveTrackerChart extends ApplicationFrame {
     dataset.addSeries(samplingSeries);
     JFreeChart timeSeriesChart = ChartFactory.createXYLineChart("Live Sampling Results",
         "Number of Samples",
-        "Reward",
+        "Frequency",
         dataset,
         PlotOrientation.VERTICAL, 
         true, 
@@ -121,8 +121,8 @@ public class LiveTrackerChart extends ApplicationFrame {
     histogram = new SimpleHistogramDataset("Rewards");
     histogram.setAdjustForBinSize(true);
     JFreeChart histogramChart = ChartFactory.createHistogram("Live Reward Frequency",
-        "Frequency", 
         "Reward", 
+        "Frequency", 
         histogram,
         PlotOrientation.VERTICAL, 
         true, 

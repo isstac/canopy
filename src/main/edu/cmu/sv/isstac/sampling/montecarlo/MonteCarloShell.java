@@ -116,7 +116,6 @@ public class MonteCarloShell implements JPFShell {
     // We add the analysis processor as an observer of the monte carlo search events.
     // It will notify the shell when it is done according to
     // the termination strategy
-    Collection<AnalysisEventObserver> analysisObservers = new ArrayList<>();
     if(!config.hasValue(ANALYSIS_PROCESSOR)) {
       mcListener.addEventObserver(AbstractAnalysisProcessor.DEFAULT);
     } else {
