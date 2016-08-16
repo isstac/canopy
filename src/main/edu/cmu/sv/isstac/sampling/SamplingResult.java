@@ -1,6 +1,6 @@
 package edu.cmu.sv.isstac.sampling;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 import edu.cmu.sv.isstac.sampling.exploration.Path;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
@@ -75,7 +75,7 @@ public class SamplingResult {
     
     @Override
     public String toString() {
-      return isSet() ? Objects.toStringHelper(this).
+      return isSet() ? MoreObjects.toStringHelper(this).
           add("reward", reward).
           add("samplesNumber", sampleNumber).
           add("path", path.toString()).
@@ -127,7 +127,7 @@ public class SamplingResult {
   
   @Override
   public String toString() {
-    return Objects.toStringHelper(this).
+    return MoreObjects.toStringHelper(this).
       add("Max succ state", maxSuccState.toString()).
       add("Max fail state", maxFailState.toString()).
       add("Max grey state", maxGreyState.toString()).toString();
