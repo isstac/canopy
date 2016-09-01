@@ -11,6 +11,7 @@ import edu.cmu.sv.isstac.sampling.SamplingResult;
 import edu.cmu.sv.isstac.sampling.SamplingResult.ResultContainer;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
+import edu.cmu.sv.isstac.sampling.mcts.quantification.PathQuantifier;
 import edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloAnalysisException;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
@@ -60,6 +61,7 @@ class MCTSListener extends PropertyListenerAdapter {
   private final SimulationPolicy simulationPolicy;
   
   private final RewardFunction rewardFunction;
+  private final PathQuantifier pathQuantifier;
   
   private final TerminationStrategy terminationStrategy;
   
@@ -76,14 +78,16 @@ class MCTSListener extends PropertyListenerAdapter {
   private Set<AnalysisEventObserver> observers = new HashSet<>();
   
   public MCTSListener(SelectionPolicy selectionPolicy,
-      SimulationPolicy simulationPolicy,
-      RewardFunction rewardFunction,
-      ChoicesStrategy choicesStrategy,
-      TerminationStrategy terminationStrategy) {
+                      SimulationPolicy simulationPolicy,
+                      RewardFunction rewardFunction,
+                      PathQuantifier pathQuantifier,
+                      ChoicesStrategy choicesStrategy,
+                      TerminationStrategy terminationStrategy) {
     this.choicesStrategy = choicesStrategy;
     this.selectionPolicy = selectionPolicy;
     this.simulationPolicy = simulationPolicy;
     this.rewardFunction = rewardFunction;
+    this.pathQuantifier = pathQuantifier;
     this.terminationStrategy = terminationStrategy;
     
     this.mctsState = MCTS_STATE.SELECTION;
@@ -217,16 +221,24 @@ class MCTSListener extends PropertyListenerAdapter {
     
     // Compute reward based on reward function
     long reward = rewardFunction.computeReward(vm);
-    logger.info("Reward computed: " + reward);
-    
+
+    // We compute the volume of the path here.
+    // This can e.g. be based on model counting
+    // The path volume is used in the backup phase,
+    // i.e. the number of times a node has been visited,
+    // corresponds to the (additive) volume of the path(s)
+    // with that node as origin
+    long pathVolume = this.pathQuantifier.quantifyPath(vm);
+
     result.incNumberOfSamples();
     long numberOfSamples = result.getNumberOfSamples();
-    logger.info("Sample number: " + numberOfSamples);
+
+    logger.info("Sample #: " + numberOfSamples + ", reward: " + reward + ", path volume: " + pathVolume);
     
     // Perform backup phase
     for(Node n = last; n != null; n = n.getParent()) {
       updater.update(n, reward);
-      n.incVisitedNum();
+      n.incVisitedNum(pathVolume);
     }
     
     // Check if the reward obtained is greater than

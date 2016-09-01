@@ -1,7 +1,11 @@
 package edu.cmu.sv.isstac.sampling.mcts;
 
+import org.antlr.runtime.RecognitionException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AbstractAnalysisProcessor;
 import edu.cmu.sv.isstac.sampling.AnalysisEventObserver;
@@ -11,9 +15,14 @@ import edu.cmu.sv.isstac.sampling.analysis.LiveAnalysisStatistics;
 import edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
+import edu.cmu.sv.isstac.sampling.mcts.quantification.AnalyzerFactory;
+import edu.cmu.sv.isstac.sampling.mcts.quantification.ConcretePathQuantifier;
+import edu.cmu.sv.isstac.sampling.mcts.quantification.ModelCountingPathQuantifier;
+import edu.cmu.sv.isstac.sampling.mcts.quantification.PathQuantifier;
 import edu.cmu.sv.isstac.sampling.policies.RandomizedPolicy;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction;
+import edu.cmu.sv.isstac.sampling.reward.ModelCountingAmplifierDecorator;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
 import edu.cmu.sv.isstac.sampling.termination.AllPathsTerminationStrategy;
 import edu.cmu.sv.isstac.sampling.termination.RewardBoundedTermination;
@@ -23,6 +32,11 @@ import edu.cmu.sv.isstac.sampling.termination.RewardBoundedTermination.EVENT;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFShell;
+import gov.nasa.jpf.util.JPFLogger;
+import modelcounting.analysis.Analyzer;
+import modelcounting.analysis.SequentialAnalyzer;
+import modelcounting.latte.LatteException;
+import modelcounting.omega.exceptions.OmegaException;
 
 /**
  * @author Kasper Luckow
@@ -31,13 +45,16 @@ import gov.nasa.jpf.JPFShell;
  * techniques for sampling
  */
 public class MCTSShell implements JPFShell {
-  
+
+  private static final Logger LOGGER = JPFLogger.getLogger(MCTSShell.class.getName());
+
   public static final String MCTS_CONF_PRFX = "symbolic.security.sampling.mcts";
   
   //This setting can be used to disable sampling to exhaustively explore the tree (mostly for debugging...)
   public static final String EXHAUSTIVE_ANALYSIS = MCTS_CONF_PRFX + ".exhaustive";
   
-  public static final String REWARD_FUNCTION = MCTS_CONF_PRFX + ".rewardfunc"; 
+  public static final String REWARD_FUNCTION = MCTS_CONF_PRFX + ".rewardfunc";
+  public static final String PATH_QUANTIFIER = MCTS_CONF_PRFX + ".pathquantifier";
 
   public static final String SELECTION_POLICY = MCTS_CONF_PRFX + ".selectionpol";
   public static final String SIM_POLICY = MCTS_CONF_PRFX + ".simulationpol";
@@ -58,7 +75,12 @@ public class MCTSShell implements JPFShell {
   public static final String TERMINATION_STRAT = MCTS_CONF_PRFX + ".termination";
   public static final String MAX_SAMPLES_TERMINATION_STRAT = TERMINATION_STRAT + ".maxsamples";
   public static final int DEFAULT_MAX_SAMPLES = 1000;
-  
+
+  //Model counting conf. This will use the model counting reward decorator and propagate
+  //the path volume (count) as the number of times a node has been visited
+  public static final boolean DEFAULT_USE_MODELCOUNT_AMPLIFICATION = true;
+  public static final String USE_MODELCOUNT_AMPLIFICATION = MCTS_CONF_PRFX + ".modelcounting";
+
   //Analysis processing
   public static final String ANALYSIS_PROCESSOR = MCTS_CONF_PRFX + ".analysisprocessor";
   
@@ -119,15 +141,46 @@ public class MCTSShell implements JPFShell {
         TERMINATION_STRAT,
         TerminationStrategy.class, 
         defaultTerminationStrategy);
-   // TerminationStrategy terminationStrategy = new RewardBoundedTermination(44, EVENT.SUCC);
+    // TerminationStrategy terminationStrategy = new RewardBoundedTermination(44, EVENT.SUCC);
     RewardFunction rewardFunc = getInstanceOrDefault(config,
         REWARD_FUNCTION, 
         RewardFunction.class, 
         new DepthRewardFunction());
+
+    PathQuantifier defaultPathQuantifier = null;
+    boolean useMCAmplification = config.getBoolean(USE_MODELCOUNT_AMPLIFICATION,
+        DEFAULT_USE_MODELCOUNT_AMPLIFICATION);
+    if(useMCAmplification) {
+      try {
+        Analyzer runtimeAnalyzer = AnalyzerFactory.create(this.jpfConfig);
+
+        //Decorate reward function with model count amplification
+        rewardFunc = new ModelCountingAmplifierDecorator(rewardFunc, runtimeAnalyzer);
+
+        //A bit ugly, but we set the default pathquantifier to use model counts
+        defaultPathQuantifier = new ModelCountingPathQuantifier(runtimeAnalyzer);
+      } catch (IOException | RecognitionException | InterruptedException |
+          OmegaException | LatteException e) {
+        LOGGER.severe(e.getMessage());
+        LOGGER.severe(e.getStackTrace().toString());
+        throw new MCTSAnalysisException(e);
+      }
+    } else {
+      //If we don't use model count amplification,
+      //then we just stick we the concrete path quantifier
+      //which adds 1 for each explored path
+      defaultPathQuantifier = new ConcretePathQuantifier();
+    }
+
+    PathQuantifier pathQuantifier = getInstanceOrDefault(config,
+        PATH_QUANTIFIER,
+        PathQuantifier.class,
+        defaultPathQuantifier);
     
     MCTSListener mcts = new MCTSListener(selPol, 
         simPol, 
-        rewardFunc, 
+        rewardFunc,
+        pathQuantifier,
         choicesStrat, 
         terminationStrategy);
     

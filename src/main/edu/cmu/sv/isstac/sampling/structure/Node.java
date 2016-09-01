@@ -19,7 +19,7 @@ public abstract class Node {
   private final Node parent;
   private final int choice;
   private final int totalChoicesNum;
-  private int visitedNum = 0;
+  private long visitedNum = 0;
   
   private final Map<Integer, Node> children = new HashMap<>();
   
@@ -63,11 +63,11 @@ public abstract class Node {
     return this.reward;
   }
   
-  public int getVisitedNum() {
+  public long getVisitedNum() {
     return this.visitedNum;
   }
   
-  public void incVisitedNum() {
-    this.visitedNum++;
+  public void incVisitedNum(long visitedNum) {
+    this.visitedNum += visitedNum;
   }
 }
