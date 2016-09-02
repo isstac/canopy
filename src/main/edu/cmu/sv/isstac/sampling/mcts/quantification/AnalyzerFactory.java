@@ -45,9 +45,12 @@ public class AnalyzerFactory {
     ProblemSetting problemSettings = ProblemSetting.loadFromFile(problemSettingsPath);
 
     Configuration configuration = new Configuration();
-    configuration.setTemporaryDirectory(config.getString(TMP_DIR_CONF, TMP_DIR_DEF_CONF));
-    configuration.setOmegaExectutablePath(config.getString(OMEGA_PATH_CONF, OMEGA_PATH_DEF_CONF));
-    configuration.setLatteExecutablePath(config.getString(LATTE_PATH_CONF, LATTE_PATH_DEF_CONF));
+    configuration.setTemporaryDirectory(config.getString(TMP_DIR_CONF, config.getString
+        (TMP_DIR_DEF_CONF)));
+    configuration.setOmegaExectutablePath(config.getString(OMEGA_PATH_CONF, config.getString
+        (OMEGA_PATH_DEF_CONF)));
+    configuration.setLatteExecutablePath(config.getString(LATTE_PATH_CONF, config.getString
+        (LATTE_PATH_DEF_CONF)));
 
     int numOfKernels = config.getInt(KERNELS_CONF, KERNELS_DEF_CONF);
 
