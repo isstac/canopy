@@ -157,7 +157,7 @@ public class MCTSShell implements JPFShell {
         //Decorate reward function with model count amplification
         rewardFunc = new ModelCountingAmplifierDecorator(rewardFunc, runtimeAnalyzer);
 
-        //A bit ugly, but we set the default pathquantifier to use model counts
+        //A bit ugly, but we set the default path quantifier to use model counts
         defaultPathQuantifier = new ModelCountingPathQuantifier(runtimeAnalyzer);
       } catch (IOException | RecognitionException | InterruptedException |
           OmegaException | LatteException e) {
