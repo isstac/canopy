@@ -8,6 +8,7 @@ import edu.cmu.sv.isstac.sampling.mcts.MCTSShell;
 import gov.nasa.jpf.Config;
 import modelcounting.analysis.Analyzer;
 import modelcounting.analysis.SequentialAnalyzer;
+import modelcounting.domain.Domain;
 import modelcounting.domain.ProblemSetting;
 import modelcounting.latte.LatteException;
 import modelcounting.omega.exceptions.OmegaException;
@@ -36,6 +37,10 @@ public class AnalyzerFactory {
 
   public static Analyzer create(Config config) throws IOException, RecognitionException,
       InterruptedException, OmegaException, LatteException {
+    if(!config.hasValue(PROBLEMSETTINGS_CONF)) {
+      throw new ModelCountingException("Problem settings not set. Please set with: " +
+          PROBLEMSETTINGS_CONF);
+    }
     String problemSettingsPath = config.getString(PROBLEMSETTINGS_CONF);
     ProblemSetting problemSettings = ProblemSetting.loadFromFile(problemSettingsPath);
 
