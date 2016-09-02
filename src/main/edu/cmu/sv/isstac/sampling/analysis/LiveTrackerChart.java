@@ -101,7 +101,7 @@ public class LiveTrackerChart extends ApplicationFrame {
     dataset.addSeries(samplingSeries);
     JFreeChart timeSeriesChart = ChartFactory.createXYLineChart("Live Sampling Results",
         "Number of Samples",
-        "Frequency",
+        "Reward",
         dataset,
         PlotOrientation.VERTICAL, 
         true, 
