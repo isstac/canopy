@@ -6,13 +6,12 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import edu.cmu.sv.isstac.sampling.AnalysisEventObserver;
-import edu.cmu.sv.isstac.sampling.SamplingResult;
-import edu.cmu.sv.isstac.sampling.SamplingResult.ResultContainer;
+import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
+import edu.cmu.sv.isstac.sampling.analysis.SamplingResult;
+import edu.cmu.sv.isstac.sampling.analysis.SamplingResult.ResultContainer;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
 import edu.cmu.sv.isstac.sampling.mcts.quantification.PathQuantifier;
-import edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloAnalysisException;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
 import edu.cmu.sv.isstac.sampling.structure.DefaultNodeFactory;
@@ -247,13 +246,14 @@ class MCTSListener extends PropertyListenerAdapter {
     ResultContainer bestResult = updater.getResultStateForEvent();
     
     // Notify observers with sample done event
+    long realReward = reward / pathVolume;
     for(AnalysisEventObserver obs : this.observers) {
-      obs.sampleDone(numberOfSamples, reward, bestResult);
+      obs.sampleDone(numberOfSamples, realReward, pathVolume, bestResult);
     }
-    
-    if(reward > bestResult.getReward()) {
+
+    if(realReward > bestResult.getReward()) {
       
-      bestResult.setReward(reward);
+      bestResult.setReward(realReward);
       bestResult.setSampleNumber(result.getNumberOfSamples());
       
       Path path = new Path(vm.getChoiceGenerator());

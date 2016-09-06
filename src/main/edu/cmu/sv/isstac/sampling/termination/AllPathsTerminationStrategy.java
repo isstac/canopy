@@ -1,10 +1,8 @@
 package edu.cmu.sv.isstac.sampling.termination;
 
-import edu.cmu.sv.isstac.sampling.SamplingResult;
+import edu.cmu.sv.isstac.sampling.analysis.SamplingResult;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
 import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
-import edu.cmu.sv.isstac.sampling.structure.Node;
-import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.VM;
 
 /**

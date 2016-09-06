@@ -8,9 +8,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import edu.cmu.sv.isstac.sampling.AnalysisEventObserver;
-import edu.cmu.sv.isstac.sampling.SamplingResult;
-import edu.cmu.sv.isstac.sampling.SamplingResult.ResultContainer;
+import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
+import edu.cmu.sv.isstac.sampling.analysis.SamplingResult;
+import edu.cmu.sv.isstac.sampling.analysis.SamplingResult.ResultContainer;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
@@ -96,7 +96,7 @@ public class MonteCarloListener extends PropertyListenerAdapter {
     
     // Notify observers with sample done event
     for(AnalysisEventObserver obs : this.observers) {
-      obs.sampleDone(numberOfSamples, reward, currentBestResult);
+      obs.sampleDone(numberOfSamples, reward, 1, currentBestResult);
     }
     
     // Check if the reward obtained is greater than

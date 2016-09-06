@@ -1,7 +1,7 @@
 package edu.cmu.sv.isstac.sampling.termination;
 
-import edu.cmu.sv.isstac.sampling.SamplingResult;
-import edu.cmu.sv.isstac.sampling.SamplingResult.ResultContainer;
+import edu.cmu.sv.isstac.sampling.analysis.SamplingResult;
+import edu.cmu.sv.isstac.sampling.analysis.SamplingResult.ResultContainer;
 import gov.nasa.jpf.vm.VM;
 
 /**

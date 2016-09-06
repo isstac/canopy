@@ -3,9 +3,7 @@ package edu.cmu.sv.isstac.sampling.analysis;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
-import edu.cmu.sv.isstac.sampling.AbstractAnalysisProcessor;
-import edu.cmu.sv.isstac.sampling.SamplingResult;
-import edu.cmu.sv.isstac.sampling.SamplingResult.ResultContainer;
+import edu.cmu.sv.isstac.sampling.analysis.SamplingResult.ResultContainer;
 
 /**
  * @author Kasper Luckow
@@ -26,8 +24,8 @@ public class LiveAnalysisStatistics extends AbstractAnalysisProcessor {
   }
   
   @Override
-  public void sampleDone(long samples, long reward, ResultContainer currentBestResult) {
-    chart.update(samples, reward);
+  public void sampleDone(long samples, long propagatedReward, long pathVolume, ResultContainer currentBestResult) {
+    chart.update(samples, propagatedReward);
   }
   
   @Override  

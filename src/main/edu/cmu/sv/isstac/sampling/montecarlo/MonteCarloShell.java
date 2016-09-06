@@ -1,11 +1,7 @@
 package edu.cmu.sv.isstac.sampling.montecarlo;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-import edu.cmu.sv.isstac.sampling.AbstractAnalysisProcessor;
-import edu.cmu.sv.isstac.sampling.AnalysisEventObserver;
-import edu.cmu.sv.isstac.sampling.SamplingResult;
+import edu.cmu.sv.isstac.sampling.analysis.AbstractAnalysisProcessor;
+import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
 import edu.cmu.sv.isstac.sampling.SamplingSearch;
 import edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
@@ -15,7 +11,6 @@ import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
 import edu.cmu.sv.isstac.sampling.termination.AllPathsTerminationStrategy;
-import edu.cmu.sv.isstac.sampling.termination.RewardBoundedTermination;
 import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.Config;

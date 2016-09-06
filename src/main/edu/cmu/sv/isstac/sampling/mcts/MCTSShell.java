@@ -7,11 +7,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Logger;
 
-import edu.cmu.sv.isstac.sampling.AbstractAnalysisProcessor;
-import edu.cmu.sv.isstac.sampling.AnalysisEventObserver;
-import edu.cmu.sv.isstac.sampling.SamplingResult;
+import edu.cmu.sv.isstac.sampling.analysis.AbstractAnalysisProcessor;
+import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
 import edu.cmu.sv.isstac.sampling.SamplingSearch;
-import edu.cmu.sv.isstac.sampling.analysis.LiveAnalysisStatistics;
+import edu.cmu.sv.isstac.sampling.analysis.LiveAnalysisStatisticsModelCounting;
 import edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
@@ -25,16 +24,13 @@ import edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction;
 import edu.cmu.sv.isstac.sampling.reward.ModelCountingAmplifierDecorator;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
 import edu.cmu.sv.isstac.sampling.termination.AllPathsTerminationStrategy;
-import edu.cmu.sv.isstac.sampling.termination.RewardBoundedTermination;
 import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
-import edu.cmu.sv.isstac.sampling.termination.RewardBoundedTermination.EVENT;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFShell;
 import gov.nasa.jpf.util.JPFLogger;
 import modelcounting.analysis.Analyzer;
-import modelcounting.analysis.SequentialAnalyzer;
 import modelcounting.latte.LatteException;
 import modelcounting.omega.exceptions.OmegaException;
 
@@ -187,10 +183,9 @@ public class MCTSShell implements JPFShell {
     // We add the analysis processor as an observer of the mcts events.
     // It will notify the shell when it is done according to
     // the termination strategy
-    Collection<AnalysisEventObserver> analysisObservers = new ArrayList<>();
     if(!config.hasValue(ANALYSIS_PROCESSOR)) {
       mcts.addEventObserver(AbstractAnalysisProcessor.DEFAULT);
-      mcts.addEventObserver(new LiveAnalysisStatistics());
+      mcts.addEventObserver(new LiveAnalysisStatisticsModelCounting());
     } else {
       for(AnalysisEventObserver obs : config.getInstances(ANALYSIS_PROCESSOR, AnalysisEventObserver.class)) {
         mcts.addEventObserver(obs);

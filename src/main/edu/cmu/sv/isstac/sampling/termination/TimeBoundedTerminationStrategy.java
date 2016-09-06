@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Stopwatch;
 
-import edu.cmu.sv.isstac.sampling.SamplingResult;
+import edu.cmu.sv.isstac.sampling.analysis.SamplingResult;
 import gov.nasa.jpf.vm.VM;
 
 /**
