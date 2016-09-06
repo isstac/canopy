@@ -228,6 +228,7 @@ class MCTSListener extends PropertyListenerAdapter {
     // corresponds to the (additive) volume of the path(s)
     // with that node as origin
     long pathVolume = this.pathQuantifier.quantifyPath(vm);
+    assert pathVolume > 0;
 
     result.incNumberOfSamples();
     long numberOfSamples = result.getNumberOfSamples();
