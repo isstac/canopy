@@ -1,32 +1,22 @@
 package edu.cmu.sv.isstac.sampling.analysis;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.awt.Label;
-import java.text.DecimalFormat;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartFrame;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.ValueMarker;
-import org.jfree.data.general.Dataset;
-import org.jfree.data.statistics.HistogramDataset;
-import org.jfree.data.statistics.HistogramType;
 import org.jfree.data.statistics.SimpleHistogramBin;
 import org.jfree.data.statistics.SimpleHistogramDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
+
+import java.awt.*;
+import java.text.DecimalFormat;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.swing.*;
 
 /**
  * @author Kasper Luckow

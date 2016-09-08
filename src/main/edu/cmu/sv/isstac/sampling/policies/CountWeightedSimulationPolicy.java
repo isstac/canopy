@@ -1,13 +1,10 @@
 package edu.cmu.sv.isstac.sampling.policies;
 
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.ImmutableCollection;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
@@ -16,7 +13,7 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
-import edu.cmu.sv.isstac.sampling.mcts.quantification.PathUtil;
+import edu.cmu.sv.isstac.sampling.quantification.PathUtil;
 import gov.nasa.jpf.jvm.bytecode.IFEQ;
 import gov.nasa.jpf.jvm.bytecode.IFGE;
 import gov.nasa.jpf.jvm.bytecode.IFGT;
@@ -99,7 +96,8 @@ public class CountWeightedSimulationPolicy implements SimulationPolicy {
       }
     }
 
-    LOGGER.info("Selecting choice " + choice);
+    LOGGER.info("simulation policy selected choice " + choice + " for condition at line " +
+        currentCg.getInsn().getLineNumber());
     return choice;
   }
 
@@ -148,7 +146,6 @@ public class CountWeightedSimulationPolicy implements SimulationPolicy {
 
     // compute the conditional probability of the next choice given the previous PC
     BigRational conditionalProbability = getConditionalProbability(countBefore, countAfter);
-
 
     if(conditionalProbability.equals(BigRational.ONE)) {
       return 1;

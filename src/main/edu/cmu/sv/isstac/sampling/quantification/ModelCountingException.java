@@ -1,6 +1,4 @@
-package edu.cmu.sv.isstac.sampling.mcts.quantification;
-
-import edu.cmu.sv.isstac.sampling.SamplingException;
+package edu.cmu.sv.isstac.sampling.quantification;
 
 /**
  * @author Kasper Luckow

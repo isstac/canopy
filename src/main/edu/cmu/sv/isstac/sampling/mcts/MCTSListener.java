@@ -11,7 +11,7 @@ import edu.cmu.sv.isstac.sampling.analysis.SamplingResult;
 import edu.cmu.sv.isstac.sampling.analysis.SamplingResult.ResultContainer;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
-import edu.cmu.sv.isstac.sampling.mcts.quantification.PathQuantifier;
+import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
 import edu.cmu.sv.isstac.sampling.structure.DefaultNodeFactory;

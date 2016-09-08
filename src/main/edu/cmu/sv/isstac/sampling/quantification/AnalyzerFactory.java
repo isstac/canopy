@@ -1,4 +1,4 @@
-package edu.cmu.sv.isstac.sampling.mcts.quantification;
+package edu.cmu.sv.isstac.sampling.quantification;
 
 import org.antlr.runtime.RecognitionException;
 
@@ -8,7 +8,6 @@ import edu.cmu.sv.isstac.sampling.mcts.MCTSShell;
 import gov.nasa.jpf.Config;
 import modelcounting.analysis.Analyzer;
 import modelcounting.analysis.SequentialAnalyzer;
-import modelcounting.domain.Domain;
 import modelcounting.domain.ProblemSetting;
 import modelcounting.latte.LatteException;
 import modelcounting.omega.exceptions.OmegaException;

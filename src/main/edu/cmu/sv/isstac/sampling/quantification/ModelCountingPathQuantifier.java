@@ -1,4 +1,4 @@
-package edu.cmu.sv.isstac.sampling.mcts.quantification;
+package edu.cmu.sv.isstac.sampling.quantification;
 
 import java.math.BigDecimal;
 import java.util.logging.Logger;

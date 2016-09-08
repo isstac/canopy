@@ -2,6 +2,7 @@ package edu.cmu.sv.isstac.sampling.exploration;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Random;
 
 import com.google.common.base.Objects;
 
