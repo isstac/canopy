@@ -155,7 +155,7 @@ class MCTSListener extends PropertyListenerAdapter {
       } else if(mctsState == MCTS_STATE.SIMULATION) {
         
         // Select choice according to simulation policy, e.g., randomly
-        choice = simulationPolicy.selectChoice(cg, eligibleChoices);
+        choice = simulationPolicy.selectChoice(vm, cg, eligibleChoices);
       } else {
         String msg = "Entered invalid MCTS state: " + mctsState;
         logger.severe(msg);

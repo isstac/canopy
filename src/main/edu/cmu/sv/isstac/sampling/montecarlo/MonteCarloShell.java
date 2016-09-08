@@ -6,7 +6,7 @@ import edu.cmu.sv.isstac.sampling.SamplingSearch;
 import edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
-import edu.cmu.sv.isstac.sampling.policies.RandomizedPolicy;
+import edu.cmu.sv.isstac.sampling.policies.UniformSimulationPolicy;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
@@ -19,7 +19,7 @@ import gov.nasa.jpf.JPFShell;
 
 /**
  * @author Kasper Luckow
- * There is a lot of redundancy between this class and MCTSShell.
+ * There is a lot of redundancy between this class and RLShell and MonteCarloShell.
  * We can maybe generalize this shell later if we experiment with more
  * techniques for sampling
  */
@@ -66,10 +66,10 @@ public class MonteCarloShell implements JPFShell {
     boolean useRandomSeed = config.getBoolean(RNG_RANDOM_SEED, DEFAULT_RANDOM_SEED);
     SimulationPolicy defaultSimulationPolicy = null;
     if(useRandomSeed) {
-      defaultSimulationPolicy = new RandomizedPolicy();
+      defaultSimulationPolicy = new UniformSimulationPolicy();
     } else {
       long seed = config.getLong(RNG_SEED, DEFAULT_RNG_SEED);
-      defaultSimulationPolicy = new RandomizedPolicy(seed);
+      defaultSimulationPolicy = new UniformSimulationPolicy(seed);
     }
     
     SimulationPolicy simPol = getInstanceOrDefault(config, 

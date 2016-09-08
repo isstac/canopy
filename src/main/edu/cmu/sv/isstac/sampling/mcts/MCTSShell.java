@@ -3,8 +3,6 @@ package edu.cmu.sv.isstac.sampling.mcts;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.analysis.AbstractAnalysisProcessor;
@@ -18,7 +16,7 @@ import edu.cmu.sv.isstac.sampling.mcts.quantification.AnalyzerFactory;
 import edu.cmu.sv.isstac.sampling.mcts.quantification.ConcretePathQuantifier;
 import edu.cmu.sv.isstac.sampling.mcts.quantification.ModelCountingPathQuantifier;
 import edu.cmu.sv.isstac.sampling.mcts.quantification.PathQuantifier;
-import edu.cmu.sv.isstac.sampling.policies.RandomizedPolicy;
+import edu.cmu.sv.isstac.sampling.policies.UniformSimulationPolicy;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction;
 import edu.cmu.sv.isstac.sampling.reward.ModelCountingAmplifierDecorator;
@@ -100,11 +98,11 @@ public class MCTSShell implements JPFShell {
     SimulationPolicy defaultSimulationPolicy = null;
     if(useRandomSeed) {
       defaultSelectionPolicy = new UCBPolicy(uctBias);
-      defaultSimulationPolicy = new RandomizedPolicy();
+      defaultSimulationPolicy = new UniformSimulationPolicy();
     } else {
       long seed = config.getLong(RNG_SEED, DEFAULT_RNG_SEED);
       defaultSelectionPolicy = new UCBPolicy(seed, uctBias);
-      defaultSimulationPolicy = new RandomizedPolicy(seed);
+      defaultSimulationPolicy = new UniformSimulationPolicy(seed);
     }
     
     SelectionPolicy selPol = getInstanceOrDefault(config, 

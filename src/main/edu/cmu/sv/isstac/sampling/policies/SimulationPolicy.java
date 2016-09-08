@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.VM;
 
 /**
  * @author Kasper Luckow
  *
  */
 public interface SimulationPolicy {
-  public int selectChoice(ChoiceGenerator<?> cg, ArrayList<Integer> eligibleChoices);
+  public int selectChoice(VM vm, ChoiceGenerator<?> cg, ArrayList<Integer> eligibleChoices);
 }

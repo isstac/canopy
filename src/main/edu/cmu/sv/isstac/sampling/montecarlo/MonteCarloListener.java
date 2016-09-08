@@ -75,7 +75,7 @@ public class MonteCarloListener extends PropertyListenerAdapter {
       
       // Select a choice according to the simulation
       // strategy, e.g., randomized selection
-      int choice = simulationPolicy.selectChoice(cg, eligibleChoices);
+      int choice = simulationPolicy.selectChoice(vm, cg, eligibleChoices);
       cg.select(choice);
     } else {
       String msg = "Unexpected CG: " + cg.getClass().getName();
