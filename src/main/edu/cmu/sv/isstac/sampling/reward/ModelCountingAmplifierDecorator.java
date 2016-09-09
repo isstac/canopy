@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.quantification.ModelCountingException;
-import edu.cmu.sv.isstac.sampling.quantification.PathUtil;
+import edu.cmu.sv.isstac.sampling.util.PathUtil;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.vm.VM;

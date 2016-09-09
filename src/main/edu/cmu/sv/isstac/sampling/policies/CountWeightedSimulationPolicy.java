@@ -13,7 +13,7 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
-import edu.cmu.sv.isstac.sampling.quantification.PathUtil;
+import edu.cmu.sv.isstac.sampling.util.PathUtil;
 import gov.nasa.jpf.jvm.bytecode.IFEQ;
 import gov.nasa.jpf.jvm.bytecode.IFGE;
 import gov.nasa.jpf.jvm.bytecode.IFGT;

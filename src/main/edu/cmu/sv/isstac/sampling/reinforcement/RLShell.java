@@ -1,25 +1,24 @@
-package edu.cmu.sv.isstac.sampling.mcts;
+package edu.cmu.sv.isstac.sampling.reinforcement;
 
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import edu.cmu.sv.isstac.sampling.SamplingSearch;
 import edu.cmu.sv.isstac.sampling.analysis.AbstractAnalysisProcessor;
 import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
-import edu.cmu.sv.isstac.sampling.SamplingSearch;
 import edu.cmu.sv.isstac.sampling.analysis.LiveAnalysisStatisticsModelCounting;
 import edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
+import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
+import edu.cmu.sv.isstac.sampling.policies.UniformSimulationPolicy;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterCreationException;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterFactory;
 import edu.cmu.sv.isstac.sampling.quantification.ConcretePathQuantifier;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCountingPathQuantifier;
 import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
-import edu.cmu.sv.isstac.sampling.policies.UniformSimulationPolicy;
-import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
-import edu.cmu.sv.isstac.sampling.quantification.SPFModelCounter;
 import edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction;
 import edu.cmu.sv.isstac.sampling.reward.ModelCountingAmplifierDecorator;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
@@ -40,51 +39,57 @@ import modelcounting.omega.exceptions.OmegaException;
  * We can maybe generalize this shell later if we experiment with more
  * techniques for sampling
  */
-public class MCTSShell implements JPFShell {
+public class RLShell implements JPFShell {
 
-  private static final Logger LOGGER = JPFLogger.getLogger(MCTSShell.class.getName());
+  private static final Logger LOGGER = JPFLogger.getLogger(RLShell.class.getName());
 
-  public static final String MCTS_CONF_PRFX = "symbolic.security.sampling.mcts";
-  
+  public static final String RL_CONF_PRFX = "symbolic.security.sampling.rl";
+
   //This setting can be used to disable sampling to exhaustively explore the tree (mostly for debugging...)
-  public static final String EXHAUSTIVE_ANALYSIS = MCTS_CONF_PRFX + ".exhaustive";
-  
-  public static final String REWARD_FUNCTION = MCTS_CONF_PRFX + ".rewardfunc";
-  public static final String PATH_QUANTIFIER = MCTS_CONF_PRFX + ".pathquantifier";
+  public static final String EXHAUSTIVE_ANALYSIS = RL_CONF_PRFX + ".exhaustive";
 
-  public static final String SELECTION_POLICY = MCTS_CONF_PRFX + ".selectionpol";
-  public static final String SIM_POLICY = MCTS_CONF_PRFX + ".simulationpol";
-  
+  public static final String REWARD_FUNCTION = RL_CONF_PRFX + ".rewardfunc";
+  public static final String PATH_QUANTIFIER = RL_CONF_PRFX + ".pathquantifier";
+
+  //Reinforcement learning setup
+  public static final String SCHEDULER_EVALUATIONS = RL_CONF_PRFX + ".scheduler.evaluations";
+  public static final String SCHEDULER_OPTIMIZATIONS = RL_CONF_PRFX + ".scheduler.optimizations";
+
   //Policies conf
-  public static final String UCT_BIAS = MCTS_CONF_PRFX + ".uct.bias";
-  public static final double DEFAULT_UCT_BIAS = Math.sqrt(2); // Is this an appropriate value?
-  
-  public static final String RNG_SEED = MCTS_CONF_PRFX + ".seed";
+  //History parameter
+  public static final String HISTORY_BIAS = RL_CONF_PRFX + ".history";
+  public static final double DEFAULT_HISTORY_BIAS = 0.5;
+  //Epsilon parameter:
+  public static final String GREEDINESS_BIAS = RL_CONF_PRFX + ".greediness";
+  public static final double DEFAULT_GREEDINESS_BIAS = 0.5;
+
+  //Rng conf
+  public static final String RNG_SEED = RL_CONF_PRFX + ".seed";
   public static final long DEFAULT_RNG_SEED = 15485863;
-  
-  public static final String RNG_RANDOM_SEED = MCTS_CONF_PRFX + ".random";
+
+  public static final String RNG_RANDOM_SEED = RL_CONF_PRFX + ".random";
   public static final boolean DEFAULT_RANDOM_SEED = false;
-  
+
   //Pruning and termination conf
-  public static final String PRUNING = MCTS_CONF_PRFX + ".pruning";
+  public static final String PRUNING = RL_CONF_PRFX + ".pruning";
   public static final boolean DEFAULT_USE_PRUNING = true;
-  public static final String TERMINATION_STRAT = MCTS_CONF_PRFX + ".termination";
+  public static final String TERMINATION_STRAT = RL_CONF_PRFX + ".termination";
   public static final String MAX_SAMPLES_TERMINATION_STRAT = TERMINATION_STRAT + ".maxsamples";
   public static final int DEFAULT_MAX_SAMPLES = 1000;
 
   //Model counting conf. This will use the model counting reward decorator and propagate
   //the path volume (count) as the number of times a node has been visited
   public static final boolean DEFAULT_USE_MODELCOUNT_AMPLIFICATION = true;
-  public static final String USE_MODELCOUNT_AMPLIFICATION = MCTS_CONF_PRFX + ".modelcounting";
+  public static final String USE_MODELCOUNT_AMPLIFICATION = RL_CONF_PRFX + ".modelcounting";
 
   //Analysis processing
-  public static final String ANALYSIS_PROCESSOR = MCTS_CONF_PRFX + ".analysisprocessor";
-  
+  public static final String ANALYSIS_PROCESSOR = RL_CONF_PRFX + ".analysisprocessor";
+
   private final Config jpfConfig;
   private final JPF jpf;
-  
+
   //ctor required for jpf shell
-  public MCTSShell(Config config) {
+  public RLShell(Config config) {
     this.jpfConfig = config;
     
     if(!jpfConfig.getBoolean(EXHAUSTIVE_ANALYSIS, false)) {
@@ -93,32 +98,22 @@ public class MCTSShell implements JPFShell {
     }
     
     this.jpf = new JPF(jpfConfig);
-    
-    double uctBias = config.getDouble(UCT_BIAS, DEFAULT_UCT_BIAS);
+
     boolean useRandomSeed = config.getBoolean(RNG_RANDOM_SEED, DEFAULT_RANDOM_SEED);
-    SelectionPolicy defaultSelectionPolicy = null;
+
     SimulationPolicy defaultSimulationPolicy = null;
     if(useRandomSeed) {
-      defaultSelectionPolicy = new UCBPolicy(uctBias);
       defaultSimulationPolicy = new UniformSimulationPolicy();
     } else {
       long seed = config.getLong(RNG_SEED, DEFAULT_RNG_SEED);
-      defaultSelectionPolicy = new UCBPolicy(seed, uctBias);
       defaultSimulationPolicy = new UniformSimulationPolicy(seed);
     }
+
+    //TODO: use RL simulation here probably
+    SimulationPolicy simPol = null;
     
-    SelectionPolicy selPol = getInstanceOrDefault(config, 
-        SELECTION_POLICY, 
-        SelectionPolicy.class, 
-        defaultSelectionPolicy);
-    
-    SimulationPolicy simPol = getInstanceOrDefault(config, 
-        SIM_POLICY, 
-        SimulationPolicy.class, 
-        defaultSimulationPolicy);
-    
-    TerminationStrategy defaultTerminationStrategy = null;
-    ChoicesStrategy choicesStrat = null;
+    TerminationStrategy defaultTerminationStrategy;
+    ChoicesStrategy choicesStrat;
     if(config.getBoolean(PRUNING, DEFAULT_USE_PRUNING)) {
       PruningChoicesStrategy prunStrat = new PruningChoicesStrategy();
       jpf.addListener(prunStrat);
@@ -148,17 +143,17 @@ public class MCTSShell implements JPFShell {
         DEFAULT_USE_MODELCOUNT_AMPLIFICATION);
     if(useMCAmplification) {
       try {
-        SPFModelCounter modelCounter = ModelCounterFactory.create(this.jpfConfig);
+        Analyzer runtimeAnalyzer = ModelCounterFactory.create(this.jpfConfig);
 
         //Decorate reward function with model count amplification
-        rewardFunc = new ModelCountingAmplifierDecorator(rewardFunc, modelCounter);
+        rewardFunc = new ModelCountingAmplifierDecorator(rewardFunc, runtimeAnalyzer);
 
         //A bit ugly, but we set the default path quantifier to use model counts
-        defaultPathQuantifier = new ModelCountingPathQuantifier(modelCounter);
+        defaultPathQuantifier = new ModelCountingPathQuantifier(runtimeAnalyzer);
       } catch (ModelCounterCreationException e) {
         LOGGER.severe(e.getMessage());
         LOGGER.severe(e.getStackTrace().toString());
-        throw new MCTSAnalysisException(e);
+        throw new RLAnalysisException(e);
       }
     } else {
       //If we don't use model count amplification,
@@ -172,8 +167,7 @@ public class MCTSShell implements JPFShell {
         PathQuantifier.class,
         defaultPathQuantifier);
     
-    MCTSListener mcts = new MCTSListener(selPol, 
-        simPol, 
+    RLListener rl = new RLListener(simPol,
         rewardFunc,
         pathQuantifier,
         choicesStrat, 
@@ -183,15 +177,15 @@ public class MCTSShell implements JPFShell {
     // It will notify the shell when it is done according to
     // the termination strategy
     if(!config.hasValue(ANALYSIS_PROCESSOR)) {
-      mcts.addEventObserver(AbstractAnalysisProcessor.DEFAULT);
-      mcts.addEventObserver(new LiveAnalysisStatisticsModelCounting());
+      rl.addEventObserver(AbstractAnalysisProcessor.DEFAULT);
+      rl.addEventObserver(new LiveAnalysisStatisticsModelCounting());
     } else {
       for(AnalysisEventObserver obs : config.getInstances(ANALYSIS_PROCESSOR, AnalysisEventObserver.class)) {
-        mcts.addEventObserver(obs);
+        rl.addEventObserver(obs);
       }
     }
     
-    jpf.addListener(mcts);
+    jpf.addListener(rl);
   }
 
   @Override

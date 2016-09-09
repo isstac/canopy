@@ -1,4 +1,4 @@
-package edu.cmu.sv.isstac.sampling.quantification;
+package edu.cmu.sv.isstac.sampling.util;
 
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 
