@@ -158,7 +158,7 @@ public class MCTSShell implements JPFShell {
       try {
         SPFModelCounter modelCounter = ModelCounterFactory.create(this.jpfConfig);
 
-        //simPol = new CountWeightedSimulationPolicy(modelCounter, new Random(42));
+        simPol = new CountWeightedSimulationPolicy(modelCounter, new Random(42));
 
         //Decorate reward function with model count amplification
         rewardFunc = new ModelCountingAmplifierDecorator(rewardFunc, modelCounter);

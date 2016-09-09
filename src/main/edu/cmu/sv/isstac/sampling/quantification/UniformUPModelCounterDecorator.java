@@ -56,11 +56,31 @@ public class UniformUPModelCounterDecorator implements SPFModelCounter {
 
   private ProblemSetting createUniformProblemSetting(Set<String> symbolicVars) throws ModelCounterCreationException {
     //Assumption is that we **ONLY** have integer symbolic vars!
-    //Note that we cannot use the full range of the integer (hence the +-10)
-    //because the model counting library cannot represent those constraints
-    //for some weird reason
-    int minInt = this.config.getInt("symbolic.min_int", Integer.MIN_VALUE + 10);
-    int maxInt = this.config.getInt("symbolic.max_int", Integer.MAX_VALUE - 10);
+    //Note that we cannot use the full range of the integer---it seems there is a bug
+    //somewhere that causes integers to overflow in which case the model counting lib
+    //crashes (in the most epic way...)
+    //In addition, the default values have to be sufficiently small for each integer
+    //because the representation of the domain is a long (not a biginteger which would
+    //have been correct). If the domain overflows a long var, then the model counter
+    //crashes with
+    //java.util.concurrent.ExecutionException: modelcounting.latte.LatteException:
+    //Cannot parse latte output from /tmp/tmp112000227167053.
+    //Yes, very descriptive....
+    int minInt;
+    if(!config.hasValue("symbolic.min_int")) {
+      minInt = -100;
+      LOGGER.warning("Defaulting to lower bound for *ALL* integers in model counter: " + minInt);
+    } else {
+      minInt = this.config.getInt("symbolic.min_int");
+    }
+
+    int maxInt;
+    if(!config.hasValue("symbolic.max_int")) {
+      maxInt = 100;
+      LOGGER.warning("Defaulting to upper bound for *ALL* integers in model counter: " + maxInt);
+    } else {
+      maxInt = this.config.getInt("symbolic.max_int");
+    }
 
     Domain.Builder domainBldr = new Domain.Builder();
     UsageProfile.Builder upBldr = new UsageProfile.Builder();
