@@ -20,8 +20,10 @@ import javax.swing.*;
 
 /**
  * @author Kasper Luckow
- *
+ * Either remove this class or make a factory that creates charts base don whether model counting
+ * is used or not
  */
+@Deprecated
 public class LiveTrackerChart extends ApplicationFrame {
   
   private static final long serialVersionUID = 1760145418311574070L;

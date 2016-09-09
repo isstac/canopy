@@ -7,8 +7,10 @@ import edu.cmu.sv.isstac.sampling.analysis.SamplingResult.ResultContainer;
 
 /**
  * @author Kasper Luckow
- *
+ * Either remove this class or make a factory that creates charts base don whether model counting
+ * is used or not
  */
+@Deprecated
 public class LiveAnalysisStatistics extends AbstractAnalysisProcessor {
   private final int BUFFER_SIZE = 20;
   
