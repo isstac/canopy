@@ -13,6 +13,7 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
+import edu.cmu.sv.isstac.sampling.quantification.SPFModelCounter;
 import edu.cmu.sv.isstac.sampling.util.PathUtil;
 import gov.nasa.jpf.jvm.bytecode.IFEQ;
 import gov.nasa.jpf.jvm.bytecode.IFGE;
@@ -52,7 +53,7 @@ public class CountWeightedSimulationPolicy implements SimulationPolicy {
   private final Random rng;
 
   //TODO: consider getting rid of Random instance
-  public CountWeightedSimulationPolicy(Analyzer runtimeAnalyzer, Random rng) {
+  public CountWeightedSimulationPolicy(SPFModelCounter modelCounter, Random rng) {
     this.rng = rng;
 
     this.countCache = CacheBuilder.newBuilder()
@@ -62,9 +63,7 @@ public class CountWeightedSimulationPolicy implements SimulationPolicy {
         if(pc.header == null) {
           return BigRational.ONE;
         }
-
-        String pString = PathUtil.clean(pc);
-        return runtimeAnalyzer.analyzeSpfPC(pString);
+        return modelCounter.analyzeSpfPC(pc);
       }
     });
   }
