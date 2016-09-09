@@ -19,18 +19,17 @@ public class ModelCountingPathQuantifier implements PathQuantifier {
   private static final Logger LOGGER = JPF.getLogger(ModelCountingAmplifierDecorator.class
       .getName());
 
-  private final Analyzer runtimeAnalyzer;
+  private final SPFModelCounter modelCounter;
 
-  public ModelCountingPathQuantifier(Analyzer runtimeAnalyzer) {
-    this.runtimeAnalyzer = runtimeAnalyzer;
+  public ModelCountingPathQuantifier(SPFModelCounter modelCounter) {
+    this.modelCounter = modelCounter;
   }
 
   @Override
   public long quantifyPath(VM vm) {
     PathCondition pc = PathCondition.getPC(vm);
-    String pString = PathUtil.clean(pc);
     try {
-      BigRational count = this.runtimeAnalyzer.countPointsOfPC(pString);
+      BigRational count = this.modelCounter.countPointsOfPC(pc);
 
       //TODO: Ugly conversion to string
       BigDecimal decimalCount = new BigDecimal(count.toString());

@@ -19,6 +19,7 @@ import edu.cmu.sv.isstac.sampling.quantification.ModelCounterFactory;
 import edu.cmu.sv.isstac.sampling.quantification.ConcretePathQuantifier;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCountingPathQuantifier;
 import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
+import edu.cmu.sv.isstac.sampling.quantification.SPFModelCounter;
 import edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction;
 import edu.cmu.sv.isstac.sampling.reward.ModelCountingAmplifierDecorator;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
@@ -143,7 +144,7 @@ public class RLShell implements JPFShell {
         DEFAULT_USE_MODELCOUNT_AMPLIFICATION);
     if(useMCAmplification) {
       try {
-        Analyzer runtimeAnalyzer = ModelCounterFactory.create(this.jpfConfig);
+        SPFModelCounter runtimeAnalyzer = ModelCounterFactory.create(this.jpfConfig);
 
         //Decorate reward function with model count amplification
         rewardFunc = new ModelCountingAmplifierDecorator(rewardFunc, runtimeAnalyzer);

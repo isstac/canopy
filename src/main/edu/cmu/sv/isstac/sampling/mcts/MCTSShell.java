@@ -3,6 +3,7 @@ package edu.cmu.sv.isstac.sampling.mcts;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
+import java.util.Random;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.analysis.AbstractAnalysisProcessor;
@@ -12,6 +13,7 @@ import edu.cmu.sv.isstac.sampling.analysis.LiveAnalysisStatisticsModelCounting;
 import edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
+import edu.cmu.sv.isstac.sampling.policies.CountWeightedSimulationPolicy;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterCreationException;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterFactory;
 import edu.cmu.sv.isstac.sampling.quantification.ConcretePathQuantifier;
@@ -111,11 +113,12 @@ public class MCTSShell implements JPFShell {
         SELECTION_POLICY, 
         SelectionPolicy.class, 
         defaultSelectionPolicy);
-    
-    SimulationPolicy simPol = getInstanceOrDefault(config, 
-        SIM_POLICY, 
-        SimulationPolicy.class, 
-        defaultSimulationPolicy);
+
+
+//    SimulationPolicy simPol = /*getInstanceOrDefault(config,
+//        SIM_POLICY,
+//        SimulationPolicy.class,
+//        defaultSimulationPolicy);*/
     
     TerminationStrategy defaultTerminationStrategy = null;
     ChoicesStrategy choicesStrat = null;
@@ -143,12 +146,19 @@ public class MCTSShell implements JPFShell {
         RewardFunction.class, 
         new DepthRewardFunction());
 
+
+    SimulationPolicy simPol = getInstanceOrDefault(config,
+        SIM_POLICY,
+        SimulationPolicy.class,
+        defaultSimulationPolicy);
     PathQuantifier defaultPathQuantifier = null;
     boolean useMCAmplification = config.getBoolean(USE_MODELCOUNT_AMPLIFICATION,
         DEFAULT_USE_MODELCOUNT_AMPLIFICATION);
     if(useMCAmplification) {
       try {
         SPFModelCounter modelCounter = ModelCounterFactory.create(this.jpfConfig);
+
+        //simPol = new CountWeightedSimulationPolicy(modelCounter, new Random(42));
 
         //Decorate reward function with model count amplification
         rewardFunc = new ModelCountingAmplifierDecorator(rewardFunc, modelCounter);

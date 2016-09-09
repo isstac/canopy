@@ -1,5 +1,7 @@
 package edu.cmu.sv.isstac.sampling.quantification;
 
+import com.google.common.base.Joiner;
+
 import org.antlr.runtime.RecognitionException;
 
 import java.util.HashMap;
@@ -41,6 +43,8 @@ public class UniformUPModelCounterDecorator implements SPFModelCounter {
   private SPFModelCounter getModelCounterInstance(Set<String> symbolicVars) throws ModelCounterCreationException {
     SPFModelCounter modelCounter = modelCounters.get(symbolicVars);
     if(modelCounter == null) {
+      Joiner joiner = Joiner.on(',');
+      LOGGER.info("Creating model counter for symbolic vars: " + joiner.join(symbolicVars));
       ProblemSetting problemSetting = createUniformProblemSetting(symbolicVars);
 
       modelCounter = ModelCounterFactory.createModelCounterWithProblemSettings(this.config,
@@ -52,10 +56,11 @@ public class UniformUPModelCounterDecorator implements SPFModelCounter {
 
   private ProblemSetting createUniformProblemSetting(Set<String> symbolicVars) throws ModelCounterCreationException {
     //Assumption is that we **ONLY** have integer symbolic vars!
-    int minInt = Integer.parseInt(this.config.getProperty("symbolic.min_int", String.valueOf(Integer
-        .MIN_VALUE)));
-    int maxInt = Integer.parseInt(this.config.getProperty("symbolic.max_int", String.valueOf(Integer
-        .MAX_VALUE)));
+    //Note that we cannot use the full range of the integer (hence the +-10)
+    //because the model counting library cannot represent those constraints
+    //for some weird reason
+    int minInt = this.config.getInt("symbolic.min_int", Integer.MIN_VALUE + 10);
+    int maxInt = this.config.getInt("symbolic.max_int", Integer.MAX_VALUE - 10);
 
     Domain.Builder domainBldr = new Domain.Builder();
     UsageProfile.Builder upBldr = new UsageProfile.Builder();
@@ -66,9 +71,9 @@ public class UniformUPModelCounterDecorator implements SPFModelCounter {
     while(symVarIter.hasNext()) {
       String symVar = symVarIter.next();
       domainBldr.addVariable(symVar, minInt, maxInt);
-      usageScenarioBuilder.append(symVar).append(" == ").append(symVar);
+      usageScenarioBuilder.append(symVar + ">=" + minInt + "&&" + symVar + "<=" + maxInt);
       if(symVarIter.hasNext()) {
-        usageScenarioBuilder.append(" && ");
+        usageScenarioBuilder.append("&&");
       }
     }
 

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.quantification.ModelCountingException;
+import edu.cmu.sv.isstac.sampling.quantification.SPFModelCounter;
 import edu.cmu.sv.isstac.sampling.util.PathUtil;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
@@ -19,12 +20,12 @@ public class ModelCountingAmplifierDecorator implements RewardFunction {
 
   private static final Logger LOGGER = JPF.getLogger(ModelCountingAmplifierDecorator.class
       .getName());
-  private final Analyzer runtimeAnalyzer;
+  private final SPFModelCounter modelCounter;
   private final RewardFunction rewardFunction;
 
-  public ModelCountingAmplifierDecorator(RewardFunction rewardFunction, Analyzer runtimeAnalyzer) {
+  public ModelCountingAmplifierDecorator(RewardFunction rewardFunction, SPFModelCounter modelCounter) {
     this.rewardFunction = rewardFunction;
-    this.runtimeAnalyzer = runtimeAnalyzer;
+    this.modelCounter = modelCounter;
   }
 
   @Override
@@ -33,10 +34,9 @@ public class ModelCountingAmplifierDecorator implements RewardFunction {
     long reward = this.rewardFunction.computeReward(vm);
 
     PathCondition pc = PathCondition.getPC(vm);
-    String pString = PathUtil.clean(pc);
 
     try {
-      BigRational rationalCount = this.runtimeAnalyzer.countPointsOfPC(pString);
+      BigRational rationalCount = this.modelCounter.countPointsOfPC(pc);
 
       //TODO: Ugly conversion to string
       //TODO: Is this correct?

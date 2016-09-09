@@ -35,7 +35,7 @@ public class ModelCounterFactory {
 
   //TODO: should fix these three. They are reused from other projects
   public static final String TMP_DIR_CONF = MODEL_COUNTING_PREFIX + ".tmpDir";
-  public static final String TMP_DIR_DEF_CONF = "symbolic.reliability.tmpDir";
+  public static final String TMP_DIR_DEF_CONF = "/tmp";
 
   public static final String OMEGA_PATH_CONF = MODEL_COUNTING_PREFIX + ".omegaPath";
   public static final String OMEGA_PATH_DEF_CONF = "symbolic.reliability.omegaPath";
@@ -128,8 +128,7 @@ public class ModelCounterFactory {
 
   static Configuration getModelCounterConfig(Config config) {
     Configuration configuration = new Configuration();
-    configuration.setTemporaryDirectory(config.getString(TMP_DIR_CONF, config.getString
-        (TMP_DIR_DEF_CONF)));
+    configuration.setTemporaryDirectory(config.getString(TMP_DIR_CONF, TMP_DIR_DEF_CONF));
     configuration.setOmegaExectutablePath(config.getString(OMEGA_PATH_CONF, config.getString
         (OMEGA_PATH_DEF_CONF)));
     configuration.setLatteExecutablePath(config.getString(LATTE_PATH_CONF, config.getString

@@ -14,19 +14,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.quantification.SPFModelCounter;
-import edu.cmu.sv.isstac.sampling.util.PathUtil;
-import gov.nasa.jpf.jvm.bytecode.IFEQ;
-import gov.nasa.jpf.jvm.bytecode.IFGE;
-import gov.nasa.jpf.jvm.bytecode.IFGT;
-import gov.nasa.jpf.jvm.bytecode.IFLE;
-import gov.nasa.jpf.jvm.bytecode.IFLT;
-import gov.nasa.jpf.jvm.bytecode.IFNE;
-import gov.nasa.jpf.jvm.bytecode.IF_ICMPEQ;
-import gov.nasa.jpf.jvm.bytecode.IF_ICMPGE;
-import gov.nasa.jpf.jvm.bytecode.IF_ICMPGT;
-import gov.nasa.jpf.jvm.bytecode.IF_ICMPLE;
-import gov.nasa.jpf.jvm.bytecode.IF_ICMPLT;
-import gov.nasa.jpf.jvm.bytecode.IF_ICMPNE;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
@@ -37,7 +24,6 @@ import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
-import modelcounting.analysis.Analyzer;
 import modelcounting.analysis.exceptions.AnalysisException;
 import modelcounting.utils.BigRational;
 
@@ -170,26 +156,32 @@ public class CountWeightedSimulationPolicy implements SimulationPolicy {
     StackFrame sf = ti.getTopFrame();
 
     PathCondition pcAfterChoice = previousPC.make_copy();
+    BranchInfo branchInfo = bytecodeToComparator.get(condInstr.getByteCode());
+    if(branchInfo == null) {
+      String msg = getExceptionMsg(condInstr);
+      LOGGER.severe(msg);
+      throw new SimulationPolicyException(msg);
+    }
 
-    if (zeroComparators.containsKey(condInstr.getClass())) {
+    if(branchInfo.type == BRANCH_TYPE.ZERO) {
       // Single operand
       IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
       Preconditions.checkNotNull(sym_v);
-      pcAfterChoice._addDet(zeroComparators.get(condInstr.getClass()), sym_v, 0);
-    } else if (variableComparators.containsKey(condInstr.getClass())) {
+      pcAfterChoice._addDet(branchInfo.comparator, sym_v, 0);
+    } else if(branchInfo.type == BRANCH_TYPE.VARIABLE) {
       int v2 = ti.getModifiableTopFrame().peek();
       int v1 = ti.getModifiableTopFrame().peek(1);
       IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(1);
       IntegerExpression sym_v2 = (IntegerExpression) sf.getOperandAttr(0);
-      if (sym_v1 != null) {
-        if (sym_v2 != null) { // both are symbolic values
-          pcAfterChoice._addDet(variableComparators.get(condInstr.getClass()), sym_v1, sym_v2);
+      if(sym_v1 != null) {
+        if(sym_v2 != null) { // both are symbolic values
+          pcAfterChoice._addDet(branchInfo.comparator, sym_v1, sym_v2);
         } else {
-          pcAfterChoice._addDet(variableComparators.get(condInstr.getClass()), sym_v1, v2);
+          pcAfterChoice._addDet(branchInfo.comparator, sym_v1, v2);
         }
       } else {
         Preconditions.checkNotNull(sym_v2);
-        pcAfterChoice._addDet(variableComparators.get(condInstr.getClass()), v1, sym_v2);
+        pcAfterChoice._addDet(branchInfo.comparator, v1, sym_v2);
       }
     } else {
       String msg = getExceptionMsg(condInstr);
@@ -202,37 +194,44 @@ public class CountWeightedSimulationPolicy implements SimulationPolicy {
 
   private String getExceptionMsg(IfInstruction condInstr) {
     Joiner j = Joiner.on(", ");
-
-    String allowed = j.join(
-        Iterables.transform(zeroComparators.keySet(),
-            (Class<? extends IfInstruction> s) -> s.getName()));
-    allowed += ", ";
-    allowed += j.join(
-        Iterables.transform(variableComparators.keySet(),
-            (Class<? extends IfInstruction> s) -> s.getName()));
-
+    //TODO: Only show bytecodes---no mnemonics
+    String allowed = j.join(bytecodeToComparator.keySet());
     String msg = "Got conditional instruction " + condInstr.getClass().getName() + " which is " +
         "not supported! Supported conditionals: " + allowed;
     return msg;
   }
 
-  private final ImmutableMap<Class<? extends IfInstruction>, Comparator> zeroComparators = ImmutableMap
-      .<Class<? extends IfInstruction>, Comparator>builder()
-      .put(IFEQ.class, Comparator.EQ)
-      .put(IFGT.class, Comparator.GT)
-      .put(IFGE.class, Comparator.GE)
-      .put(IFLE.class, Comparator.LE)
-      .put(IFLT.class, Comparator.LT)
-      .put(IFNE.class, Comparator.NE)
+  private final ImmutableMap<Integer, BranchInfo> bytecodeToComparator =
+      ImmutableMap
+      .<Integer, BranchInfo>builder()
+      .put(0x99, BranchInfo.create(BRANCH_TYPE.ZERO, Comparator.EQ)) // IFEQ
+      .put(0x9D, BranchInfo.create(BRANCH_TYPE.ZERO, Comparator.GT)) // IFGT
+      .put(0x9C, BranchInfo.create(BRANCH_TYPE.ZERO, Comparator.GE)) // IFGE
+      .put(0x9E, BranchInfo.create(BRANCH_TYPE.ZERO, Comparator.LE)) // IFLE
+      .put(0x9B, BranchInfo.create(BRANCH_TYPE.ZERO, Comparator.LT)) // IFLT
+      .put(0x9A, BranchInfo.create(BRANCH_TYPE.ZERO, Comparator.NE)) // IFNE
+      .put(0x9F, BranchInfo.create(BRANCH_TYPE.VARIABLE, Comparator.EQ)) // IF_ICMPEQ
+      .put(0xA2, BranchInfo.create(BRANCH_TYPE.VARIABLE, Comparator.GE)) // IF_ICMPGE
+      .put(0xA3, BranchInfo.create(BRANCH_TYPE.VARIABLE, Comparator.GT)) // IF_ICMPGT
+      .put(0xA4, BranchInfo.create(BRANCH_TYPE.VARIABLE, Comparator.LE)) // IF_ICMPLE
+      .put(0xA1, BranchInfo.create(BRANCH_TYPE.VARIABLE, Comparator.LT)) // IF_ICMPLT
+      .put(0xA0, BranchInfo.create(BRANCH_TYPE.VARIABLE, Comparator.NE)) // IF_ICMPNE
       .build();
 
-  private final ImmutableMap<Class<? extends IfInstruction>, Comparator> variableComparators = ImmutableMap
-      .<Class<? extends IfInstruction>, Comparator>builder()
-      .put(IF_ICMPEQ.class, Comparator.EQ)
-      .put(IF_ICMPGE.class, Comparator.GE)
-      .put(IF_ICMPGT.class, Comparator.GT)
-      .put(IF_ICMPLE.class, Comparator.LE)
-      .put(IF_ICMPLT.class, Comparator.LT)
-      .put(IF_ICMPNE.class, Comparator.NE)
-      .build();
+  private static class BranchInfo {
+    public BRANCH_TYPE type;
+    public Comparator comparator;
+    private BranchInfo(BRANCH_TYPE type, Comparator comp) {
+      this.type = type;
+      this.comparator = comp;
+    }
+    public static BranchInfo create(BRANCH_TYPE type, Comparator comp) {
+      return new BranchInfo(type, comp);
+    }
+  }
+
+  private enum BRANCH_TYPE {
+    ZERO,
+    VARIABLE
+  }
 }
