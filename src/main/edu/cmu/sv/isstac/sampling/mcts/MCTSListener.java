@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
+import edu.cmu.sv.isstac.sampling.analysis.MCTSEventObserver;
 import edu.cmu.sv.isstac.sampling.analysis.SamplingResult;
 import edu.cmu.sv.isstac.sampling.analysis.SamplingResult.ResultContainer;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
@@ -249,7 +250,13 @@ class MCTSListener extends PropertyListenerAdapter {
     // Notify observers with sample done event
     long realReward = reward / pathVolume;
     for(AnalysisEventObserver obs : this.observers) {
-      obs.sampleDone(numberOfSamples, realReward, pathVolume, bestResult);
+      //TODO: This should be fixed
+      if(obs instanceof MCTSEventObserver) {
+        ((MCTSEventObserver)obs).sampleDone(vm.getSearch(), numberOfSamples, realReward,
+            pathVolume, bestResult, this.last);
+      } else {
+        obs.sampleDone(vm.getSearch(), numberOfSamples, realReward, pathVolume, bestResult);
+      }
     }
 
     if(realReward > bestResult.getReward()) {

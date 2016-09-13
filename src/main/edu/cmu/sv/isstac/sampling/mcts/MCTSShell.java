@@ -198,6 +198,11 @@ public class MCTSShell implements JPFShell {
     if(!config.hasValue(ANALYSIS_PROCESSOR)) {
       mcts.addEventObserver(AbstractAnalysisProcessor.DEFAULT);
       mcts.addEventObserver(new LiveAnalysisStatisticsModelCounting());
+
+      //TODO: clean up this mess. Seriously
+      if(config.getBoolean("symbolic.security.sampling.mcts.visualizer")) {
+        mcts.addEventObserver(new SymTreeVisualizer());
+      }
     } else {
       for(AnalysisEventObserver obs : config.getInstances(ANALYSIS_PROCESSOR, AnalysisEventObserver.class)) {
         mcts.addEventObserver(obs);
@@ -205,10 +210,6 @@ public class MCTSShell implements JPFShell {
     }
     
     jpf.addListener(mcts);
-
-    //TODO: clean up this mess. Seriously
-    if(config.getBoolean("symbolic.security.sampling.mcts.visualizer"))
-      jpf.addListener(new SymTreeVisualizer());
   }
 
   @Override

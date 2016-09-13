@@ -44,6 +44,9 @@ public class LiveTrackerChartModelCounting extends ApplicationFrame {
   private final Label maxRewardTxtLabel = new Label(maxRewardTxt);
   private static final String maxRewardSampleTxt = "Sample # for max reward: ";
   private final Label maxRewardSampleTxtLabel = new Label(maxRewardSampleTxt);
+  private Stopwatch maxRewardStopWatch;
+  private static final String maxRewardWallClockTxt = "Wall clock time for max reward: ";
+  private final Label maxRewardWallClockTxtLabel = new Label(maxRewardWallClockTxt);
 
   private static final String throughputTxt = "Throughput [#samples/s]: ";
   private final Label throughputTxtLabel = new Label(throughputTxt);
@@ -82,8 +85,6 @@ public class LiveTrackerChartModelCounting extends ApplicationFrame {
     this.yBuf = new long[maxBufferSize];
     this.pathVolumeBuf = new long[maxBufferSize];
     this.bufferSize = 0;
-
-    this.stopwatch = Stopwatch.createStarted();
     
     ChartPanel timeSeriesPanel = new ChartPanel(createTimeSeries());
     ChartPanel histogramPanel = new ChartPanel(createHistogram());
@@ -92,13 +93,14 @@ public class LiveTrackerChartModelCounting extends ApplicationFrame {
     JPanel seriesPanel = new JPanel();
     JPanel labelPanel = new JPanel();
     labelPanel.setBackground(Color.white);
-    labelPanel.setLayout(new GridLayout(5,1));
+    labelPanel.setLayout(new GridLayout(6,1));
     
     seriesPanel.setLayout(new GridLayout(1,2));
     container.setLayout(new BorderLayout());
     
     labelPanel.add(maxRewardTxtLabel);
     labelPanel.add(maxRewardSampleTxtLabel);
+    labelPanel.add(maxRewardWallClockTxtLabel);
     labelPanel.add(avgRewardTxtLabel);
     labelPanel.add(throughputTxtLabel);
     labelPanel.add(avgThroughputTxtLabel);
@@ -108,6 +110,9 @@ public class LiveTrackerChartModelCounting extends ApplicationFrame {
     container.add(labelPanel, BorderLayout.SOUTH);
     container.add(seriesPanel, BorderLayout.CENTER);
     setContentPane(container);
+
+    this.stopwatch = Stopwatch.createStarted();
+    this.maxRewardStopWatch = Stopwatch.createStarted();
   }
   
   public JFreeChart createTimeSeries() {
@@ -211,6 +216,8 @@ public class LiveTrackerChartModelCounting extends ApplicationFrame {
       if(reward > maxReward) {
         this.maxRewardTxtLabel.setText(maxRewardTxt + reward);
         this.maxRewardSampleTxtLabel.setText(maxRewardSampleTxt + samplesNum);
+        this.maxRewardWallClockTxtLabel.setText(maxRewardWallClockTxt + this.maxRewardStopWatch
+            .elapsed(TimeUnit.SECONDS) + "s");
         maxReward = reward;
       }
       this.samplingSeries.add(samplesNum, reward);

@@ -1,5 +1,7 @@
 package edu.cmu.sv.isstac.sampling.analysis;
 
+import com.google.common.base.Stopwatch;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -15,6 +17,7 @@ import java.awt.*;
 import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.*;
 
@@ -38,7 +41,10 @@ public class LiveTrackerChart extends ApplicationFrame {
   private final Label maxRewardTxtLabel = new Label(maxRewardTxt);
   private static final String maxRewardSampleTxt = "Sample # for max reward: ";
   private final Label maxRewardSampleTxtLabel = new Label(maxRewardSampleTxt);
-  
+  private Stopwatch stopwatch;
+  private static final String maxRewardWallClockTxt = "Wall clock time for max reward: ";
+  private final Label maxRewardWallClockTxtLabel = new Label(maxRewardWallClockTxt);
+
   private static final DecimalFormat avgFormat = new DecimalFormat("#.##");
   private static final String avgRewardSampleTxt = "Average reward: ";
   private final Label avgRewardTxtLabel = new Label(avgRewardSampleTxt);
@@ -78,6 +84,7 @@ public class LiveTrackerChart extends ApplicationFrame {
     
     labelPanel.add(maxRewardTxtLabel);
     labelPanel.add(maxRewardSampleTxtLabel);
+    labelPanel.add(maxRewardWallClockTxtLabel);
     labelPanel.add(avgRewardTxtLabel);
     
     seriesPanel.add(timeSeriesPanel);
@@ -85,6 +92,8 @@ public class LiveTrackerChart extends ApplicationFrame {
     container.add(labelPanel, BorderLayout.SOUTH);
     container.add(seriesPanel, BorderLayout.CENTER);
     setContentPane(container);
+
+    stopwatch = Stopwatch.createStarted();
   }
   
   public JFreeChart createTimeSeries() {
@@ -150,6 +159,8 @@ public class LiveTrackerChart extends ApplicationFrame {
       if(reward > maxReward) {
         this.maxRewardTxtLabel.setText(maxRewardTxt + reward);
         this.maxRewardSampleTxtLabel.setText(maxRewardSampleTxt + samplesNum);
+        this.maxRewardWallClockTxtLabel.setText(maxRewardWallClockTxt + this.stopwatch.elapsed
+            (TimeUnit.SECONDS) + "s");
         maxReward = reward;
       }
       this.samplingSeries.add(samplesNum, reward);

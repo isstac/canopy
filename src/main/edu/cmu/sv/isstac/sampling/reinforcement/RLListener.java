@@ -169,7 +169,7 @@ class RLListener extends PropertyListenerAdapter {
     // Notify observers with sample done event
     long realReward = reward / pathVolume;
     for(AnalysisEventObserver obs : this.observers) {
-      obs.sampleDone(numberOfSamples, realReward, pathVolume, bestResult);
+      obs.sampleDone(vm.getSearch(), numberOfSamples, realReward, pathVolume, bestResult);
     }
 
     if(realReward > bestResult.getReward()) {

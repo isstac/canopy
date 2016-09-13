@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 
 import edu.cmu.sv.isstac.sampling.analysis.SamplingResult.ResultContainer;
+import gov.nasa.jpf.search.Search;
 
 /**
  * @author Kasper Luckow
@@ -26,7 +27,7 @@ public class LiveAnalysisStatistics extends AbstractAnalysisProcessor {
   }
   
   @Override
-  public void sampleDone(long samples, long propagatedReward, long pathVolume, ResultContainer currentBestResult) {
+  public void sampleDone(Search searchState, long samples, long propagatedReward, long pathVolume, ResultContainer currentBestResult) {
     chart.update(samples, propagatedReward);
   }
   
