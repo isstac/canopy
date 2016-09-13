@@ -159,7 +159,9 @@ public class MCTSShell implements JPFShell {
       try {
         SPFModelCounter modelCounter = ModelCounterFactory.create(this.jpfConfig);
 
-        simPol = new CountWeightedSimulationPolicy(modelCounter, new Random(42));
+        //TODO: clean up this mess (assigned previously)
+        if(config.getBoolean("symbolic.security.sampling.mcts.modelcounting"))
+          simPol = new CountWeightedSimulationPolicy(modelCounter, new Random(42));
 
         //Decorate reward function with model count amplification
         rewardFunc = new ModelCountingAmplifierDecorator(rewardFunc, modelCounter);
@@ -203,7 +205,10 @@ public class MCTSShell implements JPFShell {
     }
     
     jpf.addListener(mcts);
-    jpf.addListener(new SymTreeVisualizer());
+
+    //TODO: clean up this mess. Seriously
+    if(config.getBoolean("symbolic.security.sampling.mcts.visualizer"))
+      jpf.addListener(new SymTreeVisualizer());
   }
 
   @Override
