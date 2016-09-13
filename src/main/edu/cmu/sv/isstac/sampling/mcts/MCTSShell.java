@@ -28,6 +28,7 @@ import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
 import edu.cmu.sv.isstac.sampling.termination.AllPathsTerminationStrategy;
 import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
+import edu.cmu.sv.isstac.sampling.visualization.SymTreeVisualizer;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFShell;
@@ -202,6 +203,7 @@ public class MCTSShell implements JPFShell {
     }
     
     jpf.addListener(mcts);
+    jpf.addListener(new SymTreeVisualizer());
   }
 
   @Override
