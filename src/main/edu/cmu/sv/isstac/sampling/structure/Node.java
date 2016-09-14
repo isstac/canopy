@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.cmu.sv.isstac.sampling.reward.Reward;
+import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 
@@ -24,11 +25,24 @@ public abstract class Node {
   private final Map<Integer, Node> children = new HashMap<>();
   
   private final Reward reward = new Reward();
+
+  private final PathCondition pc;
   
   public Node(Node parent, ChoiceGenerator<?> cg, int choice) {
     this.parent = parent;
     this.choice = choice;
     this.totalChoicesNum = (cg != null) ? cg.getTotalNumberOfChoices() : 0;
+
+    //NOTE: This can be **very** expensive to compute for deep paths!
+    //I have no idea why we need to get the *previous* pc cg to obtain the pathcondition here
+    //if we just use the current cg (i.e. the one provided to the ctor), then the pathcondition
+    // is empty at this point
+    if(cg != null) {
+      PCChoiceGenerator prevPcCg = cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
+      this.pc = (prevPcCg != null) ? prevPcCg.getCurrentPC() : new PathCondition();
+    } else {
+      this.pc = new PathCondition();
+    }
   }
   
   public Node getParent() {
@@ -69,5 +83,9 @@ public abstract class Node {
   
   public void incVisitedNum(long visitedNum) {
     this.visitedNum += visitedNum;
+  }
+
+  public PathCondition getPathCondition() {
+    return this.pc;
   }
 }

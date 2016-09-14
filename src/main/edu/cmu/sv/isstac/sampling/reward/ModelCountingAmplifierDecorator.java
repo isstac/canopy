@@ -15,7 +15,9 @@ import modelcounting.utils.BigRational;
 
 /**
  * Created by luckow on 8/31/16.
+ * This class is not used atm
  */
+@Deprecated
 public class ModelCountingAmplifierDecorator implements RewardFunction {
 
   private static final Logger LOGGER = JPF.getLogger(ModelCountingAmplifierDecorator.class

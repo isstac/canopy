@@ -1,15 +1,14 @@
 package edu.cmu.sv.isstac.sampling.visualization;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
-import com.mxgraph.swing.handler.mxPanningHandler;
+import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.view.mxGraph;
+import com.mxgraph.view.mxGraphView;
 
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,20 +16,14 @@ import java.util.Map;
 
 import javax.swing.*;
 
-import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
 import edu.cmu.sv.isstac.sampling.analysis.MCTSEventObserver;
 import edu.cmu.sv.isstac.sampling.analysis.SamplingResult;
+import edu.cmu.sv.isstac.sampling.structure.FinalNode;
 import edu.cmu.sv.isstac.sampling.structure.Node;
 import edu.cmu.sv.isstac.sampling.structure.PCNode;
-import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.search.Search;
-import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
+import gov.nasa.jpf.symbc.numeric.Constraint;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
-import gov.nasa.jpf.util.ObjectConverter;
-import gov.nasa.jpf.vm.ChoiceGenerator;
-import gov.nasa.jpf.vm.ElementInfo;
-import gov.nasa.jpf.vm.ThreadInfo;
-import gov.nasa.jpf.vm.VM;
 
 /**
  * @author Kasper Luckow
@@ -41,10 +34,12 @@ public class SymTreeVisualizer implements MCTSEventObserver {
   private mxHierarchicalLayout layout;
   private mxGraphComponent graphComponent;
   private mxGraph graph;
-  private Map<String, Object> cgToVertex = new HashMap<>();
+  private Map<String, mxCell> cgToVertex = new HashMap<>();
 
   private final int VERT_SIZE = 1024;
   private final int HORIZ_SIZE = 1024;
+
+  int sampleNum = 0;
 
   public SymTreeVisualizer() {
     JFrame frame = new JFrame("Sym tree visualizer");
@@ -85,7 +80,7 @@ public class SymTreeVisualizer implements MCTSEventObserver {
     frame.setVisible(true);
   }
 
-  private static List<Node> getNodeList(Node node) {
+  private static List<Node> getNodePath(Node node) {
     //Pretty lame
     LinkedList<Node> pcs = new LinkedList<>();
     for(Node tmp = node; tmp != null; tmp = tmp.getParent()) {
@@ -97,36 +92,77 @@ public class SymTreeVisualizer implements MCTSEventObserver {
   @Override
   public void sampleDone(Search searchState, long samples, long propagatedReward, long pathVolume,
                          SamplingResult.ResultContainer currentBestResult, Node lastNode) {
-    PCChoiceGenerator[] pcs = searchState.getVM().getChoiceGeneratorsOfType(PCChoiceGenerator.class);
-    String rootLbl = "true";
-    Object prevVertex = this.cgToVertex.get(rootLbl);
-    if(prevVertex == null) {
-      prevVertex = graph.insertVertex(parent, rootLbl, null, 10, 20, 80, 30);
-      this.cgToVertex.put(rootLbl, prevVertex);
-    }
-
-    List<Node> mctsPath = getNodeList(lastNode);
+    mxCell prevVertex = null;
 
     graph.getModel().beginUpdate();
     try {
-      for(Node node : mctsPath) {
-        if(node instanceof PCNode) {
-          PathCondition pc = ((PCNode)node).getPathCondition();
-          Object curr = this.cgToVertex.get(pc.toString());
+      for(Node node : getNodePath(lastNode)) {
+        //We skip nondeterministic nodes for now
+        if(node instanceof PCNode ||
+            node instanceof FinalNode) {
+
+          PathCondition pc = node.getPathCondition();
+          mxCell curr = this.cgToVertex.get(pc.toString());
           if (curr == null) {
-            curr = graph.insertVertex(parent, pc.toString(), "s", 10, 20, 80, 30);
+            String contents = getNodeContents(node);
+            String style = getStyle(node);
+            curr = (mxCell)graph.insertVertex(parent, pc.toString(), contents, 10, 20, 80, 30,
+                style);
             this.cgToVertex.put(pc.toString(), curr);
             if (prevVertex != null) {
-              graph.insertEdge(parent, null, "", prevVertex, curr);
+              graph.insertEdge(parent, null, null, prevVertex, curr);
             }
+          } else {
+            String contents = getNodeContents(node);
+            curr.setValue(contents);
           }
+          graph.updateCellSize(curr);
           prevVertex = curr;
         }
       }
       layout.execute(graph.getDefaultParent());
     } finally {
+      //Buffering a bit here...
+      if(samples % 5 == 0) {
+        mxGraphView view = graphComponent.getGraph().getView();
+        int compLen = graphComponent.getWidth();
+        int viewLen = (int) view.getGraphBounds().getWidth();
+        if (viewLen > 0) {
+          view.setScale((double) compLen / viewLen * view.getScale());
+        }
+      }
       graph.getModel().endUpdate();
+    }
+    samples++;
+  }
 
+  private static String getStyle(Node n) {
+    //TODO: make awesome styles here---e.g., implement heatmap based on reward/visitednum
+    if(n instanceof PCNode) {
+      return "";
+    } else if(n instanceof FinalNode) {
+      return "";
+    }
+    return "";
+  }
+
+  private static String getNodeContents(Node node) {
+    StringBuilder sb = new StringBuilder();
+    PathCondition pc = node.getPathCondition();
+    String constraintStr = getConstraintRepresentation(pc);
+    sb.append(constraintStr).append('\n')
+        .append("Reward: ").append(node.getReward().getSucc()).append('\n')
+        .append("Visited: ").append(node.getVisitedNum());
+    return sb.toString();
+  }
+
+  private static String getConstraintRepresentation(PathCondition pc) {
+    Constraint header = pc.header;
+    if(header != null) {
+      return header.getLeft().stringPC() + header.getComparator().toString() + header.getRight()
+          .toString();
+    } else {
+      return "true";
     }
   }
 

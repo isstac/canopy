@@ -10,7 +10,6 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.chart.renderer.xy.XYSplineRenderer;
 import org.jfree.data.statistics.SimpleHistogramBin;
 import org.jfree.data.statistics.SimpleHistogramDataset;
 import org.jfree.data.xy.XYSeries;
@@ -53,7 +52,7 @@ public class LiveTrackerChartModelCounting extends ApplicationFrame {
   private static final String avgThroughputTxt = "Avg. throughput [#samples/s]: ";
   private final Label avgThroughputTxtLabel = new Label(avgThroughputTxt);
 
-  private static final DecimalFormat avgFormat = new DecimalFormat("#.##");
+  private static final DecimalFormat doubleFormat = new DecimalFormat("#.##");
   private static final String avgRewardSampleTxt = "Avg. reward: ";
   private final Label avgRewardTxtLabel = new Label(avgRewardSampleTxt);
 
@@ -187,8 +186,8 @@ public class LiveTrackerChartModelCounting extends ApplicationFrame {
       rollingThroughputAvg -= rollingThroughputAvg / throughputSamplesNum;
       rollingThroughputAvg += throughput / (double)throughputSamplesNum;
 
-      throughputTxtLabel.setText(throughputTxt + " " + avgFormat.format(throughput));
-      avgThroughputTxtLabel.setText(avgThroughputTxt + " " + avgFormat.format
+      throughputTxtLabel.setText(throughputTxt + " " + doubleFormat.format(throughput));
+      avgThroughputTxtLabel.setText(avgThroughputTxt + " " + doubleFormat.format
           (rollingThroughputAvg));
       bufferSize = 0;
     } else {
@@ -216,8 +215,9 @@ public class LiveTrackerChartModelCounting extends ApplicationFrame {
       if(reward > maxReward) {
         this.maxRewardTxtLabel.setText(maxRewardTxt + reward);
         this.maxRewardSampleTxtLabel.setText(maxRewardSampleTxt + samplesNum);
-        this.maxRewardWallClockTxtLabel.setText(maxRewardWallClockTxt + this.maxRewardStopWatch
-            .elapsed(TimeUnit.SECONDS) + "s");
+        String time = doubleFormat.format(this.maxRewardStopWatch.elapsed(TimeUnit.MILLISECONDS) /
+            1000);
+        this.maxRewardWallClockTxtLabel.setText(maxRewardWallClockTxt + time + "s");
         maxReward = reward;
       }
       this.samplingSeries.add(samplesNum, reward);
@@ -225,7 +225,7 @@ public class LiveTrackerChartModelCounting extends ApplicationFrame {
       rollingAvg -= rollingAvg/samplesNum;
       rollingAvg += reward/(double)samplesNum;
     }
-    avgRewardTxtLabel.setText(avgRewardSampleTxt + avgFormat.format(rollingAvg)); 
+    avgRewardTxtLabel.setText(avgRewardSampleTxt + doubleFormat.format(rollingAvg));
     maxMarker.setValue(maxReward);
     avgMarker.setValue(rollingAvg);
   }

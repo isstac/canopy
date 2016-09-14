@@ -1,5 +1,9 @@
 package edu.cmu.sv.isstac.sampling.mcts;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -21,6 +25,7 @@ import edu.cmu.sv.isstac.sampling.structure.NodeFactory;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.search.Search;
+import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.ChoiceGenerator;
@@ -113,7 +118,7 @@ class MCTSListener extends PropertyListenerAdapter {
         last = this.nodeFactory.create(last, cg, expandedChoice);
         expandedFlag = false;
       }
-      
+
       // Get the eligible choices for this CG
       // based on the exploration strategy (e.g., pruning-based)
       ArrayList<Integer> eligibleChoices = choicesStrategy.getEligibleChoices(cg);
@@ -234,11 +239,15 @@ class MCTSListener extends PropertyListenerAdapter {
     result.incNumberOfSamples();
     long numberOfSamples = result.getNumberOfSamples();
 
-    logger.info("Sample #: " + numberOfSamples + ", reward: " + reward + ", path volume: " + pathVolume);
-    
+    // The reward that will actually be propagated
+    long amplifiedReward = reward * pathVolume;
+
+    logger.info("Sample #: " + numberOfSamples + ", reward: " + reward + ", path volume: " +
+        pathVolume + ", amplified reward: " + amplifiedReward);
+
     // Perform backup phase
     for(Node n = last; n != null; n = n.getParent()) {
-      updater.update(n, reward);
+      updater.update(n, amplifiedReward);
       n.incVisitedNum(pathVolume);
     }
     
@@ -248,20 +257,19 @@ class MCTSListener extends PropertyListenerAdapter {
     ResultContainer bestResult = updater.getResultStateForEvent();
     
     // Notify observers with sample done event
-    long realReward = reward / pathVolume;
     for(AnalysisEventObserver obs : this.observers) {
       //TODO: This should be fixed
       if(obs instanceof MCTSEventObserver) {
-        ((MCTSEventObserver)obs).sampleDone(vm.getSearch(), numberOfSamples, realReward,
+        ((MCTSEventObserver)obs).sampleDone(vm.getSearch(), numberOfSamples, reward,
             pathVolume, bestResult, this.last);
       } else {
-        obs.sampleDone(vm.getSearch(), numberOfSamples, realReward, pathVolume, bestResult);
+        obs.sampleDone(vm.getSearch(), numberOfSamples, reward, pathVolume, bestResult);
       }
     }
 
-    if(realReward > bestResult.getReward()) {
+    if(reward > bestResult.getReward()) {
       
-      bestResult.setReward(realReward);
+      bestResult.setReward(reward);
       bestResult.setSampleNumber(result.getNumberOfSamples());
       
       Path path = new Path(vm.getChoiceGenerator());

@@ -164,7 +164,7 @@ public class MCTSShell implements JPFShell {
           simPol = new CountWeightedSimulationPolicy(modelCounter, new Random(42));
 
         //Decorate reward function with model count amplification
-        rewardFunc = new ModelCountingAmplifierDecorator(rewardFunc, modelCounter);
+        //rewardFunc = new ModelCountingAmplifierDecorator(rewardFunc, modelCounter);
 
         //A bit ugly, but we set the default path quantifier to use model counts
         defaultPathQuantifier = new ModelCountingPathQuantifier(modelCounter);
