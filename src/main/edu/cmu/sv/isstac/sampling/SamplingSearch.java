@@ -17,7 +17,7 @@ public class SamplingSearch extends Search {
 
   @Override
   public void search () {
-    depth = 1; // should it be 1 or 0?
+    depth = 0; // should it be 1 or 0?
 
     if(hasPropertyTermination()) {
       return;
@@ -49,7 +49,7 @@ public class SamplingSearch extends Search {
           notifySearchConstraintHit("depth limit reached: " + depthLimit);
         }
         checkPropertyViolation();
-        depth = 1;
+        depth = 0;
         vm.restoreState(initState);
         vm.resetNextCG();
 
