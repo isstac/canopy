@@ -22,9 +22,14 @@ public class TimeBoundedTerminationStrategy implements TerminationStrategy {
     this.timeBound = timeBound;
     this.stopwatch = Stopwatch.createStarted();
   }
-  
+
   @Override
-  public boolean terminate(VM vm, SamplingResult currentResult) {
+  public boolean terminateBeforeSample(VM vm) {
+    return false;
+  }
+
+  @Override
+  public boolean terminateAfterSample(VM vm, SamplingResult currentResult) {
     // Ugly that we rely on deprecated api because of messy guava dependencies
     return stopwatch.elapsed(timeUnit) >= timeBound;
   }

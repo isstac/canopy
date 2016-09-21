@@ -21,7 +21,18 @@ import gov.nasa.jpf.vm.VM;
 public class PruningChoicesStrategy extends PropertyListenerAdapter implements ChoicesStrategy {
   
   private Set<Path> pruned = Sets.newHashSet();
-  
+
+  private static PruningChoicesStrategy instance;
+
+  public static PruningChoicesStrategy getInstance() {
+    if(instance == null) {
+      instance = new PruningChoicesStrategy();
+    }
+    return instance;
+  }
+
+  private PruningChoicesStrategy() { }
+
   @Override
   public ArrayList<Integer> getEligibleChoices(ChoiceGenerator<?> cg) {
     Path p = new Path(cg.getPreviousChoiceGenerator());
@@ -51,7 +62,15 @@ public class PruningChoicesStrategy extends PropertyListenerAdapter implements C
     Path p = new Path(cg);
     return isPruned(p);
   }
-  
+
+  @Override
+  public void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> currentCG) {
+    if(vm.getSystemState().isIgnored()) {
+
+      performPruning(currentCG);
+    }
+  }
+
   @Override
   public void searchConstraintHit(Search search) {
     ChoiceGenerator<?> cg = search.getVM().getChoiceGenerator();
@@ -72,10 +91,10 @@ public class PruningChoicesStrategy extends PropertyListenerAdapter implements C
     performPruning(cg);
   }
   
-  private void performPruning(ChoiceGenerator<?> cg) {
+  public void performPruning(ChoiceGenerator<?> cg) {
     Path p = new Path(cg);
 
-    assert !pruned.contains(p);
+//    assert !pruned.contains(p);
     pruned.add(p);
     propagatePruning(p, cg);
   }

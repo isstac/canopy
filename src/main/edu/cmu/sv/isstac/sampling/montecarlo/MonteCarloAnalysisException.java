@@ -1,6 +1,6 @@
 package edu.cmu.sv.isstac.sampling.montecarlo;
 
-import edu.cmu.sv.isstac.sampling.SamplingException;
+import edu.cmu.sv.isstac.sampling.search.SamplingException;
 
 /**
  * @author Kasper Luckow

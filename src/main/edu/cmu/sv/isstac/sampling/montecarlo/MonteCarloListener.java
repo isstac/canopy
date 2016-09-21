@@ -113,8 +113,8 @@ public class MonteCarloListener extends PropertyListenerAdapter {
       currentBestResult.setPathCondition(pc);
     }
     
-    // Check if we should terminate
-    if(terminationStrategy.terminate(vm, this.result)) {
+    // Check if we should terminateAfterSample
+    if(terminationStrategy.terminateAfterSample(vm, this.result)) {
       vm.getSearch().terminate();
       
       // Notify observers with termination event

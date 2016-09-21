@@ -123,14 +123,14 @@ public class SymTreeVisualizer implements MCTSEventObserver {
       layout.execute(graph.getDefaultParent());
     } finally {
       //Buffering a bit here...
-      if(samples % 5 == 0) {
+      //if(samples % 5 == 0) {
         mxGraphView view = graphComponent.getGraph().getView();
         int compLen = graphComponent.getWidth();
         int viewLen = (int) view.getGraphBounds().getWidth();
         if (viewLen > 0) {
           view.setScale((double) compLen / viewLen * view.getScale());
         }
-      }
+      //}
       graph.getModel().endUpdate();
     }
     samples++;

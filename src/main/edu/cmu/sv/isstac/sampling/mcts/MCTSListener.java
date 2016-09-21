@@ -1,15 +1,12 @@
 package edu.cmu.sv.isstac.sampling.mcts;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import edu.cmu.sv.isstac.sampling.search.SamplingSearchListener;
 import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
 import edu.cmu.sv.isstac.sampling.analysis.MCTSEventObserver;
 import edu.cmu.sv.isstac.sampling.analysis.SamplingResult;
@@ -25,7 +22,6 @@ import edu.cmu.sv.isstac.sampling.structure.NodeFactory;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.search.Search;
-import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.ChoiceGenerator;
@@ -37,7 +33,8 @@ import gov.nasa.jpf.vm.VM;
  * @author Kasper Luckow
  *
  */
-class MCTSListener extends PropertyListenerAdapter {
+class MCTSListener extends PropertyListenerAdapter implements SamplingSearchListener {
+
   private enum MCTS_STATE {
     SELECTION {
       @Override
@@ -280,19 +277,23 @@ class MCTSListener extends PropertyListenerAdapter {
       bestResult.setPathCondition(pc);
     }
     
-    // Check if we should terminate the search
+    // Check if we should terminateAfterSample the search
     // based on the result obtained
-    if(terminationStrategy.terminate(vm, this.result)) {
-      vm.getSearch().terminate();
-      
-      // Notify observers with termination event
-      for(AnalysisEventObserver obs : this.observers) {
-        obs.analysisDone(result);
-      }
+    if(terminationStrategy.terminateAfterSample(vm, this.result)) {
+      terminate(vm);
     }
     
     // Reset exploration to drive a new round of sampling
     resetExploration();
+  }
+
+  private void terminate(VM vm) {
+    vm.getSearch().terminate();
+
+    // Notify observers with termination event
+    for(AnalysisEventObserver obs : this.observers) {
+      obs.analysisDone(result);
+    }
   }
   
   /**
@@ -357,6 +358,18 @@ class MCTSListener extends PropertyListenerAdapter {
   private void resetExploration() {
     this.mctsState = MCTS_STATE.SELECTION;
     this.last = this.root;
+  }
+
+  @Override
+  public void newSampleStarted(Search samplingSearch) {
+    if(terminationStrategy.terminateBeforeSample(samplingSearch.getVM())) {
+      terminate(samplingSearch.getVM());
+    }
+  }
+
+  @Override
+  public void sampleTerminated(Search samplingSearch) {
+    // Do nothing
   }
   
   private boolean isFrontierNode(Node node, Collection<Integer> eligibleChoices) {

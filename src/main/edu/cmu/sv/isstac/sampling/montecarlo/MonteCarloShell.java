@@ -2,7 +2,7 @@ package edu.cmu.sv.isstac.sampling.montecarlo;
 
 import edu.cmu.sv.isstac.sampling.analysis.AbstractAnalysisProcessor;
 import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
-import edu.cmu.sv.isstac.sampling.SamplingSearch;
+import edu.cmu.sv.isstac.sampling.search.SamplingSearch;
 import edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
@@ -80,7 +80,7 @@ public class MonteCarloShell implements JPFShell {
     TerminationStrategy defaultTerminationStrategy = null;
     ChoicesStrategy choicesStrat = null;
     if(config.getBoolean(PRUNING, DEFAULT_USE_PRUNING)) {
-      PruningChoicesStrategy prunStrat = new PruningChoicesStrategy();
+      PruningChoicesStrategy prunStrat = PruningChoicesStrategy.getInstance();
       jpf.addListener(prunStrat);
       choicesStrat = prunStrat;
       

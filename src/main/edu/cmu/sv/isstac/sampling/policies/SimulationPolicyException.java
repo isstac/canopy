@@ -1,7 +1,5 @@
 package edu.cmu.sv.isstac.sampling.policies;
 
-import edu.cmu.sv.isstac.sampling.SamplingException;
-
 /**
  * @author Kasper Luckow
  *

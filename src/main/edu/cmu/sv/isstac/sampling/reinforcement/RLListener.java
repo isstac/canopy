@@ -1,7 +1,6 @@
 package edu.cmu.sv.isstac.sampling.reinforcement;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -185,9 +184,9 @@ class RLListener extends PropertyListenerAdapter {
       bestResult.setPathCondition(pc);
     }
     
-    // Check if we should terminate the search
+    // Check if we should terminateAfterSample the search
     // based on the result obtained
-    if(terminationStrategy.terminate(vm, this.result)) {
+    if(terminationStrategy.terminateAfterSample(vm, this.result)) {
       vm.getSearch().terminate();
       
       // Notify observers with termination event

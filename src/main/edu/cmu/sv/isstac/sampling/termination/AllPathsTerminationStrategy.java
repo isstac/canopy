@@ -17,9 +17,14 @@ public class AllPathsTerminationStrategy implements TerminationStrategy {
   public AllPathsTerminationStrategy(PruningChoicesStrategy pruner) {
     this.pruner = pruner;
   }
-  
+
   @Override
-  public boolean terminate(VM vm, SamplingResult currentResult) {
+  public boolean terminateBeforeSample(VM vm) {
     return this.pruner.isPruned(ROOT);
+  }
+
+  @Override
+  public boolean terminateAfterSample(VM vm, SamplingResult currentResult) {
+    return false;
   }
 }

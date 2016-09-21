@@ -1,11 +1,8 @@
 package edu.cmu.sv.isstac.sampling.reinforcement;
 
-import org.antlr.runtime.RecognitionException;
-
-import java.io.IOException;
 import java.util.logging.Logger;
 
-import edu.cmu.sv.isstac.sampling.SamplingSearch;
+import edu.cmu.sv.isstac.sampling.search.SamplingSearch;
 import edu.cmu.sv.isstac.sampling.analysis.AbstractAnalysisProcessor;
 import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
 import edu.cmu.sv.isstac.sampling.analysis.LiveAnalysisStatisticsModelCounting;
@@ -30,9 +27,6 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFShell;
 import gov.nasa.jpf.util.JPFLogger;
-import modelcounting.analysis.Analyzer;
-import modelcounting.latte.LatteException;
-import modelcounting.omega.exceptions.OmegaException;
 
 /**
  * @author Kasper Luckow
@@ -116,7 +110,7 @@ public class RLShell implements JPFShell {
     TerminationStrategy defaultTerminationStrategy;
     ChoicesStrategy choicesStrat;
     if(config.getBoolean(PRUNING, DEFAULT_USE_PRUNING)) {
-      PruningChoicesStrategy prunStrat = new PruningChoicesStrategy();
+      PruningChoicesStrategy prunStrat = PruningChoicesStrategy.getInstance();
       jpf.addListener(prunStrat);
       choicesStrat = prunStrat;
       

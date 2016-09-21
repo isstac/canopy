@@ -1,14 +1,11 @@
 package edu.cmu.sv.isstac.sampling.mcts;
 
-import org.antlr.runtime.RecognitionException;
-
-import java.io.IOException;
 import java.util.Random;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.analysis.AbstractAnalysisProcessor;
 import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
-import edu.cmu.sv.isstac.sampling.SamplingSearch;
+import edu.cmu.sv.isstac.sampling.search.SamplingSearch;
 import edu.cmu.sv.isstac.sampling.analysis.LiveAnalysisStatisticsModelCounting;
 import edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
@@ -23,7 +20,6 @@ import edu.cmu.sv.isstac.sampling.policies.UniformSimulationPolicy;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.quantification.SPFModelCounter;
 import edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction;
-import edu.cmu.sv.isstac.sampling.reward.ModelCountingAmplifierDecorator;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
 import edu.cmu.sv.isstac.sampling.termination.AllPathsTerminationStrategy;
 import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
@@ -33,9 +29,6 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFShell;
 import gov.nasa.jpf.util.JPFLogger;
-import modelcounting.analysis.Analyzer;
-import modelcounting.latte.LatteException;
-import modelcounting.omega.exceptions.OmegaException;
 
 /**
  * @author Kasper Luckow
@@ -92,9 +85,11 @@ public class MCTSShell implements JPFShell {
     
     if(!jpfConfig.getBoolean(EXHAUSTIVE_ANALYSIS, false)) {
       //Substitute search object to use our sampler
+      //There is no other way than using the string name of the class and rely
+      //on the reflection in jpf-core...
       this.jpfConfig.setProperty("search.class", SamplingSearch.class.getName());
     }
-    
+
     this.jpf = new JPF(jpfConfig);
     
     double uctBias = config.getDouble(UCT_BIAS, DEFAULT_UCT_BIAS);
@@ -124,8 +119,8 @@ public class MCTSShell implements JPFShell {
     TerminationStrategy defaultTerminationStrategy = null;
     ChoicesStrategy choicesStrat = null;
     if(config.getBoolean(PRUNING, DEFAULT_USE_PRUNING)) {
-      PruningChoicesStrategy prunStrat = new PruningChoicesStrategy();
-      jpf.addListener(prunStrat);
+      PruningChoicesStrategy prunStrat = PruningChoicesStrategy.getInstance();
+      //jpf.addListener(prunStrat);
       choicesStrat = prunStrat;
       
       //termination

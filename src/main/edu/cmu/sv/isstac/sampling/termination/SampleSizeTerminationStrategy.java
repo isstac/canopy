@@ -15,9 +15,14 @@ public class SampleSizeTerminationStrategy implements TerminationStrategy {
   public SampleSizeTerminationStrategy(int maxSamples) {
     this.maxSamples = maxSamples;
   }
-  
+
   @Override
-  public boolean terminate(VM vm, SamplingResult currentResult) {
+  public boolean terminateAfterSample(VM vm, SamplingResult currentResult) {
     return ++samples >= maxSamples;
+  }
+
+  @Override
+  public boolean terminateBeforeSample(VM vm) {
+    return false;
   }
 }
