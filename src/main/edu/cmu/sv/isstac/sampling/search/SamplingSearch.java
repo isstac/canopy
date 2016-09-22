@@ -24,6 +24,7 @@ public class SamplingSearch extends Search {
   public SamplingSearch(Config config, VM vm) {
     super(config, vm);
     pruner = PruningChoicesStrategy.getInstance();
+    pruner.reset();
   }
 
   @Override

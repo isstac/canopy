@@ -57,7 +57,14 @@ public class MonteCarloListener extends PropertyListenerAdapter {
   public void addEventObserver(AnalysisEventObserver observer) {
     observers.add(observer);
   }
-    
+
+  @Override
+  public void searchStarted(Search search) {
+    for(AnalysisEventObserver obs : this.observers) {
+      obs.analysisStarted(search);
+    }
+  }
+
   @Override
   public void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> cg) {
     if(isPCNode(cg) || isNondeterministicChoice(cg)) {
@@ -115,12 +122,21 @@ public class MonteCarloListener extends PropertyListenerAdapter {
     
     // Check if we should terminate
     if(terminationStrategy.terminate(vm, this.result)) {
-      vm.getSearch().terminate();
-      
-      // Notify observers with termination event
-      for(AnalysisEventObserver obs : this.observers) {
-        obs.analysisDone(result);
-      }
+      terminate(vm);
+    }
+  }
+
+  @Override
+  public void searchFinished(Search search) {
+    terminate(search.getVM());
+  }
+
+  private void terminate(VM vm) {
+    vm.getSearch().terminate();
+
+    // Notify observers with termination event
+    for(AnalysisEventObserver obs : this.observers) {
+      obs.analysisDone(result);
     }
   }
   

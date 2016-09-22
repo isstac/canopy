@@ -11,4 +11,6 @@ public interface AnalysisEventObserver {
                          SamplingResult.ResultContainer currentBestResult);
 
   public void analysisDone(SamplingResult result);
+
+  public void analysisStarted(Search search);
 }

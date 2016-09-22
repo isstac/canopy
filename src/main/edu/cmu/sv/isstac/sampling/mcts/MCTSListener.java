@@ -101,7 +101,14 @@ class MCTSListener extends PropertyListenerAdapter {
   public void addEventObserver(AnalysisEventObserver observer) {
     observers.add(observer);
   }
-    
+
+  @Override
+  public void searchStarted(Search search) {
+    for(AnalysisEventObserver obs : this.observers) {
+      obs.analysisStarted(search);
+    }
+  }
+
   @Override
   public void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> cg) {
     if(this.nodeFactory.isSupportedChoiceGenerator(cg)) {
@@ -285,6 +292,11 @@ class MCTSListener extends PropertyListenerAdapter {
     
     // Reset exploration to drive a new round of sampling
     resetExploration();
+  }
+
+  @Override
+  public void searchFinished(Search search) {
+    terminate(search.getVM());
   }
 
   private void terminate(VM vm) {

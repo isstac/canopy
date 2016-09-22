@@ -14,6 +14,11 @@ public abstract class AbstractAnalysisProcessor implements AnalysisEventObserver
       System.out.println("Max rewards observed based on MCTS policies: ");
       System.out.println(result.toString());
     }
+
+    @Override
+    public void analysisStarted(Search search) {
+      System.out.println("Analysis started");
+    }
   };
 
   @Override

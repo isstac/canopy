@@ -28,6 +28,10 @@ public class PruningChoicesStrategy implements ChoicesStrategy, PruningStrategy 
 
   private PruningChoicesStrategy() { }
 
+  public void reset() {
+    this.pruned.clear();
+  }
+
   @Override
   public ArrayList<Integer> getEligibleChoices(ChoiceGenerator<?> cg) {
     Path p = new Path(cg.getPreviousChoiceGenerator());

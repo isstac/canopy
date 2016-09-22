@@ -31,4 +31,7 @@ public class LiveAnalysisStatisticsModelCounting extends AbstractAnalysisProcess
   @Override  
   public void analysisDone(SamplingResult result) { }
 
+  @Override
+  public void analysisStarted(Search search) { }
+
 }

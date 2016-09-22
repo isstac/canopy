@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.JPFSamplerFactory;
 import edu.cmu.sv.isstac.sampling.Options;
+import edu.cmu.sv.isstac.sampling.SamplingShell;
 import edu.cmu.sv.isstac.sampling.analysis.AbstractAnalysisProcessor;
 import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
 import edu.cmu.sv.isstac.sampling.analysis.LiveAnalysisStatisticsModelCounting;
@@ -37,7 +38,7 @@ import gov.nasa.jpf.util.JPFLogger;
  * We can maybe generalize this shell later if we experiment with more
  * techniques for sampling
  */
-public class MCTSShell implements JPFShell {
+public class MCTSShell implements SamplingShell {
 
   private static final Logger logger = JPFLogger.getLogger(MCTSShell.class.getName());
 
@@ -78,7 +79,7 @@ public class MCTSShell implements JPFShell {
   //Analysis processing
   public static final String ANALYSIS_PROCESSOR = MCTS_CONF_PRFX + ".analysisprocessor";
   public static final String USE_TREE_VISUALIZATION = MCTS_CONF_PRFX + ".treevisualizer";
-  private static final String SHOW_LIVE_STATISTICS = MCTS_CONF_PRFX + ".statistics";
+  public static final String SHOW_LIVE_STATISTICS = MCTS_CONF_PRFX + ".statistics";
 
   private final Config jpfConfig;
   private final JPF jpf;
@@ -176,7 +177,7 @@ public class MCTSShell implements JPFShell {
     assert choicesStrat != null;
 
     //We construct the mcts listener that does all the hard work
-    MCTSListener mcts = new MCTSListener(selPol, 
+    mcts = new MCTSListener(selPol,
         simPol, 
         rewardFunc,
         pathQuantifier,
@@ -202,6 +203,14 @@ public class MCTSShell implements JPFShell {
     }
     
     jpf.addListener(mcts);
+  }
+
+  //TODO: clean up this mess---only used for batch experiments
+  private MCTSListener mcts;
+
+  @Override
+  public void addEventObserver(AnalysisEventObserver eventObserver) {
+    mcts.addEventObserver(eventObserver);
   }
 
   @Override

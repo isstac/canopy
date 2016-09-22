@@ -34,4 +34,9 @@ public class LiveAnalysisStatistics extends AbstractAnalysisProcessor {
   @Override  
   public void analysisDone(SamplingResult result) { }
 
+  @Override
+  public void analysisStarted(Search search) {
+
+  }
+
 }

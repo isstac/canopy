@@ -1,5 +1,7 @@
 package edu.cmu.sv.isstac.sampling.montecarlo;
 
+import edu.cmu.sv.isstac.sampling.JPFSamplerFactory;
+import edu.cmu.sv.isstac.sampling.SamplingShell;
 import edu.cmu.sv.isstac.sampling.analysis.AbstractAnalysisProcessor;
 import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
 import edu.cmu.sv.isstac.sampling.search.SamplingSearch;
@@ -23,7 +25,7 @@ import gov.nasa.jpf.JPFShell;
  * We can maybe generalize this shell later if we experiment with more
  * techniques for sampling
  */
-public class MonteCarloShell implements JPFShell {
+public class MonteCarloShell implements SamplingShell {
   public static final String MC_CONF_PRFX = "symbolic.security.sampling.montecarlo";
   
   //This setting can be used to disable sampling to exhaustively explore the tree (mostly for debugging...)
@@ -61,7 +63,7 @@ public class MonteCarloShell implements JPFShell {
       this.jpfConfig.setProperty("search.class", SamplingSearch.class.getName());
     }
     
-    this.jpf = new JPF(jpfConfig);
+    this.jpf = JPFSamplerFactory.create(jpfConfig);
     
     boolean useRandomSeed = config.getBoolean(RNG_RANDOM_SEED, DEFAULT_RANDOM_SEED);
     SimulationPolicy defaultSimulationPolicy = null;
@@ -102,7 +104,7 @@ public class MonteCarloShell implements JPFShell {
         RewardFunction.class, 
         new DepthRewardFunction());
     
-    MonteCarloListener mcListener = new MonteCarloListener(simPol, 
+    mcListener = new MonteCarloListener(simPol,
         rewardFunc, 
         choicesStrat, 
         terminationStrategy);
@@ -119,6 +121,14 @@ public class MonteCarloShell implements JPFShell {
     }
 
     jpf.addListener(mcListener);
+  }
+
+  //TODO: as in mctsshell, get rid of this
+  private MonteCarloListener mcListener;
+
+  @Override
+  public void addEventObserver(AnalysisEventObserver eventObserver) {
+    mcListener.addEventObserver(eventObserver);
   }
 
   @Override

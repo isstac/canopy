@@ -175,4 +175,9 @@ public class SymTreeVisualizer implements MCTSEventObserver {
   public void analysisDone(SamplingResult result) {
     // Do nothing
   }
+
+  @Override
+  public void analysisStarted(Search search) {
+    // Do nothing
+  }
 }
