@@ -23,7 +23,7 @@ public class RewardBoundedTermination implements TerminationStrategy {
   }
 
   @Override
-  public boolean terminateAfterSample(VM vm, SamplingResult currentResult) {
+  public boolean terminate(VM vm, SamplingResult currentResult) {
     ResultContainer res = null;
     switch(targetEvent) {
     case SUCC:
@@ -39,10 +39,5 @@ public class RewardBoundedTermination implements TerminationStrategy {
         throw new IllegalStateException("Did not recognize event type " + targetEvent);
     }
     return res.getReward() >= rewardBound;
-  }
-
-  @Override
-  public boolean terminateBeforeSample(VM vm) {
-    return false;
   }
 }

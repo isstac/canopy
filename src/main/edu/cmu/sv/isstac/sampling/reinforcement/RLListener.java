@@ -184,9 +184,9 @@ class RLListener extends PropertyListenerAdapter {
       bestResult.setPathCondition(pc);
     }
     
-    // Check if we should terminateAfterSample the search
+    // Check if we should terminate the search
     // based on the result obtained
-    if(terminationStrategy.terminateAfterSample(vm, this.result)) {
+    if(terminationStrategy.terminate(vm, this.result)) {
       vm.getSearch().terminate();
       
       // Notify observers with termination event

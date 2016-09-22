@@ -3,9 +3,10 @@ package edu.cmu.sv.isstac.sampling.mcts;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import edu.cmu.sv.isstac.sampling.JPFSamplerFactory;
+import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.analysis.AbstractAnalysisProcessor;
 import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
-import edu.cmu.sv.isstac.sampling.search.SamplingSearch;
 import edu.cmu.sv.isstac.sampling.analysis.LiveAnalysisStatisticsModelCounting;
 import edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
@@ -21,7 +22,7 @@ import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.quantification.SPFModelCounter;
 import edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
-import edu.cmu.sv.isstac.sampling.termination.AllPathsTerminationStrategy;
+import edu.cmu.sv.isstac.sampling.termination.NeverTerminateStrategy;
 import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import edu.cmu.sv.isstac.sampling.visualization.SymTreeVisualizer;
@@ -38,12 +39,9 @@ import gov.nasa.jpf.util.JPFLogger;
  */
 public class MCTSShell implements JPFShell {
 
-  private static final Logger LOGGER = JPFLogger.getLogger(MCTSShell.class.getName());
+  private static final Logger logger = JPFLogger.getLogger(MCTSShell.class.getName());
 
-  public static final String MCTS_CONF_PRFX = "symbolic.security.sampling.mcts";
-  
-  //This setting can be used to disable sampling to exhaustively explore the tree (mostly for debugging...)
-  public static final String EXHAUSTIVE_ANALYSIS = MCTS_CONF_PRFX + ".exhaustive";
+  public static final String MCTS_CONF_PRFX = Options.SAMPLING_CONF_PREFIX + ".mcts";
   
   public static final String REWARD_FUNCTION = MCTS_CONF_PRFX + ".rewardfunc";
   public static final String PATH_QUANTIFIER = MCTS_CONF_PRFX + ".pathquantifier";
@@ -71,26 +69,25 @@ public class MCTSShell implements JPFShell {
   //Model counting conf. This will use the model counting reward decorator and propagate
   //the path volume (count) as the number of times a node has been visited
   public static final boolean DEFAULT_USE_MODELCOUNT_AMPLIFICATION = true;
-  public static final String USE_MODELCOUNT_AMPLIFICATION = MCTS_CONF_PRFX + ".modelcounting";
+  public static final String MODEL_COUNTING_PREFIX = MCTS_CONF_PRFX + ".modelcounting";
+  public static final String USE_MODELCOUNT_AMPLIFICATION = MODEL_COUNTING_PREFIX +
+      ".amplifyrewards";
+  public static final String USE_MODELCOUNT_WEIGHTED_SIMULATION = MCTS_CONF_PRFX +
+      ".weightedsampling";
 
   //Analysis processing
   public static final String ANALYSIS_PROCESSOR = MCTS_CONF_PRFX + ".analysisprocessor";
-  
+  public static final String USE_TREE_VISUALIZATION = MCTS_CONF_PRFX + ".treevisualizer";
+  private static final String SHOW_LIVE_STATISTICS = MCTS_CONF_PRFX + ".statistics";
+
   private final Config jpfConfig;
   private final JPF jpf;
   
   //ctor required for jpf shell
   public MCTSShell(Config config) {
     this.jpfConfig = config;
-    
-    if(!jpfConfig.getBoolean(EXHAUSTIVE_ANALYSIS, false)) {
-      //Substitute search object to use our sampler
-      //There is no other way than using the string name of the class and rely
-      //on the reflection in jpf-core...
-      this.jpfConfig.setProperty("search.class", SamplingSearch.class.getName());
-    }
 
-    this.jpf = new JPF(jpfConfig);
+    this.jpf = JPFSamplerFactory.create(config);
     
     double uctBias = config.getDouble(UCT_BIAS, DEFAULT_UCT_BIAS);
     boolean useRandomSeed = config.getBoolean(RNG_RANDOM_SEED, DEFAULT_RANDOM_SEED);
@@ -109,77 +106,76 @@ public class MCTSShell implements JPFShell {
         SELECTION_POLICY, 
         SelectionPolicy.class, 
         defaultSelectionPolicy);
-
-
-//    SimulationPolicy simPol = /*getInstanceOrDefault(config,
-//        SIM_POLICY,
-//        SimulationPolicy.class,
-//        defaultSimulationPolicy);*/
     
     TerminationStrategy defaultTerminationStrategy = null;
     ChoicesStrategy choicesStrat = null;
     if(config.getBoolean(PRUNING, DEFAULT_USE_PRUNING)) {
-      PruningChoicesStrategy prunStrat = PruningChoicesStrategy.getInstance();
-      //jpf.addListener(prunStrat);
-      choicesStrat = prunStrat;
-      
-      //termination
-      defaultTerminationStrategy = new AllPathsTerminationStrategy(prunStrat);
+      choicesStrat = PruningChoicesStrategy.getInstance();
+
+      //Default termination when using pruning
+      defaultTerminationStrategy = new NeverTerminateStrategy();
     } else {
       choicesStrat = new AllChoicesStrategy();
-      
-      //termination
+
+      //Default termination when *not* using pruning
       int sampleSize = config.getInt(MAX_SAMPLES_TERMINATION_STRAT, DEFAULT_MAX_SAMPLES);
       defaultTerminationStrategy = new SampleSizeTerminationStrategy(sampleSize);
     }
+
     TerminationStrategy terminationStrategy = getInstanceOrDefault(config, 
         TERMINATION_STRAT,
         TerminationStrategy.class, 
         defaultTerminationStrategy);
-    // TerminationStrategy terminationStrategy = new RewardBoundedTermination(44, EVENT.SUCC);
+
     RewardFunction rewardFunc = getInstanceOrDefault(config,
         REWARD_FUNCTION, 
         RewardFunction.class, 
         new DepthRewardFunction());
 
 
-    SimulationPolicy simPol = getInstanceOrDefault(config,
-        SIM_POLICY,
-        SimulationPolicy.class,
-        defaultSimulationPolicy);
-    PathQuantifier defaultPathQuantifier = null;
+    SimulationPolicy simPol = null;
+
+    PathQuantifier pathQuantifier = null;
     boolean useMCAmplification = config.getBoolean(USE_MODELCOUNT_AMPLIFICATION,
         DEFAULT_USE_MODELCOUNT_AMPLIFICATION);
     if(useMCAmplification) {
       try {
         SPFModelCounter modelCounter = ModelCounterFactory.create(this.jpfConfig);
 
-        //TODO: clean up this mess (assigned previously)
-        if(config.getBoolean("symbolic.security.sampling.mcts.modelcounting"))
+        if(config.getBoolean(USE_MODELCOUNT_WEIGHTED_SIMULATION))
           simPol = new CountWeightedSimulationPolicy(modelCounter, new Random(42));
+        else
+          simPol = new UniformSimulationPolicy();
 
         //Decorate reward function with model count amplification
         //rewardFunc = new ModelCountingAmplifierDecorator(rewardFunc, modelCounter);
 
         //A bit ugly, but we set the default path quantifier to use model counts
-        defaultPathQuantifier = new ModelCountingPathQuantifier(modelCounter);
+        pathQuantifier = new ModelCountingPathQuantifier(modelCounter);
       } catch (ModelCounterCreationException e) {
-        LOGGER.severe(e.getMessage());
-        LOGGER.severe(e.getStackTrace().toString());
+        logger.severe(e.getMessage());
+        logger.severe(e.getStackTrace().toString());
         throw new MCTSAnalysisException(e);
       }
     } else {
-      //If we don't use model count amplification,
-      //then we just stick we the concrete path quantifier
-      //which adds 1 for each explored path
-      defaultPathQuantifier = new ConcretePathQuantifier();
-    }
 
-    PathQuantifier pathQuantifier = getInstanceOrDefault(config,
-        PATH_QUANTIFIER,
-        PathQuantifier.class,
-        defaultPathQuantifier);
-    
+      simPol = getInstanceOrDefault(config,
+          SIM_POLICY,
+          SimulationPolicy.class,
+          new UniformSimulationPolicy());
+      //If we don't use model count amplification,
+      //then we just stick with the concrete path quantifier
+      //which adds 1 for each explored path
+      pathQuantifier = new ConcretePathQuantifier();
+    }
+    assert simPol != null;
+    assert selPol != null;
+    assert rewardFunc != null;
+    assert pathQuantifier != null;
+    assert terminationStrategy != null;
+    assert choicesStrat != null;
+
+    //We construct the mcts listener that does all the hard work
     MCTSListener mcts = new MCTSListener(selPol, 
         simPol, 
         rewardFunc,
@@ -192,10 +188,11 @@ public class MCTSShell implements JPFShell {
     // the termination strategy
     if(!config.hasValue(ANALYSIS_PROCESSOR)) {
       mcts.addEventObserver(AbstractAnalysisProcessor.DEFAULT);
-      mcts.addEventObserver(new LiveAnalysisStatisticsModelCounting());
 
-      //TODO: clean up this mess. Seriously
-      if(config.getBoolean("symbolic.security.sampling.mcts.visualizer")) {
+      if(config.getBoolean(SHOW_LIVE_STATISTICS, true)) {
+        mcts.addEventObserver(new LiveAnalysisStatisticsModelCounting());
+      }
+      if(config.getBoolean(USE_TREE_VISUALIZATION, false)) {
         mcts.addEventObserver(new SymTreeVisualizer());
       }
     } else {

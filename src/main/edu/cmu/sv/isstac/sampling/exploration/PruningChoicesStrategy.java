@@ -6,19 +6,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
-import edu.cmu.sv.isstac.sampling.structure.Node;
-import gov.nasa.jpf.PropertyListenerAdapter;
-import gov.nasa.jpf.search.Search;
+
 import gov.nasa.jpf.vm.ChoiceGenerator;
-import gov.nasa.jpf.vm.ElementInfo;
-import gov.nasa.jpf.vm.ThreadInfo;
-import gov.nasa.jpf.vm.VM;
 
 /**
  * @author Kasper Luckow
  * 
  */
-public class PruningChoicesStrategy extends PropertyListenerAdapter implements ChoicesStrategy {
+public class PruningChoicesStrategy implements ChoicesStrategy, PruningStrategy {
   
   private Set<Path> pruned = Sets.newHashSet();
 
@@ -48,53 +43,28 @@ public class PruningChoicesStrategy extends PropertyListenerAdapter implements C
     
     return eligibleChoices;
   }
-  
+
+  @Override
   public boolean isPruned(Path p) {
     return pruned.contains(p);
   }
-  
-  public boolean isPruned(Node n) {
-    Path p = new Path(n);
-    return isPruned(p);
-  }
-  
+
   public boolean isPruned(ChoiceGenerator<?> cg) {
     Path p = new Path(cg);
     return isPruned(p);
   }
 
+  private static final Path root = new Path(); //empty path
   @Override
-  public void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> currentCG) {
-    if(vm.getSystemState().isIgnored()) {
-
-      performPruning(currentCG);
-    }
+  public boolean isFullyPruned() {
+    return isPruned(root);
   }
 
   @Override
-  public void searchConstraintHit(Search search) {
-    ChoiceGenerator<?> cg = search.getVM().getChoiceGenerator();
-    performPruning(cg);
-  }
-  
-  @Override
-  public void stateAdvanced(Search search) {
-    if(search.isEndState()) {
-      ChoiceGenerator<?> cg = search.getVM().getChoiceGenerator();
-      performPruning(cg);
-    }
-  }
-
-  @Override
-  public void exceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
-    ChoiceGenerator<?> cg = vm.getChoiceGenerator();
-    performPruning(cg);
-  }
-  
   public void performPruning(ChoiceGenerator<?> cg) {
     Path p = new Path(cg);
 
-//    assert !pruned.contains(p);
+    assert !pruned.contains(p);
     pruned.add(p);
     propagatePruning(p, cg);
   }

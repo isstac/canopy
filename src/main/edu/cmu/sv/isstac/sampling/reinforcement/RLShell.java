@@ -20,7 +20,7 @@ import edu.cmu.sv.isstac.sampling.quantification.SPFModelCounter;
 import edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction;
 import edu.cmu.sv.isstac.sampling.reward.ModelCountingAmplifierDecorator;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
-import edu.cmu.sv.isstac.sampling.termination.AllPathsTerminationStrategy;
+import edu.cmu.sv.isstac.sampling.termination.NeverTerminateStrategy;
 import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.Config;
@@ -111,11 +111,10 @@ public class RLShell implements JPFShell {
     ChoicesStrategy choicesStrat;
     if(config.getBoolean(PRUNING, DEFAULT_USE_PRUNING)) {
       PruningChoicesStrategy prunStrat = PruningChoicesStrategy.getInstance();
-      jpf.addListener(prunStrat);
       choicesStrat = prunStrat;
       
       //termination
-      defaultTerminationStrategy = new AllPathsTerminationStrategy(prunStrat);
+      defaultTerminationStrategy = new NeverTerminateStrategy();
     } else {
       choicesStrat = new AllChoicesStrategy();
       

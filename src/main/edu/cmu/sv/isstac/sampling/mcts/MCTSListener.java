@@ -33,7 +33,7 @@ import gov.nasa.jpf.vm.VM;
  * @author Kasper Luckow
  *
  */
-class MCTSListener extends PropertyListenerAdapter implements SamplingSearchListener {
+class MCTSListener extends PropertyListenerAdapter {
 
   private enum MCTS_STATE {
     SELECTION {
@@ -277,9 +277,9 @@ class MCTSListener extends PropertyListenerAdapter implements SamplingSearchList
       bestResult.setPathCondition(pc);
     }
     
-    // Check if we should terminateAfterSample the search
+    // Check if we should terminate the search
     // based on the result obtained
-    if(terminationStrategy.terminateAfterSample(vm, this.result)) {
+    if(terminationStrategy.terminate(vm, this.result)) {
       terminate(vm);
     }
     
@@ -358,18 +358,6 @@ class MCTSListener extends PropertyListenerAdapter implements SamplingSearchList
   private void resetExploration() {
     this.mctsState = MCTS_STATE.SELECTION;
     this.last = this.root;
-  }
-
-  @Override
-  public void newSampleStarted(Search samplingSearch) {
-    if(terminationStrategy.terminateBeforeSample(samplingSearch.getVM())) {
-      terminate(samplingSearch.getVM());
-    }
-  }
-
-  @Override
-  public void sampleTerminated(Search samplingSearch) {
-    // Do nothing
   }
   
   private boolean isFrontierNode(Node node, Collection<Integer> eligibleChoices) {
