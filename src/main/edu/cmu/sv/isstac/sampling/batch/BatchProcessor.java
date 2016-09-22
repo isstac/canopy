@@ -1,10 +1,8 @@
 package edu.cmu.sv.isstac.sampling.batch;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,14 +10,13 @@ import java.util.Random;
 
 import edu.cmu.sv.isstac.sampling.SamplingShell;
 import gov.nasa.jpf.Config;
-import gov.nasa.jpf.tool.RunJPF;
 
 /**
  * @author Kasper Luckow
  */
 public class BatchProcessor {
 
-  private static final int DEFAULT_ITERATIONS = 3;
+  private static final int DEFAULT_ITERATIONS = 1;
 
 
   //This one is important: it determines the initial
@@ -43,10 +40,36 @@ public class BatchProcessor {
     }
 
     assert outputFolder != null;
+    List<Experiment> experiments = createDefaultExperiments();
 
-    Random rng = new Random(DEFAULT_SEED);
+    performBatchProcessing(inputFolder, outputFolder, iterations, experiments, DEFAULT_SEED);
+  }
 
-    List<Experiment> experiments = createExperiments();
+  private static List<Experiment> createDefaultExperiments() {
+    List<Experiment> experiments = new ArrayList<>();
+    //MCTS: pruning, reward amplification, weighted simulation
+    //  experiments.add(new MCTSExperiment(true, true, true));
+    //MCTS: pruning, reward amplification
+    experiments.add(new MCTSExperiment(true, true, false));
+    //MCTS: pruning
+//    experiments.add(new MCTSExperiment(true, false, false));
+    //MCTS: no pruning
+//    experiments.add(new MCTSExperiment(false, false, false));
+    //MCTS: no pruning, reward amplification
+//    experiments.add(new MCTSExperiment(false, false, false));
+
+    //Monte carlo: pruning
+    //   experiments.add(new MonteCarloExperiment(true));
+
+    //Monte carlo: no pruning
+//    experiments.add(new MonteCarloExperiment(false));
+
+    return experiments;
+  }
+
+  public static void performBatchProcessing(File inputFolder, File resultsFolder, int iterations,
+                                       List<Experiment> experiments, long initSeed) {
+    Random rng = new Random(initSeed);
 
     for(File jpfFile : inputFolder.listFiles()) {
       if(!jpfFile.getName().endsWith(".jpf")) {
@@ -57,7 +80,7 @@ public class BatchProcessor {
       //Seriously messed up ctors for Config class.
       Config conftmp = new Config(new String[] { jpfFile.getAbsolutePath() });
       String targetName = conftmp.getString("target");
-      String outputFile = getOutputFile(jpfFile.getName(), outputFolder);
+      String outputFile = getOutputFile(jpfFile.getName(), resultsFolder);
 
       for (Experiment experiment : experiments) {
         for (int iteration = 1; iteration <= iterations; iteration++) {
@@ -122,28 +145,6 @@ public class BatchProcessor {
   private static String getOutputFile(String jpfFile, File outputDir) {
     String fileName = jpfFile.substring(0, jpfFile.indexOf(".jpf")) + ".csv";
     return new File(outputDir, fileName).getAbsolutePath();
-  }
-
-  private static List<Experiment> createExperiments() {
-    List<Experiment> experiments = new ArrayList<>();
-    //MCTS: pruning, reward amplification, weighted simulation
-//    experiments.add(new MCTSExperiment(true, true, true));
-    //MCTS: pruning, reward amplification
-    experiments.add(new MCTSExperiment(true, true, false));
-    //MCTS: pruning
-//    experiments.add(new MCTSExperiment(true, false, false));
-    //MCTS: no pruning
-//    experiments.add(new MCTSExperiment(false, false, false));
-    //MCTS: no pruning, reward amplification
-//    experiments.add(new MCTSExperiment(false, false, false));
-
-    //Monte carlo: pruning
-//    experiments.add(new MonteCarloExperiment(true));
-
-    //Monte carlo: no pruning
-//    experiments.add(new MonteCarloExperiment(false));
-
-    return experiments;
   }
 
   private static void printUsage() {
