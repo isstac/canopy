@@ -52,9 +52,9 @@ public class BatchProcessor {
   private static List<Experiment> createDefaultExperiments() {
     List<Experiment> experiments = new ArrayList<>();
     //MCTS: pruning, reward amplification, weighted simulation
-    experiments.add(new MCTSExperiment(true, true, true));
+  //  experiments.add(new MCTSExperiment(true, true, true));
     //MCTS: pruning, reward amplification
-    experiments.add(new MCTSExperiment(true, true, false));
+ //   experiments.add(new MCTSExperiment(true, true, false));
     //MCTS: pruning
     experiments.add(new MCTSExperiment(true, false, false));
     //MCTS: no pruning
@@ -98,14 +98,15 @@ public class BatchProcessor {
           shell.addEventObserver(statistics);
           shell.start(new String[0]);
 
-          writeStatisticsToFile(statistics, iteration, targetName, experiment.getName(), outputFile);
+          writeStatisticsToFile(statistics, iteration, seed, targetName, experiment.getName(),
+              outputFile);
         }
       }
     }
   }
 
-  private static void writeStatisticsToFile(SampleStatistics statistics, int iteration, String
-      target, String experimentName, String outputFile) {
+  private static void writeStatisticsToFile(SampleStatistics statistics, int iteration, long seed,
+                                            String target, String experimentName, String outputFile) {
 
     final DecimalFormat doubleFormat = new DecimalFormat("#.##");
     File csvFile = new File(outputFile);
@@ -118,10 +119,22 @@ public class BatchProcessor {
 
       //write csv header
       try(FileWriter fw = new FileWriter(csvFile, true)) {
-        fw.write("Target,experiment,iteration,bestReward,bestRewardSampleNum," +
-            "bestRewardTime[" + statistics.getTimeUnit().toString() + "],totalSampleNum" +
-            ",totalAnalysisTime[" + statistics.getTimeUnit().toString() + "]" +
-            ",avgThroughput[#samples/" + statistics.getTimeUnit().toString() + "]\n");
+        fw.write("Target," +
+            "experiment," +
+            "iteration," +
+            "minReward," +
+            "bestReward," +
+            "bestRewardSampleNum," +
+            "bestRewardTime[" + statistics.getTimeUnit().toString() + "]," +
+            "bestRewardCount," +
+            "totalSampleNum," +
+            "totalAnalysisTime[" + statistics.getTimeUnit().toString() + "]," +
+            "avgThroughput[#samples/" + statistics.getTimeUnit().toString() + "]," +
+            "seed," +
+            "rewardMean," +
+            "rewardVariance," +
+            "rewardStdDev" +
+            "\n");
       } catch (IOException e) {
         throw new BatchProcessorException(e);
       }
@@ -131,12 +144,19 @@ public class BatchProcessor {
     sb.append(target).append(',')
         .append(experimentName).append(',')
         .append(iteration).append(',')
+        .append(statistics.getMinReward()).append(',')
         .append(statistics.getBestReward()).append(',')
         .append(statistics.getBestRewardSampleNum()).append(',')
         .append(statistics.getBestRewardTime()).append(',')
+        .append(statistics.getNumberOfBestRewards()).append(',')
         .append(statistics.getTotalSampleNum()).append(',')
         .append(statistics.getTotalAnalysisTime()).append(',')
-        .append(doubleFormat.format(statistics.getAvgThroughput())).append('\n');
+        .append(doubleFormat.format(statistics.getAvgThroughput())).append(',')
+        .append(seed).append(',')
+        .append(doubleFormat.format(statistics.getRewardMean())).append(',')
+        .append(doubleFormat.format(statistics.getRewardVariance())).append(',')
+        .append(doubleFormat.format(statistics.getRewardStandardDeviation()))
+        .append('\n');
     //Append results to file
 
     try(FileWriter fw = new FileWriter(csvFile, true)) {
