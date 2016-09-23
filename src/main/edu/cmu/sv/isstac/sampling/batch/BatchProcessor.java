@@ -7,8 +7,10 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import edu.cmu.sv.isstac.sampling.SamplingShell;
+import edu.cmu.sv.isstac.sampling.termination.TimeBoundedTerminationStrategy;
 import gov.nasa.jpf.Config;
 
 /**
@@ -16,11 +18,13 @@ import gov.nasa.jpf.Config;
  */
 public class BatchProcessor {
 
-  private static final int DEFAULT_ITERATIONS = 1;
-
+  private static final int DEFAULT_ITERATIONS = 2;
 
   //This one is important: it determines the initial
   //seed for the rng that will generate seeds for the experiments
+  //Note that in order to reproduce the results, not only must the seed
+  //of course be the same, but also the *order* of the experiments must
+  //be the same!
   private static final int DEFAULT_SEED = 42;
 
   public static void main(String[] args) {
@@ -48,18 +52,18 @@ public class BatchProcessor {
   private static List<Experiment> createDefaultExperiments() {
     List<Experiment> experiments = new ArrayList<>();
     //MCTS: pruning, reward amplification, weighted simulation
-    //  experiments.add(new MCTSExperiment(true, true, true));
+    experiments.add(new MCTSExperiment(true, true, true));
     //MCTS: pruning, reward amplification
     experiments.add(new MCTSExperiment(true, true, false));
     //MCTS: pruning
-//    experiments.add(new MCTSExperiment(true, false, false));
+    experiments.add(new MCTSExperiment(true, false, false));
     //MCTS: no pruning
 //    experiments.add(new MCTSExperiment(false, false, false));
     //MCTS: no pruning, reward amplification
 //    experiments.add(new MCTSExperiment(false, false, false));
 
     //Monte carlo: pruning
-    //   experiments.add(new MonteCarloExperiment(true));
+    experiments.add(new MonteCarloExperiment(true));
 
     //Monte carlo: no pruning
 //    experiments.add(new MonteCarloExperiment(false));
