@@ -249,7 +249,7 @@ class MCTSListener extends PropertyListenerAdapter {
     // The reward that will actually be propagated
     long amplifiedReward = reward * pathVolume;
 
-    logger.info("Sample #: " + numberOfSamples + ", reward: " + reward + ", path volume: " +
+    logger.fine("Sample #: " + numberOfSamples + ", reward: " + reward + ", path volume: " +
         pathVolume + ", amplified reward: " + amplifiedReward);
 
     // Perform backup phase
