@@ -289,9 +289,9 @@ class MCTSListener extends PropertyListenerAdapter {
     
     // Check if we should terminate the search
     // based on the result obtained
+    // searchFinished will be called later
     if(terminationStrategy.terminate(vm, this.result)) {
       vm.getSearch().terminate();
-      notifyTermination(vm);
     }
     
     // Reset exploration to drive a new round of sampling

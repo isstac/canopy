@@ -119,14 +119,14 @@ public class MonteCarloListener extends PropertyListenerAdapter {
       PathCondition pc = PathCondition.getPC(vm);
       currentBestResult.setPathCondition(pc);
     }
-    
-    // Check if we should terminate
+    // Check if we should terminate the search
+    // based on the result obtained
+    // searchFinished will be called later
     if(terminationStrategy.terminate(vm, this.result)) {
-
-      notifyTermination(vm);
+      vm.getSearch().terminate();
     }
   }
-  
+
   @Override
   public void searchFinished(Search search) {
     notifyTermination(search.getVM());
