@@ -8,7 +8,7 @@ import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.SamplingShell;
 import edu.cmu.sv.isstac.sampling.analysis.AbstractAnalysisProcessor;
 import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
-import edu.cmu.sv.isstac.sampling.analysis.LiveAnalysisStatisticsModelCounting;
+import edu.cmu.sv.isstac.sampling.analysis.LiveAnalysisStatistics;
 import edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
@@ -93,6 +93,7 @@ public class MCTSShell implements SamplingShell {
     double uctBias = config.getDouble(UCT_BIAS, DEFAULT_UCT_BIAS);
     boolean useRandomSeed = config.getBoolean(RNG_RANDOM_SEED, DEFAULT_RANDOM_SEED);
     SelectionPolicy defaultSelectionPolicy = null;
+    //TODO: defaultSimulationPolicy is not used atm!
     SimulationPolicy defaultSimulationPolicy = null;
     if(useRandomSeed) {
       defaultSelectionPolicy = new UCBPolicy(uctBias);
@@ -144,6 +145,7 @@ public class MCTSShell implements SamplingShell {
         SPFModelCounter modelCounter = ModelCounterFactory.create(this.jpfConfig);
 
         if(config.getBoolean(USE_MODELCOUNT_WEIGHTED_SIMULATION))
+          //TODO: SEED MUST NOT BE FIXED!
           simPol = new CountWeightedSimulationPolicy(modelCounter, new Random(42));
         else
           simPol = new UniformSimulationPolicy();
@@ -191,7 +193,7 @@ public class MCTSShell implements SamplingShell {
       mcts.addEventObserver(AbstractAnalysisProcessor.DEFAULT);
 
       if(config.getBoolean(SHOW_LIVE_STATISTICS, true)) {
-        mcts.addEventObserver(new LiveAnalysisStatisticsModelCounting());
+        mcts.addEventObserver(new LiveAnalysisStatistics());
       }
       if(config.getBoolean(USE_TREE_VISUALIZATION, false)) {
         mcts.addEventObserver(new SymTreeVisualizer());
@@ -211,6 +213,11 @@ public class MCTSShell implements SamplingShell {
   @Override
   public void addEventObserver(AnalysisEventObserver eventObserver) {
     mcts.addEventObserver(eventObserver);
+  }
+
+  @Override
+  public void setTerminationStrategy(TerminationStrategy terminationStrategy) {
+
   }
 
   @Override

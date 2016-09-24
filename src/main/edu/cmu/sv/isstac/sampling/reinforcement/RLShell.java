@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 import edu.cmu.sv.isstac.sampling.search.SamplingSearch;
 import edu.cmu.sv.isstac.sampling.analysis.AbstractAnalysisProcessor;
 import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
-import edu.cmu.sv.isstac.sampling.analysis.LiveAnalysisStatisticsModelCounting;
+import edu.cmu.sv.isstac.sampling.analysis.LiveAnalysisStatistics;
 import edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
@@ -172,7 +172,7 @@ public class RLShell implements JPFShell {
     // the termination strategy
     if(!config.hasValue(ANALYSIS_PROCESSOR)) {
       rl.addEventObserver(AbstractAnalysisProcessor.DEFAULT);
-      rl.addEventObserver(new LiveAnalysisStatisticsModelCounting());
+      rl.addEventObserver(new LiveAnalysisStatistics());
     } else {
       for(AnalysisEventObserver obs : config.getInstances(ANALYSIS_PROCESSOR, AnalysisEventObserver.class)) {
         rl.addEventObserver(obs);

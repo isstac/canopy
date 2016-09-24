@@ -1,6 +1,7 @@
 package edu.cmu.sv.isstac.sampling;
 
 import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
+import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.JPFShell;
 
 /**
@@ -9,4 +10,6 @@ import gov.nasa.jpf.JPFShell;
  */
 public interface SamplingShell extends JPFShell {
   public void addEventObserver(AnalysisEventObserver eventObserver);
+
+  public void setTerminationStrategy(TerminationStrategy terminationStrategy);
 }

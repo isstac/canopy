@@ -132,6 +132,11 @@ public class MonteCarloShell implements SamplingShell {
   }
 
   @Override
+  public void setTerminationStrategy(TerminationStrategy terminationStrategy) {
+
+  }
+
+  @Override
   public void start(String[] args) {
     jpf.run();
   }
