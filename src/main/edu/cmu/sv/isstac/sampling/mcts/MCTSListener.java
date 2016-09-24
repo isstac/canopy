@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import edu.cmu.sv.isstac.sampling.search.SamplingSearchListener;
 import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
 import edu.cmu.sv.isstac.sampling.analysis.MCTSEventObserver;
 import edu.cmu.sv.isstac.sampling.analysis.SamplingResult;
@@ -65,7 +64,7 @@ class MCTSListener extends PropertyListenerAdapter {
   private final RewardFunction rewardFunction;
   private final PathQuantifier pathQuantifier;
   
-  private final TerminationStrategy terminationStrategy;
+  private TerminationStrategy terminationStrategy;
   
   private boolean expandedFlag = false;
   private int expandedChoice = -1;
@@ -96,6 +95,10 @@ class MCTSListener extends PropertyListenerAdapter {
     
     //For now we just stick with the default factory
     this.nodeFactory = new DefaultNodeFactory();
+  }
+
+  public void setTerminationStrategy(TerminationStrategy strategy) {
+    this.terminationStrategy = strategy;
   }
   
   public void addEventObserver(AnalysisEventObserver observer) {
@@ -287,7 +290,8 @@ class MCTSListener extends PropertyListenerAdapter {
     // Check if we should terminate the search
     // based on the result obtained
     if(terminationStrategy.terminate(vm, this.result)) {
-      terminate(vm);
+      vm.getSearch().terminate();
+      notifyTermination(vm);
     }
     
     // Reset exploration to drive a new round of sampling
@@ -296,12 +300,10 @@ class MCTSListener extends PropertyListenerAdapter {
 
   @Override
   public void searchFinished(Search search) {
-    terminate(search.getVM());
+    notifyTermination(search.getVM());
   }
 
-  private void terminate(VM vm) {
-    vm.getSearch().terminate();
-
+  private void notifyTermination(VM vm) {
     // Notify observers with termination event
     for(AnalysisEventObserver obs : this.observers) {
       obs.analysisDone(result);

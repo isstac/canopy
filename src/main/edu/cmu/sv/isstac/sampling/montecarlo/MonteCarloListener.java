@@ -38,7 +38,7 @@ public class MonteCarloListener extends PropertyListenerAdapter {
   
   private final RewardFunction rewardFunction;
   
-  private final TerminationStrategy terminationStrategy;
+  private TerminationStrategy terminationStrategy;
   
   private SamplingResult result = new SamplingResult();
 
@@ -122,18 +122,17 @@ public class MonteCarloListener extends PropertyListenerAdapter {
     
     // Check if we should terminate
     if(terminationStrategy.terminate(vm, this.result)) {
-      terminate(vm);
+
+      notifyTermination(vm);
     }
   }
-
+  
   @Override
   public void searchFinished(Search search) {
-    terminate(search.getVM());
+    notifyTermination(search.getVM());
   }
 
-  private void terminate(VM vm) {
-    vm.getSearch().terminate();
-
+  private void notifyTermination(VM vm) {
     // Notify observers with termination event
     for(AnalysisEventObserver obs : this.observers) {
       obs.analysisDone(result);
@@ -167,5 +166,9 @@ public class MonteCarloListener extends PropertyListenerAdapter {
   public void searchConstraintHit(Search search) {
     logger.fine("Search constraint hit.");
     finishSample(search.getVM(), this.result.getMaxGreyResult());
+  }
+
+  public void setTerminationStrategy(TerminationStrategy terminationStrategy) {
+    this.terminationStrategy = terminationStrategy;
   }
 }
