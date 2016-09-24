@@ -5,8 +5,11 @@ import com.google.common.base.Stopwatch;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.ValueMarker;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.statistics.SimpleHistogramBin;
 import org.jfree.data.statistics.SimpleHistogramDataset;
 import org.jfree.data.xy.XYSeries;
@@ -23,51 +26,63 @@ import javax.swing.*;
 
 /**
  * @author Kasper Luckow
- * Either remove this class or make a factory that creates charts base don whether model counting
- * is used or not
+ *
  */
-@Deprecated
 public class LiveTrackerChart extends ApplicationFrame {
-  
+
   private static final long serialVersionUID = 1760145418311574070L;
-  
+
   private SimpleHistogramDataset histogram;
   private XYSeries samplingSeries;
-  
+  private XYSeries volumeSeries;
+
   private ValueMarker avgMarker = new ValueMarker(0);
   private ValueMarker maxMarker = new ValueMarker(0);
-  
+
   private static final String maxRewardTxt = "Max reward observed: ";
   private final Label maxRewardTxtLabel = new Label(maxRewardTxt);
   private static final String maxRewardSampleTxt = "Sample # for max reward: ";
   private final Label maxRewardSampleTxtLabel = new Label(maxRewardSampleTxt);
-  private Stopwatch stopwatch;
+  private Stopwatch maxRewardStopWatch;
   private static final String maxRewardWallClockTxt = "Wall clock time for max reward: ";
   private final Label maxRewardWallClockTxtLabel = new Label(maxRewardWallClockTxt);
 
-  private static final DecimalFormat avgFormat = new DecimalFormat("#.##");
-  private static final String avgRewardSampleTxt = "Average reward: ";
+  private static final String throughputTxt = "Throughput [#samples/s]: ";
+  private final Label throughputTxtLabel = new Label(throughputTxt);
+  private static final String avgThroughputTxt = "Avg. throughput [#samples/s]: ";
+  private final Label avgThroughputTxtLabel = new Label(avgThroughputTxt);
+
+  private static final DecimalFormat doubleFormat = new DecimalFormat("#.##");
+  private static final String avgRewardSampleTxt = "Avg. reward: ";
   private final Label avgRewardTxtLabel = new Label(avgRewardSampleTxt);
-  
+
   private final int maxBufferSize;
   private int bufferSize;
   private long xBuf[];
   private long yBuf[];
-  
+  private long pathVolumeBuf[];
+
   private long maxReward = 0;
   private double rollingAvg = 0;
-  
+
   private Set<Long> binsUsed = new HashSet<>();
-  
+
+
+  // For throughput calculation
+  private Stopwatch stopwatch;
+  private double rollingThroughputAvg = 0.0;
+  private long throughputSamplesNum = 0;
+
   public LiveTrackerChart() {
     this(10);
   }
-  
+
   public LiveTrackerChart(int maxBufferSize) {
     super("Sampling live results");
     this.maxBufferSize = maxBufferSize;
     this.xBuf = new long[maxBufferSize];
     this.yBuf = new long[maxBufferSize];
+    this.pathVolumeBuf = new long[maxBufferSize];
     this.bufferSize = 0;
     
     ChartPanel timeSeriesPanel = new ChartPanel(createTimeSeries());
@@ -77,7 +92,7 @@ public class LiveTrackerChart extends ApplicationFrame {
     JPanel seriesPanel = new JPanel();
     JPanel labelPanel = new JPanel();
     labelPanel.setBackground(Color.white);
-    labelPanel.setLayout(new GridLayout(3,1));
+    labelPanel.setLayout(new GridLayout(6,1));
     
     seriesPanel.setLayout(new GridLayout(1,2));
     container.setLayout(new BorderLayout());
@@ -86,6 +101,8 @@ public class LiveTrackerChart extends ApplicationFrame {
     labelPanel.add(maxRewardSampleTxtLabel);
     labelPanel.add(maxRewardWallClockTxtLabel);
     labelPanel.add(avgRewardTxtLabel);
+    labelPanel.add(throughputTxtLabel);
+    labelPanel.add(avgThroughputTxtLabel);
     
     seriesPanel.add(timeSeriesPanel);
     seriesPanel.add(histogramPanel);
@@ -93,23 +110,47 @@ public class LiveTrackerChart extends ApplicationFrame {
     container.add(seriesPanel, BorderLayout.CENTER);
     setContentPane(container);
 
-    stopwatch = Stopwatch.createStarted();
+    this.stopwatch = Stopwatch.createStarted();
+    this.maxRewardStopWatch = Stopwatch.createStarted();
   }
   
   public JFreeChart createTimeSeries() {
-    XYSeriesCollection dataset = new XYSeriesCollection();
+    XYSeriesCollection rewardDataset = new XYSeriesCollection();
     samplingSeries = new XYSeries("Reward");
-    dataset.addSeries(samplingSeries);
-    JFreeChart timeSeriesChart = ChartFactory.createXYLineChart("Live Sampling Results",
-        "Number of Samples",
-        "Reward",
-        dataset,
-        PlotOrientation.VERTICAL, 
-        true, 
-        true, 
-        false);
+    rewardDataset.addSeries(samplingSeries);
 
-    timeSeriesChart.setBackgroundPaint(Color.WHITE);
+    XYSeriesCollection pathVolumeDataset = new XYSeriesCollection();
+    volumeSeries = new XYSeries("Path volume");
+    pathVolumeDataset.addSeries(volumeSeries);
+
+    final int SAMPLING_SERIES_ID = 0;
+    final int VOLUME_SERIES_ID = 1;
+    //construct the plot
+    XYPlot plot = new XYPlot();
+    plot.setDataset(SAMPLING_SERIES_ID, rewardDataset);
+    plot.setDataset(1, pathVolumeDataset);
+
+    //customize the plot with renderers and axis
+    XYLineAndShapeRenderer xyLineRenderer1 = new XYLineAndShapeRenderer();
+    xyLineRenderer1.setSeriesShapesVisible(0, false);
+    plot.setRenderer(0, xyLineRenderer1);
+    // fill paint
+    // for first series
+    XYLineAndShapeRenderer xyLineRenderer2 = new XYLineAndShapeRenderer();
+    xyLineRenderer2.setSeriesShapesVisible(0, false);
+    xyLineRenderer2.setSeriesFillPaint(0, Color.BLUE);
+    plot.setRenderer(VOLUME_SERIES_ID, xyLineRenderer2);
+    plot.setRangeAxis(SAMPLING_SERIES_ID, new NumberAxis("Reward"));
+    plot.setRangeAxis(VOLUME_SERIES_ID, new NumberAxis("Volume"));
+    plot.setDomainAxis(new NumberAxis("Number of Samples"));
+
+    //Map the data to the appropriate axis
+    plot.mapDatasetToRangeAxis(SAMPLING_SERIES_ID, SAMPLING_SERIES_ID);
+    plot.mapDatasetToRangeAxis(VOLUME_SERIES_ID, VOLUME_SERIES_ID);
+
+    //generate the chart
+    JFreeChart timeSeriesChart = new JFreeChart("Live Sampling Results", getFont(), plot, true);
+    timeSeriesChart.setBorderPaint(Color.white);
     avgMarker.setPaint(Color.green);
     maxMarker.setPaint(Color.blue);
     
@@ -133,21 +174,36 @@ public class LiveTrackerChart extends ApplicationFrame {
     return histogramChart;
   }
   
-  public void update(long x, long y) {
+  public void update(long x, long reward, long pathVolume) {
     if(bufferSize >= maxBufferSize) {
-      updateCharts(xBuf, yBuf);
+      updateCharts(xBuf, yBuf, pathVolumeBuf);
+      long elapsedTime = this.stopwatch.elapsed(TimeUnit.MILLISECONDS);
+      this.stopwatch.reset().start();
+
+      //Compute throughput
+      double throughput = bufferSize / ((double)elapsedTime / 1000);
+      throughputSamplesNum++;
+      rollingThroughputAvg -= rollingThroughputAvg / throughputSamplesNum;
+      rollingThroughputAvg += throughput / (double)throughputSamplesNum;
+
+      throughputTxtLabel.setText(throughputTxt + " " + doubleFormat.format(throughput));
+      avgThroughputTxtLabel.setText(avgThroughputTxt + " " + doubleFormat.format
+          (rollingThroughputAvg));
       bufferSize = 0;
     } else {
       xBuf[bufferSize] = x;
-      yBuf[bufferSize++] = y;
+      yBuf[bufferSize] = reward;
+      pathVolumeBuf[bufferSize] = pathVolume;
+      bufferSize++;
     }
   }
 
   //TODO: buffering is not working atm -- seems a bit complicated
-  private void updateCharts(long[] x, long[] y) {
+  private void updateCharts(long[] x, long[] y, long[] pathVolume) {
     for(int i = 0; i < x.length; i++) {
       long samplesNum = x[i];
       long reward = y[i];
+      long volume = pathVolume[i];
       
       //Crazy we have to do this...
       if(!binsUsed.contains(reward)) {
@@ -159,15 +215,17 @@ public class LiveTrackerChart extends ApplicationFrame {
       if(reward > maxReward) {
         this.maxRewardTxtLabel.setText(maxRewardTxt + reward);
         this.maxRewardSampleTxtLabel.setText(maxRewardSampleTxt + samplesNum);
-        this.maxRewardWallClockTxtLabel.setText(maxRewardWallClockTxt + this.stopwatch.elapsed
-            (TimeUnit.SECONDS) + "s");
+        String time = doubleFormat.format(this.maxRewardStopWatch.elapsed(TimeUnit.MILLISECONDS) /
+            1000);
+        this.maxRewardWallClockTxtLabel.setText(maxRewardWallClockTxt + time + "s");
         maxReward = reward;
       }
       this.samplingSeries.add(samplesNum, reward);
+      this.volumeSeries.add(samplesNum, volume);
       rollingAvg -= rollingAvg/samplesNum;
       rollingAvg += reward/(double)samplesNum;
     }
-    avgRewardTxtLabel.setText(avgRewardSampleTxt + avgFormat.format(rollingAvg)); 
+    avgRewardTxtLabel.setText(avgRewardSampleTxt + doubleFormat.format(rollingAvg));
     maxMarker.setValue(maxReward);
     avgMarker.setValue(rollingAvg);
   }
