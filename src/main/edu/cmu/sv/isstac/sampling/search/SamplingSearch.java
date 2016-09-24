@@ -58,7 +58,7 @@ public class SamplingSearch extends Search {
           break;
         }
 
-        notifySampleTerminated();
+        //notifySampleTerminated();
 
         //We start a new sample here by restoring the state, and resetting the depth
         resetJPFState();
@@ -115,22 +115,11 @@ public class SamplingSearch extends Search {
     BytecodeUtils.clearSymVarCounter();
   }
 
-  private void notifySampleTerminated() {
-    try {
-      for (int i = 0; i < listeners.length; i++) {
-        if (listeners[i] instanceof SamplingSearchListener)
-          ((SamplingSearchListener)listeners[i]).sampleTerminated(this);
-      }
-    } catch (Throwable t) {
-      throw new JPFListenerException("exception during stateBacktracked() notification", t);
-    }
-  }
-
   private void notifyNewSample() {
     try {
       for (int i = 0; i < listeners.length; i++) {
-        if (listeners[i] instanceof SamplingSearchListener)
-          ((SamplingSearchListener)listeners[i]).newSampleStarted(this);
+        if (listeners[i] instanceof SamplingListener)
+          ((SamplingListener)listeners[i]).newSampleStarted(this);
       }
     } catch (Throwable t) {
       throw new JPFListenerException("exception during stateBacktracked() notification", t);
