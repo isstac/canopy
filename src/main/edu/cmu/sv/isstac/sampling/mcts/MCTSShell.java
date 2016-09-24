@@ -196,7 +196,7 @@ public class MCTSShell implements SamplingShell {
         mcts.addEventObserver(new LiveAnalysisStatistics());
       }
       if(config.getBoolean(USE_TREE_VISUALIZATION, false)) {
-        mcts.addEventObserver(new SymTreeVisualizer());
+    //    mcts.addEventObserver(new SymTreeVisualizer());
       }
     } else {
       for(AnalysisEventObserver obs : config.getInstances(ANALYSIS_PROCESSOR, AnalysisEventObserver.class)) {

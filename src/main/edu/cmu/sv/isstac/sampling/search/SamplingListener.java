@@ -42,7 +42,7 @@ public abstract class SamplingListener extends PropertyListenerAdapter {
 
   // Observers are notified upon termination. We can add more fine grained
   // events if necessary, e.g. emit event after each sample.
-  private final Collection<AnalysisEventObserver> observers;
+  public Collection<AnalysisEventObserver> observers;
 
   public SamplingListener(RewardFunction rewardFunction,
                           PathQuantifier pathQuantifier,
@@ -149,6 +149,8 @@ public abstract class SamplingListener extends PropertyListenerAdapter {
       PathCondition pc = PathCondition.getPC(vm);
       bestResult.setPathCondition(pc);
     }
+
+    pathTerminated(termType, reward, pathVolume, amplifiedReward, search);
 
     // Check if we should terminate the search
     // based on the result obtained
