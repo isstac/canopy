@@ -58,7 +58,17 @@ class MCTSListener extends SamplingListener {
       }
     };
   }
-  
+
+  private interface RewardUpdater {
+    void update(Node n, long reward);
+  }
+  private static final Map<TerminationType, RewardUpdater> rewardUpdaters = new HashedMap<>();
+  static {
+    rewardUpdaters.put(TerminationType.SUCCESS, (n, reward) -> n.getReward().incrementSucc(reward));
+    rewardUpdaters.put(TerminationType.ERROR, (n, reward) -> n.getReward().incrementFail(reward));
+    rewardUpdaters.put(TerminationType.CONSTRAINT_HIT, (n, reward) -> n.getReward().incrementGrey(reward));
+  }
+
   private static final Logger logger = JPFLogger.getLogger(MCTSListener.class.getName());
   
   private final ChoicesStrategy choicesStrategy;
@@ -192,32 +202,6 @@ class MCTSListener extends SamplingListener {
     }
     
     return unexpandedEligibleChoices;
-  }
-
-  // Can we transition to Java 8, please.
-  private interface RewardUpdater {
-    public void update(Node n, long reward);
-  }
-  private static final Map<TerminationType, RewardUpdater> rewardUpdaters = new HashedMap<>();
-  static {
-    rewardUpdaters.put(TerminationType.SUCCESS, new RewardUpdater() {
-      @Override
-      public void update(Node n, long reward) {
-        n.getReward().incrementSucc(reward);
-      }
-    });
-    rewardUpdaters.put(TerminationType.ERROR, new RewardUpdater() {
-      @Override
-      public void update(Node n, long reward) {
-        n.getReward().incrementFail(reward);
-      }
-    });
-    rewardUpdaters.put(TerminationType.CONSTRAINT_HIT, new RewardUpdater() {
-      @Override
-      public void update(Node n, long reward) {
-        n.getReward().incrementGrey(reward);
-      }
-    });
   }
 
   @Override
