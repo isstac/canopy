@@ -2,12 +2,17 @@ package edu.cmu.sv.isstac.sampling.search;
 
 import java.util.logging.Logger;
 
+import edu.cmu.sv.isstac.sampling.Options;
+import edu.cmu.sv.isstac.sampling.exploration.NoPruningStrategy;
+import edu.cmu.sv.isstac.sampling.exploration.Path;
 import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
+import edu.cmu.sv.isstac.sampling.exploration.PruningStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPFListenerException;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.symbc.bytecode.BytecodeUtils;
 import gov.nasa.jpf.util.JPFLogger;
+import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.RestorableVMState;
 import gov.nasa.jpf.vm.VM;
 
@@ -19,14 +24,19 @@ public class SamplingSearch extends Search {
   private final Logger logger = JPFLogger.getLogger(SamplingSearch.class.getName());
 
   private RestorableVMState initState;
-  private PruningChoicesStrategy pruner;
+  private PruningStrategy pruner;
 
   public SamplingSearch(Config config, VM vm) {
     super(config, vm);
-    pruner = PruningChoicesStrategy.getInstance();
-    pruner.reset();
-    throw new RuntimeException("parse config here accroding to Options to see if we should use " +
-        "pruning");
+
+    // Set up pruner---if any
+    if(Options.choicesStrategy instanceof PruningStrategy) {
+      pruner = PruningChoicesStrategy.getInstance();
+      pruner.reset();
+    } else {
+      // Create a dummy
+      pruner = new NoPruningStrategy();
+    }
   }
 
   @Override

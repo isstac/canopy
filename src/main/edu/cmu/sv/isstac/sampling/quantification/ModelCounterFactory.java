@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
+import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.mcts.MCTSShell;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.util.JPFLogger;
@@ -24,31 +25,29 @@ import modelcounting.utils.Configuration;
 public class ModelCounterFactory {
   private static final Logger LOGGER = JPFLogger.getLogger(ModelCounterFactory.class.getName());
 
-  public static final String MODEL_COUNTING_PREFIX = MCTSShell.MCTS_CONF_PRFX + ".modelcounting";
-
-  public static final String PROBLEMSETTINGS_CONF = MODEL_COUNTING_PREFIX + ".problemsettings";
+  public static final String PROBLEMSETTINGS_CONF = Options.MODEL_COUNTING_PREFIX + ".problemsettings";
 
   //Kernels for Sequential and Barvinok
-  public static final String KERNELS_CONF = MODEL_COUNTING_PREFIX + "modelcounter.sequential" +
+  public static final String KERNELS_CONF = Options.MODEL_COUNTING_PREFIX + "modelcounter.sequential" +
       ".kernels";
   public static final int KERNELS_DEF_CONF = 1;
 
   //TODO: should fix these three. They are reused from other projects
-  public static final String TMP_DIR_CONF = MODEL_COUNTING_PREFIX + ".tmpDir";
+  public static final String TMP_DIR_CONF = Options.MODEL_COUNTING_PREFIX + ".tmpDir";
   public static final String TMP_DIR_DEF_CONF = "/tmp";
 
-  public static final String OMEGA_PATH_CONF = MODEL_COUNTING_PREFIX + ".omegaPath";
+  public static final String OMEGA_PATH_CONF = Options.MODEL_COUNTING_PREFIX + ".omegaPath";
   public static final String OMEGA_PATH_DEF_CONF = "symbolic.reliability.omegaPath";
 
-  public static final String LATTE_PATH_CONF = MODEL_COUNTING_PREFIX + ".lattePath";
+  public static final String LATTE_PATH_CONF = Options.MODEL_COUNTING_PREFIX + ".lattePath";
   public static final String LATTE_PATH_DEF_CONF = "symbolic.reliability.lattePath";
 
   //model counter type
-  public static final String MODEL_COUNTER_TYPE = MODEL_COUNTING_PREFIX + ".modelcounter.type";
-  public static final String PARALLEL_MODEL_COUNTER_THREADS = MODEL_COUNTING_PREFIX + ".modelcounter" +
+  public static final String MODEL_COUNTER_TYPE = Options.MODEL_COUNTING_PREFIX + ".modelcounter.type";
+  public static final String PARALLEL_MODEL_COUNTER_THREADS = Options.MODEL_COUNTING_PREFIX + ".modelcounter" +
       ".parallel.threads";
   public static final int PARALLEL_MODEL_COUNTER_THREADS_DEF = 4;
-  public static final String PARALLEL_MODEL_COUNTER_CACHE_FILLER = MODEL_COUNTING_PREFIX + ".modelcounter" +
+  public static final String PARALLEL_MODEL_COUNTER_CACHE_FILLER = Options.MODEL_COUNTING_PREFIX + ".modelcounter" +
       ".parallel.cachefiller";
   public static final int PARALLEL_MODEL_COUNTER_CACHE_FILLER_DEF = 80;
 

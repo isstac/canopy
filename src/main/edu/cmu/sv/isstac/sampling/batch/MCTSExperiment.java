@@ -1,9 +1,13 @@
 package edu.cmu.sv.isstac.sampling.batch;
 
-import edu.cmu.sv.isstac.sampling.SamplingShell;
-import edu.cmu.sv.isstac.sampling.mcts.MCTSShell;
+import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
+import edu.cmu.sv.isstac.sampling.Options;
+import edu.cmu.sv.isstac.sampling.mcts.MCTSStrategy;
+import edu.cmu.sv.isstac.sampling.mcts.SelectionPolicy;
+import edu.cmu.sv.isstac.sampling.mcts.Utils;
+import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
+import edu.cmu.sv.isstac.sampling.quantification.ModelCounterCreationException;
 import gov.nasa.jpf.Config;
-import gov.nasa.jpf.JPFShell;
 
 /**
  * @author Kasper Luckow
@@ -22,22 +26,22 @@ public class MCTSExperiment implements Experiment {
   }
 
   @Override
-  public SamplingShell createShell(Config config, int seed) {
-    config.setProperty(MCTSShell.PRUNING, Boolean.toString(this.pruning));
-    if(!pruning) {
-      config.setProperty(MCTSShell.MAX_SAMPLES_TERMINATION_STRAT, Integer
-          .toString(MAX_SAMPLES_NO_PRUNING));
-    }
-    config.setProperty(MCTSShell.USE_MODELCOUNT_AMPLIFICATION,
+  public AnalysisStrategy createAnalysisStrategy(Config config, int seed) {
+    config.setProperty(Options.USE_MODELCOUNT_AMPLIFICATION,
         Boolean.toString(this.rewardAmplifcation));
-    config.setProperty(MCTSShell.USE_MODELCOUNT_WEIGHTED_SIMULATION,
+    config.setProperty(Utils.USE_MODELCOUNT_WEIGHTED_SIMULATION,
         Boolean.toString(this.weightedSimulation));
 
-    config.setProperty(MCTSShell.SHOW_LIVE_STATISTICS, Boolean.toString(false));
+    config.setProperty(Options.RNG_SEED, Integer.toString(seed));
 
-    config.setProperty(MCTSShell.RNG_SEED, Integer.toString(seed));
+    try {
+      SimulationPolicy simPol = Utils.createSimulationPolicy(config);
+      SelectionPolicy selPol = Utils.createSelectionPolicy(config);
 
-    return new MCTSShell(config);
+      return new MCTSStrategy(selPol, simPol);
+    } catch(ModelCounterCreationException e) {
+      throw new BatchProcessorException(e);
+    }
   }
 
   @Override

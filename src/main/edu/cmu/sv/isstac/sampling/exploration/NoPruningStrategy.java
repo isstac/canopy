@@ -19,6 +19,11 @@ public class NoPruningStrategy implements PruningStrategy {
   }
 
   @Override
+  public void reset() {
+
+  }
+
+  @Override
   public void performPruning(ChoiceGenerator<?> cg) {
     //Do nothing
   }

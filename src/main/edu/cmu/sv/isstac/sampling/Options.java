@@ -13,13 +13,10 @@ import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 public class Options {
   public static final String SAMPLING_CONF_PREFIX = "symbolic.security.sampling";
 
-
   public static final String REWARD_FUNCTION = SAMPLING_CONF_PREFIX + ".rewardfunc";
   public static final String PATH_QUANTIFIER = SAMPLING_CONF_PREFIX + ".pathquantifier";
 
   public static final String TERMINATION_STRATEGY = SAMPLING_CONF_PREFIX + ".termination";
-  public static final String MAX_SAMPLES_TERMINATION_STRAT = TERMINATION_STRATEGY + ".maxsamples";
-
 
   public static final String MODEL_COUNTING_PREFIX = SAMPLING_CONF_PREFIX + ".modelcounting";
   public static final String USE_MODELCOUNT_AMPLIFICATION = MODEL_COUNTING_PREFIX +
@@ -35,6 +32,7 @@ public class Options {
   public static final TerminationStrategy DEFAULT_TERMINATION_STRATEGY
       = new NeverTerminateStrategy();
 
+  public static final String CHOICES_STRATEGY = SAMPLING_CONF_PREFIX + ".choicesstrategy";
   public static final ChoicesStrategy DEFAULT_CHOICES_STRATEGY = PruningChoicesStrategy.getInstance();
 
   public static final boolean DEFAULT_USE_MODELCOUNT_AMPLIFICATION = true;
@@ -47,5 +45,10 @@ public class Options {
   public static final long DEFAULT_RNG_SEED = 15485863;
   public static final String RNG_RANDOM_SEED = SAMPLING_CONF_PREFIX + ".random";
   public static final boolean DEFAULT_RANDOM_SEED = false;
+
+
+  //TODO: Fix this state. It is added because we cannot obtain an instance of SamplingSearch and
+  // thus we have to pass "parameters" to it as statics
+  public static ChoicesStrategy choicesStrategy;
 
 }

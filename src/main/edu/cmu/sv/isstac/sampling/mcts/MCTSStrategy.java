@@ -24,7 +24,7 @@ import gov.nasa.jpf.vm.VM;
  * @author Kasper Luckow
  *
  */
-class MCTSStrategy implements AnalysisStrategy {
+public class MCTSStrategy implements AnalysisStrategy {
 
   private enum MCTS_STATE {
     SELECTION {

@@ -8,5 +8,6 @@ import gov.nasa.jpf.vm.ChoiceGenerator;
 public interface PruningStrategy {
   boolean isPruned(Path p);
   boolean isFullyPruned();
+  void reset();
   void performPruning(ChoiceGenerator<?> cg);
 }

@@ -8,7 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import edu.cmu.sv.isstac.sampling.SamplingShell;
+import edu.cmu.sv.isstac.sampling.AnalysisCreationException;
+import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
+import edu.cmu.sv.isstac.sampling.Options;
+import edu.cmu.sv.isstac.sampling.SamplingAnalysis;
 import edu.cmu.sv.isstac.sampling.analysis.SampleStatistics;
 import gov.nasa.jpf.Config;
 
@@ -26,7 +29,7 @@ public class BatchProcessor {
   //be the same!
   private static final int DEFAULT_SEED = 42;
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws AnalysisCreationException {
     if(args.length < 2 || args.length > 3) {
       printUsage();
       return;
@@ -62,16 +65,13 @@ public class BatchProcessor {
 //    experiments.add(new MCTSExperiment(false, false, false));
 
     //Monte carlo: pruning
-    experiments.add(new MonteCarloExperiment(true));
-
-    //Monte carlo: no pruning
-//    experiments.add(new MonteCarloExperiment(false));
+    experiments.add(new MonteCarloExperiment());
 
     return experiments;
   }
 
   public static void performBatchProcessing(File inputFolder, File resultsFolder, int iterations,
-                                       List<Experiment> experiments, long initSeed) {
+                                       List<Experiment> experiments, long initSeed) throws AnalysisCreationException {
     Random rng = new Random(initSeed);
 
     for(File jpfFile : inputFolder.listFiles()) {
@@ -90,12 +90,18 @@ public class BatchProcessor {
           int seed = rng.nextInt();
 
           Config conf = new Config(new String[] { jpfFile.getAbsolutePath() });
-          SamplingShell shell = experiment.createShell(conf, seed);
+          conf.setProperty(Options.SHOW_LIVE_STATISTICS, Boolean.toString(false));
+          conf.setProperty(Options.SHOW_STATISTICS, Boolean.toString(false));
+
+          SamplingAnalysis.Builder analysisBuilder = new SamplingAnalysis.Builder();
+          AnalysisStrategy analysisStrategy = experiment.createAnalysisStrategy(conf, seed);
 
           //Add the statistics reporter
           SampleStatistics statistics = new SampleStatistics();
-          shell.addEventObserver(statistics);
-          shell.start(new String[0]);
+          analysisBuilder.addEventObserver(statistics);
+
+          SamplingAnalysis analysis = analysisBuilder.build(conf, analysisStrategy);
+          analysis.run();
 
           writeStatisticsToFile(statistics, iteration, seed, targetName, experiment.getName(),
               outputFile);

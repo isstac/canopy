@@ -82,7 +82,19 @@ public class SamplingAnalysis {
       }
 
       if(choicesStrategy == null) {
+        if(jpfConfig.hasValue(Options.CHOICES_STRATEGY)) {
+          choicesStrategy = jpfConfig.getInstance(Options.CHOICES_STRATEGY, ChoicesStrategy.class);
+        } else {
+          //This is pretty ugly, but right now I'm not sure how we can get around it
+          //because SamplingSearch cannot be instantiated :/
+          choicesStrategy = Options.DEFAULT_CHOICES_STRATEGY;
+          Options.choicesStrategy = choicesStrategy;
+        }
+      } else {
         choicesStrategy = Options.DEFAULT_CHOICES_STRATEGY;
+        //This is pretty ugly, but right now I'm not sure how we can get around it
+        //because SamplingSearch cannot be instantiated :/
+        Options.choicesStrategy = choicesStrategy;
       }
 
       if(pathQuantifier == null) {

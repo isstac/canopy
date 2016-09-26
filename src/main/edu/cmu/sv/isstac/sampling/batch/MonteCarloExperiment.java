@@ -1,8 +1,11 @@
 package edu.cmu.sv.isstac.sampling.batch;
 
-import edu.cmu.sv.isstac.sampling.SamplingShell;
-import edu.cmu.sv.isstac.sampling.mcts.MCTSShell;
+import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
+import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell;
+import edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloStrategy;
+import edu.cmu.sv.isstac.sampling.montecarlo.Utils;
+import edu.cmu.sv.isstac.sampling.quantification.ModelCounterCreationException;
 import gov.nasa.jpf.Config;
 
 /**
@@ -10,29 +13,19 @@ import gov.nasa.jpf.Config;
  */
 public class MonteCarloExperiment implements Experiment {
 
-  private static final int MAX_SAMPLES_NO_PRUNING = 2000;
-
-  private final boolean pruning;
-
-  public MonteCarloExperiment(boolean pruning) {
-    this.pruning = pruning;
-  }
-
   @Override
-  public SamplingShell createShell(Config config, int seed) {
-    config.setProperty(MonteCarloShell.PRUNING, Boolean.toString(this.pruning));
-    if(!pruning) {
-      config.setProperty(MonteCarloShell.MAX_SAMPLES_TERMINATION_STRAT, Integer
-          .toString(MAX_SAMPLES_NO_PRUNING));
+  public AnalysisStrategy createAnalysisStrategy(Config config, int seed) throws BatchProcessorException {
+    config.setProperty(Options.RNG_SEED, Integer.toString(seed));
+
+    try {
+      return new MonteCarloStrategy(Utils.createSimulationPolicy(config));
+    } catch (ModelCounterCreationException e) {
+      throw new BatchProcessorException(e);
     }
-
-    config.setProperty(MonteCarloShell.RNG_SEED, Integer.toString(seed));
-
-    return new MonteCarloShell(config);
   }
 
   @Override
   public String getName() {
-    return "MonteCarlo[pruning=" + this.pruning + "]";
+    return "MonteCarlo";
   }
 }
