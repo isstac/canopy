@@ -6,6 +6,7 @@ import static edu.cmu.sv.isstac.sampling.structure.CGClassification.isPCNode;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
+import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
@@ -22,22 +23,17 @@ import gov.nasa.jpf.vm.VM;;
  * @author Kasper Luckow
  *
  */
-public class MonteCarloListener extends SamplingListener {
- private static final Logger logger = JPFLogger.getLogger(MonteCarloListener.class.getName());
+public class MonteCarloStrategy implements AnalysisStrategy {
+ private static final Logger logger = JPFLogger.getLogger(MonteCarloStrategy.class.getName());
 
   private final SimulationPolicy simulationPolicy;
   
-  public MonteCarloListener(RewardFunction rewardFunction,
-                            PathQuantifier pathQuantifier,
-                            TerminationStrategy terminationStrategy,
-                            SimulationPolicy simulationPolicy,
-                            ChoicesStrategy choicesStrategy) {
-    super(rewardFunction, pathQuantifier, terminationStrategy, choicesStrategy);
+  public MonteCarloStrategy(SimulationPolicy simulationPolicy) {
     this.simulationPolicy = simulationPolicy;
   }
 
   @Override
-  public void newState(VM vm, ChoiceGenerator<?> cg, ArrayList<Integer> eligibleChoices) {
+  public void makeStateChoice(VM vm, ChoiceGenerator<?> cg, ArrayList<Integer> eligibleChoices) {
     if(isPCNode(cg) || isNondeterministicChoice(cg)) {
 
       // If empty, we entered an invalid state
@@ -56,6 +52,11 @@ public class MonteCarloListener extends SamplingListener {
       logger.severe(msg);
       throw new MonteCarloAnalysisException(msg);
     }
+  }
+
+  @Override
+  public void newSampleStarted(Search samplingSearch) {
+
   }
 
   @Override

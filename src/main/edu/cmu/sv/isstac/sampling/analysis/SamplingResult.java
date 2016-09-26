@@ -13,7 +13,7 @@ public class SamplingResult {
 
   // It would be much better with an immutable
   // result state here, but it clutters a bit
-  // how results are updated in MCTSListener
+  // how results are updated in MCTSStrategy
   public static class ResultContainer {
     private long reward = Long.MIN_VALUE;
     private long sampleNumber = Long.MIN_VALUE;

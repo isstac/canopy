@@ -25,7 +25,7 @@ import gov.nasa.jpf.JPFShell;
  * We can maybe generalize this shell later if we experiment with more
  * techniques for sampling
  */
-public class MonteCarloShell implements SamplingShell {
+public class MonteCarloShell implements JPFShell {
   public static final String MC_CONF_PRFX = "symbolic.security.sampling.montecarlo";
   
   //This setting can be used to disable sampling to exhaustively explore the tree (mostly for debugging...)
@@ -103,38 +103,12 @@ public class MonteCarloShell implements SamplingShell {
         REWARD_FUNCTION, 
         RewardFunction.class, 
         new DepthRewardFunction());
-    
-    mcListener = new MonteCarloListener(simPol,
-        rewardFunc, 
-        choicesStrat, 
-        terminationStrategy);
-    
-    // We add the analysis processor as an observer of the monte carlo search events.
-    // It will notify the shell when it is done according to
-    // the termination strategy
-    if(!config.hasValue(ANALYSIS_PROCESSOR)) {
-      mcListener.addEventObserver(AbstractAnalysisProcessor.DEFAULT);
-    } else {
-      for(AnalysisEventObserver obs : config.getInstances(ANALYSIS_PROCESSOR, AnalysisEventObserver.class)) {
-        mcListener.addEventObserver(obs);
-      }
-    }
 
-    jpf.addListener(mcListener);
+
   }
 
   //TODO: as in mctsshell, get rid of this
-  private MonteCarloListener mcListener;
-
-  @Override
-  public void addEventObserver(AnalysisEventObserver eventObserver) {
-    mcListener.addEventObserver(eventObserver);
-  }
-
-  @Override
-  public void setTerminationStrategy(TerminationStrategy terminationStrategy) {
-
-  }
+  private MonteCarloStrategy mcListener;
 
   @Override
   public void start(String[] args) {

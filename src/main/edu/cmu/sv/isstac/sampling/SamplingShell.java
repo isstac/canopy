@@ -8,6 +8,8 @@ import gov.nasa.jpf.JPFShell;
  * @author Kasper Luckow
  * TODO: this is super ugly. Get rid of this interface
  */
+
+@Deprecated
 public interface SamplingShell extends JPFShell {
   public void addEventObserver(AnalysisEventObserver eventObserver);
 

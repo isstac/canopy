@@ -137,7 +137,7 @@ public class RLShell implements JPFShell {
         DEFAULT_USE_MODELCOUNT_AMPLIFICATION);
     if(useMCAmplification) {
       try {
-        SPFModelCounter runtimeAnalyzer = ModelCounterFactory.create(this.jpfConfig);
+        SPFModelCounter runtimeAnalyzer = ModelCounterFactory.getInstance(this.jpfConfig);
 
         //Decorate reward function with model count amplification
         rewardFunc = new ModelCountingAmplifierDecorator(rewardFunc, runtimeAnalyzer);
@@ -171,7 +171,6 @@ public class RLShell implements JPFShell {
     // It will notify the shell when it is done according to
     // the termination strategy
     if(!config.hasValue(ANALYSIS_PROCESSOR)) {
-      rl.addEventObserver(AbstractAnalysisProcessor.DEFAULT);
       rl.addEventObserver(new LiveAnalysisStatistics());
     } else {
       for(AnalysisEventObserver obs : config.getInstances(ANALYSIS_PROCESSOR, AnalysisEventObserver.class)) {

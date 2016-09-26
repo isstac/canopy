@@ -1,5 +1,6 @@
-package edu.cmu.sv.isstac.sampling.batch;
+package edu.cmu.sv.isstac.sampling.analysis;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
@@ -31,6 +32,8 @@ public class SampleStatistics implements AnalysisEventObserver {
   private SummaryStatistics sumStats = new SummaryStatistics();
   private int numberOfBestRewards = 0;
 
+  private SamplingResult finalResult;
+
   @Override
   public void sampleDone(Search searchState, long samples, long propagatedReward, long pathVolume, SamplingResult.ResultContainer currentBestResult) {
     sumStats.addValue(propagatedReward);
@@ -54,6 +57,8 @@ public class SampleStatistics implements AnalysisEventObserver {
       long msToS = TIMEUNIT.toMillis(1);
       avgThroughput = (totalSampleNum / (double)totalAnalysisTimeMS) * msToS;
     }
+
+    this.finalResult = result;
   }
 
   @Override
@@ -107,5 +112,23 @@ public class SampleStatistics implements AnalysisEventObserver {
 
   public TimeUnit getTimeUnit() {
     return TIMEUNIT;
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("min. reward", getMinReward())
+        .add("max. reward", getBestReward())
+        .add("max. reward sample #", getBestRewardSampleNum())
+        .add("max. reward time", getBestRewardTime())
+        .add("# same max. rewards", getNumberOfBestRewards())
+        .add("total sample number", getTotalSampleNum())
+        .add("total analysis time", getTotalAnalysisTime())
+        .add("avg. throughput", getAvgThroughput())
+        .add("reward mean", getRewardMean())
+        .add("reward variance", getRewardVariance())
+        .add("reward stddev", getRewardStandardDeviation())
+        .add("final result", this.finalResult)
+        .toString();
   }
 }

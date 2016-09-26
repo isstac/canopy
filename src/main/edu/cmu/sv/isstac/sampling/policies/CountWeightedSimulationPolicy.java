@@ -38,20 +38,27 @@ public class CountWeightedSimulationPolicy implements SimulationPolicy {
   private final LoadingCache<PathCondition, BigRational> countCache;
   private final Random rng;
 
-  //TODO: consider getting rid of Random instance
-  public CountWeightedSimulationPolicy(SPFModelCounter modelCounter, Random rng) {
-    this.rng = rng;
+  public CountWeightedSimulationPolicy(SPFModelCounter modelCounter, Random random) {
+    this.rng = random;
 
     this.countCache = CacheBuilder.newBuilder()
         .build(new CacheLoader<PathCondition, BigRational>() {
-      @Override
-      public BigRational load(PathCondition pc) throws AnalysisException {
-        if(pc.header == null) {
-          return BigRational.ONE;
-        }
-        return modelCounter.analyzeSpfPC(pc);
-      }
-    });
+          @Override
+          public BigRational load(PathCondition pc) throws AnalysisException {
+            if(pc.header == null) {
+              return BigRational.ONE;
+            }
+            return modelCounter.analyzeSpfPC(pc);
+          }
+        });
+  }
+
+  public CountWeightedSimulationPolicy(SPFModelCounter modelCounter) {
+    this(modelCounter, new Random());
+  }
+
+  public CountWeightedSimulationPolicy(SPFModelCounter modelCounter, long seed) {
+    this(modelCounter, new Random(seed));
   }
 
   @Override

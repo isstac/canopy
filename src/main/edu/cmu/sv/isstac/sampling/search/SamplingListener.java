@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.logging.Logger;
 
+import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
 import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
 import edu.cmu.sv.isstac.sampling.analysis.SamplingResult;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
@@ -26,7 +27,7 @@ import gov.nasa.jpf.vm.VM;
 /**
  * @author Kasper Luckow
  */
-public abstract class SamplingListener extends PropertyListenerAdapter {
+public final class SamplingListener extends PropertyListenerAdapter {
 
   private static final Logger logger = JPFLogger.getLogger(SamplingListener.class.getName());
 
@@ -44,17 +45,22 @@ public abstract class SamplingListener extends PropertyListenerAdapter {
 
   // Observers are notified upon termination. We can add more fine grained
   // events if necessary, e.g. emit event after each sample.
-  public Collection<AnalysisEventObserver> observers;
+  private Collection<AnalysisEventObserver> observers;
 
-  public SamplingListener(RewardFunction rewardFunction, PathQuantifier pathQuantifier,
+
+  // The analysis strategy to use, e.g., MCTS
+  private final AnalysisStrategy analysisStrategy;
+
+  public SamplingListener(AnalysisStrategy analysisStrategy, RewardFunction rewardFunction, PathQuantifier pathQuantifier,
                           TerminationStrategy terminationStrategy, ChoicesStrategy choicesStrategy) {
-    this(rewardFunction, pathQuantifier, terminationStrategy, choicesStrategy, new HashSet<>());
+    this(analysisStrategy, rewardFunction, pathQuantifier, terminationStrategy, choicesStrategy, new HashSet<>());
   }
 
-  public SamplingListener(RewardFunction rewardFunction,
+  public SamplingListener(AnalysisStrategy analysisStrategy, RewardFunction rewardFunction,
                           PathQuantifier pathQuantifier,
                           TerminationStrategy terminationStrategy,
                           ChoicesStrategy choicesStrategy, Collection<AnalysisEventObserver> observers) {
+    this.analysisStrategy = analysisStrategy;
     this.choicesStrategy = choicesStrategy;
     // Check input
     Preconditions.checkNotNull(rewardFunction);
@@ -74,10 +80,10 @@ public abstract class SamplingListener extends PropertyListenerAdapter {
     // Get the eligible choices for this CG
     // based on the exploration strategy (e.g., pruning-based)
     ArrayList<Integer> eligibleChoices = choicesStrategy.getEligibleChoices(cg);
-    newState(vm, cg, eligibleChoices);
-  }
 
-  public abstract void newState(VM vm, ChoiceGenerator<?> cg, ArrayList<Integer> eligibleChoices);
+    // We use the analysis strategy to make the next choice
+    this.analysisStrategy.makeStateChoice(vm, cg, eligibleChoices);
+  }
 
   @Override
   public void searchStarted(Search search) {
@@ -92,9 +98,6 @@ public abstract class SamplingListener extends PropertyListenerAdapter {
       obs.analysisDone(result);
     }
   }
-
-  public abstract void pathTerminated(TerminationType termType, long reward, long pathVolume,
-                                      long amplifiedReward, Search searchState);
 
   private void pathTerminated(TerminationType termType, Search search) {
     VM vm = search.getVM();
@@ -156,7 +159,7 @@ public abstract class SamplingListener extends PropertyListenerAdapter {
       bestResult.setPathCondition(pc);
     }
 
-    pathTerminated(termType, reward, pathVolume, amplifiedReward, search);
+    this.analysisStrategy.pathTerminated(termType, reward, pathVolume, amplifiedReward, search);
 
     // Check if we should terminate the search
     // based on the result obtained
@@ -167,7 +170,7 @@ public abstract class SamplingListener extends PropertyListenerAdapter {
   }
 
   public void newSampleStarted(Search samplingSearch) {
-
+    this.analysisStrategy.newSampleStarted(samplingSearch);
   }
 
   @Override

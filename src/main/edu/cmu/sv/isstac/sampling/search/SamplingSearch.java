@@ -25,6 +25,8 @@ public class SamplingSearch extends Search {
     super(config, vm);
     pruner = PruningChoicesStrategy.getInstance();
     pruner.reset();
+    throw new RuntimeException("parse config here accroding to Options to see if we should use " +
+        "pruning");
   }
 
   @Override

@@ -7,10 +7,9 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 import edu.cmu.sv.isstac.sampling.SamplingShell;
-import edu.cmu.sv.isstac.sampling.termination.TimeBoundedTerminationStrategy;
+import edu.cmu.sv.isstac.sampling.analysis.SampleStatistics;
 import gov.nasa.jpf.Config;
 
 /**

@@ -9,17 +9,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
-import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
-import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
+import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
-import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
-import edu.cmu.sv.isstac.sampling.search.SamplingListener;
 import edu.cmu.sv.isstac.sampling.search.TerminationType;
 import edu.cmu.sv.isstac.sampling.structure.DefaultNodeFactory;
 import edu.cmu.sv.isstac.sampling.structure.Node;
 import edu.cmu.sv.isstac.sampling.structure.NodeFactory;
-import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.ChoiceGenerator;
@@ -29,11 +24,7 @@ import gov.nasa.jpf.vm.VM;
  * @author Kasper Luckow
  *
  */
-class MCTSListener extends SamplingListener {
-
-  public void addEventObserver(AnalysisEventObserver aDefault) {
-    observers.add(aDefault);
-  }
+class MCTSStrategy implements AnalysisStrategy {
 
   private enum MCTS_STATE {
     SELECTION {
@@ -61,7 +52,7 @@ class MCTSListener extends SamplingListener {
     rewardUpdaters.put(TerminationType.CONSTRAINT_HIT, (n, reward) -> n.getReward().incrementGrey(reward));
   }
 
-  private static final Logger logger = JPFLogger.getLogger(MCTSListener.class.getName());
+  private static final Logger logger = JPFLogger.getLogger(MCTSStrategy.class.getName());
   
   private MCTS_STATE mctsState;
   private Node last = null;
@@ -73,31 +64,9 @@ class MCTSListener extends SamplingListener {
   
   private boolean expandedFlag = false;
   private int expandedChoice = -1;
-  
-  public MCTSListener(SelectionPolicy selectionPolicy,
-                      SimulationPolicy simulationPolicy,
-                      RewardFunction rewardFunction,
-                      PathQuantifier pathQuantifier,
-                      ChoicesStrategy choicesStrategy,
-                      TerminationStrategy terminationStrategy) {
-    super(rewardFunction, pathQuantifier, terminationStrategy, choicesStrategy);
-    this.selectionPolicy = selectionPolicy;
-    this.simulationPolicy = simulationPolicy;
 
-    this.mctsState = MCTS_STATE.SELECTION;
-
-    //For now we just stick with the default factory
-    this.nodeFactory = new DefaultNodeFactory();
-  }
-
-  public MCTSListener(RewardFunction rewardFunction,
-                      PathQuantifier pathQuantifier,
-                      TerminationStrategy terminationStrategy,
-                      ChoicesStrategy choicesStrategy,
-                      Collection<AnalysisEventObserver> observers,
-                      SelectionPolicy selectionPolicy,
+  public MCTSStrategy(SelectionPolicy selectionPolicy,
                       SimulationPolicy simulationPolicy) {
-    super(rewardFunction, pathQuantifier, terminationStrategy, choicesStrategy, observers);
     this.selectionPolicy = selectionPolicy;
     this.simulationPolicy = simulationPolicy;
 
@@ -108,7 +77,7 @@ class MCTSListener extends SamplingListener {
   }
 
   @Override
-  public void newState(VM vm, ChoiceGenerator<?> cg, ArrayList<Integer> eligibleChoices) {
+  public void makeStateChoice(VM vm, ChoiceGenerator<?> cg, ArrayList<Integer> eligibleChoices) {
     if(this.nodeFactory.isSupportedChoiceGenerator(cg)) {
       
       // If we expanded a child in the previous CG advancement,
@@ -175,7 +144,7 @@ class MCTSListener extends SamplingListener {
       throw new MCTSAnalysisException(msg);
     }
   }
-  
+
   private ArrayList<Integer> getUnexpandedEligibleChoices(Node n, ArrayList<Integer> eligibleChoices) {
     ArrayList<Integer> unexpandedEligibleChoices = new ArrayList<>();
     Collection<Node> expandedChildren = n.getChildren();
@@ -234,5 +203,10 @@ class MCTSListener extends SamplingListener {
         return true;
     }
     return false;
+  }
+
+  @Override
+  public void newSampleStarted(Search samplingSearch) {
+    // We don't need to track anything here
   }
 }

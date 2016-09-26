@@ -56,7 +56,7 @@ public class ModelCounterFactory {
 
   //TODO: Add option for cleaning up the gigantic load of temp files
 
-  public static SPFModelCounter create(Config config) throws ModelCounterCreationException {
+  public static SPFModelCounter getInstance(Config config) throws ModelCounterCreationException {
     if(config.hasValue(PROBLEMSETTINGS_CONF)) {
       String problemSettingsPath = config.getString(PROBLEMSETTINGS_CONF);
       ProblemSetting problemSettings = null;
