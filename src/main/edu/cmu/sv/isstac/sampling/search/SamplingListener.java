@@ -2,17 +2,17 @@ package edu.cmu.sv.isstac.sampling.search;
 
 import com.google.common.base.Preconditions;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
-import edu.cmu.sv.isstac.sampling.analysis.MCTSEventObserver;
 import edu.cmu.sv.isstac.sampling.analysis.SamplingResult;
+import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
 import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
-import edu.cmu.sv.isstac.sampling.structure.Node;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.search.Search;
@@ -35,6 +35,8 @@ public abstract class SamplingListener extends PropertyListenerAdapter {
 
   private final TerminationStrategy terminationStrategy;
 
+  private final ChoicesStrategy choicesStrategy;
+
   // Holds the largest rewards found (note: we assume a deterministic system!)
   // for succ, fail and grey. Maybe we only want to keep one of them?
   // In addition it holds various statistics about the exploration
@@ -44,16 +46,16 @@ public abstract class SamplingListener extends PropertyListenerAdapter {
   // events if necessary, e.g. emit event after each sample.
   public Collection<AnalysisEventObserver> observers;
 
-  public SamplingListener(RewardFunction rewardFunction,
-                          PathQuantifier pathQuantifier,
-                          TerminationStrategy terminationStrategy) {
-    this(rewardFunction, pathQuantifier, terminationStrategy, new HashSet<>());
+  public SamplingListener(RewardFunction rewardFunction, PathQuantifier pathQuantifier,
+                          TerminationStrategy terminationStrategy, ChoicesStrategy choicesStrategy) {
+    this(rewardFunction, pathQuantifier, terminationStrategy, choicesStrategy, new HashSet<>());
   }
 
   public SamplingListener(RewardFunction rewardFunction,
                           PathQuantifier pathQuantifier,
                           TerminationStrategy terminationStrategy,
-                          Collection<AnalysisEventObserver> observers) {
+                          ChoicesStrategy choicesStrategy, Collection<AnalysisEventObserver> observers) {
+    this.choicesStrategy = choicesStrategy;
     // Check input
     Preconditions.checkNotNull(rewardFunction);
     Preconditions.checkNotNull(pathQuantifier);
@@ -68,10 +70,14 @@ public abstract class SamplingListener extends PropertyListenerAdapter {
 
   @Override
   public final void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> cg) {
-    newState(vm, cg);
+
+    // Get the eligible choices for this CG
+    // based on the exploration strategy (e.g., pruning-based)
+    ArrayList<Integer> eligibleChoices = choicesStrategy.getEligibleChoices(cg);
+    newState(vm, cg, eligibleChoices);
   }
 
-  public abstract void newState(VM vm, ChoiceGenerator<?> cg);
+  public abstract void newState(VM vm, ChoiceGenerator<?> cg, ArrayList<Integer> eligibleChoices);
 
   @Override
   public void searchStarted(Search search) {

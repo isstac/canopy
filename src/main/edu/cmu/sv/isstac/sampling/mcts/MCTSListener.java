@@ -9,13 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import edu.cmu.sv.isstac.sampling.analysis.AbstractAnalysisProcessor;
 import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
-import edu.cmu.sv.isstac.sampling.analysis.MCTSEventObserver;
-import edu.cmu.sv.isstac.sampling.analysis.SamplingResult;
-import edu.cmu.sv.isstac.sampling.analysis.SamplingResult.ResultContainer;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
-import edu.cmu.sv.isstac.sampling.exploration.Path;
 import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
@@ -25,13 +20,9 @@ import edu.cmu.sv.isstac.sampling.structure.DefaultNodeFactory;
 import edu.cmu.sv.isstac.sampling.structure.Node;
 import edu.cmu.sv.isstac.sampling.structure.NodeFactory;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
-import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.search.Search;
-import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.ChoiceGenerator;
-import gov.nasa.jpf.vm.ElementInfo;
-import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 
 /**
@@ -59,6 +50,7 @@ class MCTSListener extends SamplingListener {
     };
   }
 
+  @FunctionalInterface
   private interface RewardUpdater {
     void update(Node n, long reward);
   }
@@ -70,8 +62,6 @@ class MCTSListener extends SamplingListener {
   }
 
   private static final Logger logger = JPFLogger.getLogger(MCTSListener.class.getName());
-  
-  private final ChoicesStrategy choicesStrategy;
   
   private MCTS_STATE mctsState;
   private Node last = null;
@@ -90,20 +80,35 @@ class MCTSListener extends SamplingListener {
                       PathQuantifier pathQuantifier,
                       ChoicesStrategy choicesStrategy,
                       TerminationStrategy terminationStrategy) {
-    super(rewardFunction, pathQuantifier, terminationStrategy);
-    this.choicesStrategy = choicesStrategy;
+    super(rewardFunction, pathQuantifier, terminationStrategy, choicesStrategy);
     this.selectionPolicy = selectionPolicy;
     this.simulationPolicy = simulationPolicy;
-    
+
     this.mctsState = MCTS_STATE.SELECTION;
-    
+
     //For now we just stick with the default factory
     this.nodeFactory = new DefaultNodeFactory();
   }
 
+  public MCTSListener(RewardFunction rewardFunction,
+                      PathQuantifier pathQuantifier,
+                      TerminationStrategy terminationStrategy,
+                      ChoicesStrategy choicesStrategy,
+                      Collection<AnalysisEventObserver> observers,
+                      SelectionPolicy selectionPolicy,
+                      SimulationPolicy simulationPolicy) {
+    super(rewardFunction, pathQuantifier, terminationStrategy, choicesStrategy, observers);
+    this.selectionPolicy = selectionPolicy;
+    this.simulationPolicy = simulationPolicy;
+
+    this.mctsState = MCTS_STATE.SELECTION;
+
+    //For now we just stick with the default factory
+    this.nodeFactory = new DefaultNodeFactory();
+  }
 
   @Override
-  public void newState(VM vm, ChoiceGenerator<?> cg) {
+  public void newState(VM vm, ChoiceGenerator<?> cg, ArrayList<Integer> eligibleChoices) {
     if(this.nodeFactory.isSupportedChoiceGenerator(cg)) {
       
       // If we expanded a child in the previous CG advancement,
@@ -115,10 +120,6 @@ class MCTSListener extends SamplingListener {
         last = this.nodeFactory.create(last, cg, expandedChoice);
         expandedFlag = false;
       }
-
-      // Get the eligible choices for this CG
-      // based on the exploration strategy (e.g., pruning-based)
-      ArrayList<Integer> eligibleChoices = choicesStrategy.getEligibleChoices(cg);
       
       // If empty, we entered an invalid state
       if(eligibleChoices.isEmpty()) {
