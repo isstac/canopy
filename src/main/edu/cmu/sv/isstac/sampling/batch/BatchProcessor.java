@@ -145,7 +145,7 @@ public class BatchProcessor {
             "bestRewardSampleNum," +
             "bestRewardTime[" + statistics.getTimeUnit().toString() + "]," +
             "bestRewardCount," +
-            "totalSampleNum," +
+            "totalSampleNum/paths," +
             "totalAnalysisTime[" + statistics.getTimeUnit().toString() + "]," +
             "avgThroughput[#samples/" + statistics.getTimeUnit().toString() + "]," +
             "seed," +
