@@ -14,7 +14,7 @@ import modelcounting.analysis.exceptions.AnalysisException;
 import modelcounting.utils.BigRational;
 
 /**
- * Created by luckow on 8/31/16.
+ * @author Kasper Luckow
  * This class is not used atm
  */
 @Deprecated

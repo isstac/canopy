@@ -1,6 +1,7 @@
 package edu.cmu.sv.isstac.sampling.montecarlo;
 
 import edu.cmu.sv.isstac.sampling.AnalysisCreationException;
+import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.SamplingAnalysis;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterCreationException;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
@@ -23,8 +24,11 @@ public class MonteCarloShell implements JPFShell {
 
     SamplingAnalysis.Builder samplingAnalysisBuilder = new SamplingAnalysis.Builder();
 
-    this.samplingAnalysis = samplingAnalysisBuilder.build(config, new MonteCarloStrategy
-        (simulationPolicy));
+    // We never use model counting with monte carlo. It does not give anything
+    config.setProperty(Options.USE_MODELCOUNT_AMPLIFICATION, Boolean.toString(false));
+
+    this.samplingAnalysis = samplingAnalysisBuilder.build(config,
+        new MonteCarloStrategy(simulationPolicy));
   }
 
   @Override
