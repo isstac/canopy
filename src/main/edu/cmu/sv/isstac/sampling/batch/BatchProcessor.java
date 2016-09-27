@@ -1,5 +1,7 @@
 package edu.cmu.sv.isstac.sampling.batch;
 
+import com.google.common.base.Stopwatch;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -7,6 +9,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AnalysisCreationException;
 import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
@@ -14,11 +18,13 @@ import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.SamplingAnalysis;
 import edu.cmu.sv.isstac.sampling.analysis.SampleStatistics;
 import gov.nasa.jpf.Config;
+import gov.nasa.jpf.util.JPFLogger;
 
 /**
  * @author Kasper Luckow
  */
 public class BatchProcessor {
+  public static final Logger logger = JPFLogger.getLogger(BatchProcessor.class.getName());
 
   private static final int DEFAULT_ITERATIONS = 2;
 
@@ -54,15 +60,11 @@ public class BatchProcessor {
   private static List<Experiment> createDefaultExperiments() {
     List<Experiment> experiments = new ArrayList<>();
     //MCTS: pruning, reward amplification, weighted simulation
-  //  experiments.add(new MCTSExperiment(true, true, true));
+    experiments.add(new MCTSExperiment(true, true, true));
     //MCTS: pruning, reward amplification
- //   experiments.add(new MCTSExperiment(true, true, false));
+    experiments.add(new MCTSExperiment(true, true, false));
     //MCTS: pruning
     experiments.add(new MCTSExperiment(true, false, false));
-    //MCTS: no pruning
-//    experiments.add(new MCTSExperiment(false, false, false));
-    //MCTS: no pruning, reward amplification
-//    experiments.add(new MCTSExperiment(false, false, false));
 
     //Monte carlo: pruning
     experiments.add(new MonteCarloExperiment());
@@ -74,11 +76,15 @@ public class BatchProcessor {
                                        List<Experiment> experiments, long initSeed) throws AnalysisCreationException {
     Random rng = new Random(initSeed);
 
+    Stopwatch stopwatch = Stopwatch.createStarted();
+
     for(File jpfFile : inputFolder.listFiles()) {
       if(!jpfFile.getName().endsWith(".jpf")) {
-        System.out.println("skipping file " + jpfFile.getName());
+        logger.info("skipping file " + jpfFile.getName());
         continue;
       }
+
+      logger.info("Processing jpf file: " + jpfFile.getName());
 
       //Seriously messed up ctors for Config class.
       Config conftmp = new Config(new String[] { jpfFile.getAbsolutePath() });
@@ -87,6 +93,9 @@ public class BatchProcessor {
 
       for (Experiment experiment : experiments) {
         for (int iteration = 1; iteration <= iterations; iteration++) {
+          logger.info("Processing jpf file " + jpfFile.getName() + " Experiment " + experiment
+              .getName() + " iteration " + iteration);
+
           int seed = rng.nextInt();
 
           Config conf = new Config(new String[] { jpfFile.getAbsolutePath() });
@@ -108,6 +117,10 @@ public class BatchProcessor {
         }
       }
     }
+
+    stopwatch.stop();
+
+    logger.info("Batch processing done. Took " + stopwatch.elapsed(TimeUnit.SECONDS) + "s");
   }
 
   private static void writeStatisticsToFile(SampleStatistics statistics, int iteration, long seed,
