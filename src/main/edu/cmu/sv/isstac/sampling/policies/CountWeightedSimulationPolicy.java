@@ -94,9 +94,18 @@ public class CountWeightedSimulationPolicy implements SimulationPolicy {
   }
 
   private int makeWeightedChoice(PCChoiceGenerator pcCg, VM vm) {
-    PathCondition pcBeforeChoice = pcCg.getCurrentPC();
-    if (pcBeforeChoice == null) {
+    PathCondition pcBeforeChoice = null;
+
+    // We need to obtain the PC from the **PREVIOUS** PC because at this point, the input
+    // choicegenerator (pcCg), has not been updated yet.
+    PCChoiceGenerator prevPCCg = pcCg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
+    if(prevPCCg == null) {
       pcBeforeChoice = new PathCondition();
+    } else {
+      pcBeforeChoice = prevPCCg.getCurrentPC();
+      if(pcBeforeChoice == null) {
+        pcBeforeChoice = new PathCondition();
+      }
     }
 
     //TODO: I'm not sure if this pc will *always* correspond to
