@@ -24,7 +24,7 @@ import gov.nasa.jpf.vm.VM;;
  *
  */
 public class MonteCarloStrategy implements AnalysisStrategy {
- private static final Logger logger = JPFLogger.getLogger(MonteCarloStrategy.class.getName());
+  private static final Logger logger = JPFLogger.getLogger(MonteCarloStrategy.class.getName());
 
   private final SimulationPolicy simulationPolicy;
   
