@@ -17,6 +17,9 @@ public class MonteCarloExperiment implements Experiment {
   public AnalysisStrategy createAnalysisStrategy(Config config, int seed) throws BatchProcessorException {
     config.setProperty(Options.RNG_SEED, Integer.toString(seed));
 
+    //Never use model counting with monte carlo
+    config.setProperty(Options.USE_MODELCOUNT_AMPLIFICATION, Boolean.toString(false));
+
     try {
       return new MonteCarloStrategy(Utils.createSimulationPolicy(config));
     } catch (ModelCounterCreationException e) {
