@@ -74,7 +74,7 @@ public class LiveTrackerChart extends ApplicationFrame {
   private long throughputSamplesNum = 0;
 
   public LiveTrackerChart() {
-    this(1);
+    this(10);
   }
 
   public LiveTrackerChart(int maxBufferSize) {
