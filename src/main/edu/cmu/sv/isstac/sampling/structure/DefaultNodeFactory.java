@@ -10,7 +10,7 @@ import static edu.cmu.sv.isstac.sampling.structure.CGClassification.*;
  * @author Kasper Luckow
  *
  */
-public class DefaultNodeFactory implements NodeFactory {
+public class DefaultNodeFactory implements NodeFactory<Node> {
   private static final Logger logger = JPFLogger.getLogger(DefaultNodeFactory.class.getName());
   
   @Override

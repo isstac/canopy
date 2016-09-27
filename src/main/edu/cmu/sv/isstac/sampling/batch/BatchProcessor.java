@@ -26,7 +26,7 @@ import gov.nasa.jpf.util.JPFLogger;
 public class BatchProcessor {
   public static final Logger logger = JPFLogger.getLogger(BatchProcessor.class.getName());
 
-  private static final int DEFAULT_ITERATIONS = 2;
+  private static final int DEFAULT_ITERATIONS = 50;
 
   //This one is important: it determines the initial
   //seed for the rng that will generate seeds for the experiments

@@ -1,7 +1,6 @@
 package edu.cmu.sv.isstac.sampling.mcts;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import edu.cmu.sv.isstac.sampling.structure.Node;
