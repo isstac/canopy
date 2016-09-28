@@ -19,8 +19,6 @@ import gov.nasa.jpf.vm.VM;
 
 import static edu.cmu.sv.isstac.sampling.structure.CGClassification.isPCNode;
 
-;
-
 /**
  * @author Kasper Luckow
  *
@@ -31,7 +29,7 @@ public class ReinforcementLearningStrategy implements AnalysisStrategy {
   // Params for reinforcement learning
   private final int samplesPerOptimization;
   private final double epsilon;
-  private final double history;
+  private final double historyWeight;
 
   private RLNodeFactoryDecorator nodeFactory;
 
@@ -39,15 +37,17 @@ public class ReinforcementLearningStrategy implements AnalysisStrategy {
   private RLNode lastNode;
   private int lastChoice = -1;
 
+  private int samplesSinceOptimization = 0;
+
   private final Random rng;
 
   private Map<Integer, RLNode> nodes = new HashMap<>();
 
   public ReinforcementLearningStrategy(int samplesPerOptimization, double epsilon,
-                                       double history, SPFModelCounter modelCounter, long seed) {
+                                       double historyWeight, SPFModelCounter modelCounter, long seed) {
     this.samplesPerOptimization = samplesPerOptimization;
     this.epsilon = epsilon;
-    this.history = history;
+    this.historyWeight = historyWeight;
     this.rng = new Random(seed);
 
     this.nodeFactory = new RLNodeFactoryDecorator(new DefaultNodeFactory(), modelCounter);
@@ -88,29 +88,72 @@ public class ReinforcementLearningStrategy implements AnalysisStrategy {
     }
   }
 
-  private RLNode getNode(ChoiceGenerator<?> cg, RLNode lastNode, int lastChoice) {
-    RLNode node = nodes.get(cg.getStateId());
-    if(node == null) {
-      try {
+  private void performOptimizationStep() {
 
-        //TODO: maybe we don't need to keep track of the root
-        if(root == null) {
-          node = root = nodeFactory.create(null, cg, -1);
-        } else {
-          node = this.nodeFactory.create(lastNode, cg, lastChoice);
+    // Iterate over all nodes in the tree and update the probabilities for selecting choices
+    // (children)
+    for(RLNode node : this.nodes.values()) {
+
+      //Of course, only reinforce nodes that can make choices (i.e. not final nodes)
+      if(node.getTotalChoicesNum() > 0) {
+        double qualitySum = 0.0;
+        double maxQuality = -1.0;
+        int maxQualityChoice = -1;
+
+        // Find choice with max quality
+        // Assume that choices are 0..TotalChoices
+        for(int choice = 0; choice < node.getTotalChoicesNum(); choice++) {
+          double quality = getChoiceQuality(node, choice);
+          if(quality > maxQuality) {
+            maxQuality = quality;
+            maxQualityChoice = choice;
+          }
+          qualitySum += quality;
         }
-      } catch (NodeCreationException e) {
-        String msg = "Could not create root node";
-        logger.severe(msg);
-        throw new RLAnalysisException(msg);
+        if(qualitySum > 0.0) {
+
+          // Assume that choices are 0..TotalChoices
+          for(int choice = 0; choice < node.getTotalChoicesNum(); choice++) {
+
+            double updatedProb = 0.0;
+
+            //max quality choice gets the best prob
+            if(choice == maxQualityChoice) {
+              updatedProb += 1.0 - this.epsilon;
+            }
+            double quality = getChoiceQuality(node, choice);
+            updatedProb += this.epsilon * (quality / qualitySum);
+
+            double oldProb = node.getChoiceProbability(choice);
+            double newProb = (this.historyWeight * oldProb)
+                + ((1 - this.historyWeight) * updatedProb);
+            node.setChoiceProbability(choice, newProb);
+          }
+        } else {
+          String msg = "Quality sum must be positive";
+          logger.severe(msg);
+          throw new RLAnalysisException(msg);
+        }
       }
     }
-    return node;
   }
 
-  @Override
-  public void newSampleStarted(Search samplingSearch) {
-
+  private double getChoiceQuality(RLNode parent, int choice) {
+    long subDomainParent = parent.getSubdomainSize();
+    double quality;
+    // This is important:
+    // If the parent does *not* have a child node for a particular choice (i.e. the subtree
+    // rooted at the choice has never been sampled), then the quality for that choice is the initial
+    // probability of being selected i.e. 1/numChoices. This is the same in jpf-reliability
+    if(parent.hasChildForChoice(choice)) {
+      RLNode child = (RLNode)parent.getChild(choice);
+      logger.warning("assuming succ reward *ONLY* for quality calculation (might want to make " +
+          "this optional)");
+      quality = child.getReward().getSucc() / (double)subDomainParent;
+    } else {
+      quality = 1 / (double)parent.getTotalChoicesNum();
+    }
+    return quality;
   }
 
   @Override
@@ -135,7 +178,38 @@ public class ReinforcementLearningStrategy implements AnalysisStrategy {
     // These are two different approaches
     BackPropagator.cumulativeRewardPropagation(lastNode, amplifiedReward, pathVolume, termType);
 
+    samplesSinceOptimization++;
+
+    // We perform optimization (or reinforcement) of choices after samplesPerOptimization
+    if(samplesSinceOptimization >= this.samplesPerOptimization) {
+      performOptimizationStep();
+      samplesSinceOptimization = 0;
+    }
     // reset exploration to drive a new round of sampling
     this.lastNode = this.root;
+  }
+
+  private RLNode getNode(ChoiceGenerator<?> cg, RLNode lastNode, int lastChoice) {
+    RLNode node = nodes.get(cg.getStateId());
+    if(node == null) {
+      try {
+        //TODO: maybe we don't need to keep track of the root
+        if(root == null) {
+          node = root = nodeFactory.create(null, cg, -1);
+        } else {
+          node = this.nodeFactory.create(lastNode, cg, lastChoice);
+        }
+      } catch (NodeCreationException e) {
+        String msg = "Could not create root node";
+        logger.severe(msg);
+        throw new RLAnalysisException(msg);
+      }
+    }
+    return node;
+  }
+
+  @Override
+  public void newSampleStarted(Search samplingSearch) {
+    // We don't track anything here
   }
 }
