@@ -4,6 +4,8 @@ import edu.cmu.sv.isstac.sampling.AnalysisCreationException;
 import edu.cmu.sv.isstac.sampling.SamplingAnalysis;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterCreationException;
+import edu.cmu.sv.isstac.sampling.quantification.ModelCounterFactory;
+import edu.cmu.sv.isstac.sampling.quantification.SPFModelCounter;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPFShell;
 
@@ -25,9 +27,9 @@ public class ReinforcementLearningShell implements JPFShell {
 
     double epsilon = config.getDouble(Utils.EPSILON, Utils.DEFAULT_EPSILON);
     double history = config.getDouble(Utils.HISTORY, Utils.DEFAULT_HISTORY);
-
+    SPFModelCounter modelCounter = ModelCounterFactory.getInstance(config);
     this.samplingAnalysis = samplingAnalysisBuilder.build(config,
-        new ReinforcementLearningStrategy(samplesPerOptimization, epsilon, history));
+        new ReinforcementLearningStrategy(samplesPerOptimization, epsilon, history, modelCounter));
   }
 
   @Override

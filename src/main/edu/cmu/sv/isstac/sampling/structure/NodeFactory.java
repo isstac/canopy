@@ -8,7 +8,7 @@ import gov.nasa.jpf.vm.ChoiceGenerator;
  */
 public interface NodeFactory<T extends Node> {
   
-  public T create(T parent, ChoiceGenerator<?> currentCG, int choice);
+  public T create(T parent, ChoiceGenerator<?> currentCG, int choice) throws NodeCreationException;
   
   public boolean isSupportedChoiceGenerator(ChoiceGenerator<?> cg);
 }
