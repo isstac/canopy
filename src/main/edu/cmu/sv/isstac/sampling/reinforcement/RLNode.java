@@ -19,7 +19,7 @@ public class RLNode implements Node {
 
   private Map<Integer, Double> choice2prob = new HashMap<>();
 
-  private final long subdomainSize;
+  public long subdomainSize;
 
   public RLNode(Node decoratee, long subdomainSize) {
     this.decoratee = decoratee;

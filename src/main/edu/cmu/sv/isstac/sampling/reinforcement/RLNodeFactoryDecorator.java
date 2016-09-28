@@ -5,6 +5,7 @@ import edu.cmu.sv.isstac.sampling.structure.Node;
 import edu.cmu.sv.isstac.sampling.structure.NodeCreationException;
 import edu.cmu.sv.isstac.sampling.structure.NodeFactory;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
+import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import modelcounting.analysis.exceptions.AnalysisException;
 import modelcounting.utils.BigRational;
@@ -26,22 +27,31 @@ public class RLNodeFactoryDecorator implements NodeFactory<RLNode> {
   @Override
   public RLNode create(RLNode parent, ChoiceGenerator<?> currentCG, int choice)
       throws NodeCreationException {
-    assert currentCG instanceof PCChoiceGenerator;
-
-    PCChoiceGenerator pccg = (PCChoiceGenerator)currentCG;
-    long subdomainSize;
-    try {
-      subdomainSize = this.modelCounter.countPointsOfPC(pccg.getCurrentPC()).longValue();
-    } catch (AnalysisException e) {
-      throw new NodeCreationException(e);
+    if(currentCG != null) {
+      PCChoiceGenerator pccg = currentCG.
+          getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
+      PathCondition pc;
+      if (pccg != null) {
+        pc = pccg.getCurrentPC();
+      } else {
+        pc = new PathCondition();
+      }
+      long subdomainSize;
+      try {
+        subdomainSize = this.modelCounter.countPointsOfPC(pc).longValue();
+      } catch (AnalysisException e) {
+        throw new NodeCreationException(e);
+      }
+      return new RLNode(this.decoratee.create(parent, currentCG, choice), subdomainSize);
+    } else {
+      // This should only happen when the node we are creating is a final node
+      // in which case the domain size does not matter anyway
+      return new RLNode(this.decoratee.create(parent, currentCG, choice), -1);
     }
-
-    throw new RuntimeException("check if pc is correct here");
-    //return new RLNode(this.decoratee.create(parent, currentCG, choice), subdomainSize);
   }
 
   @Override
   public boolean isSupportedChoiceGenerator(ChoiceGenerator<?> cg) {
-    return false;
+    return this.decoratee.isSupportedChoiceGenerator(cg);
   }
 }

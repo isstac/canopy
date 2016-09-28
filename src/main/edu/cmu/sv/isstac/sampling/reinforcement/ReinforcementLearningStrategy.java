@@ -56,10 +56,9 @@ public class ReinforcementLearningStrategy implements AnalysisStrategy {
   @Override
   public void makeStateChoice(VM vm, ChoiceGenerator<?> cg, ArrayList<Integer> eligibleChoices) {
     //TODO: Later expand this to support nondeterministic choices too
-    if(isPCNode(cg)) {
+    if(this.nodeFactory.isSupportedChoiceGenerator(cg)) {
 
       RLNode node = getNode(cg, lastNode, lastChoice);
-
 
       // We make a choice by flipping a coin. Choices are made according to their respective
       // probabilities of selection which is adjusted at scheduler improvement (i.e. after
@@ -89,6 +88,26 @@ public class ReinforcementLearningStrategy implements AnalysisStrategy {
       logger.severe(msg);
       throw new RLAnalysisException(msg);
     }
+  }
+
+  private double getChoiceQuality(RLNode parent, int choice) {
+    long subDomainParent = parent.getSubdomainSize();
+    assert subDomainParent > 0;
+
+    double quality;
+    // This is important:
+    // If the parent does *not* have a child node for a particular choice (i.e. the subtree
+    // rooted at the choice has never been sampled), then the quality for that choice is the initial
+    // probability of being selected i.e. 1/numChoices. This is the same in jpf-reliability
+    if(parent.hasChildForChoice(choice)) {
+      RLNode child = (RLNode)parent.getChild(choice);
+      logger.warning("assuming succ reward *ONLY* for quality calculation (might want to make " +
+          "this optional)");
+      quality = child.getReward().getSucc() / (double)subDomainParent;
+    } else {
+      quality = 1 / (double)parent.getTotalChoicesNum();
+    }
+    return quality;
   }
 
   private void performOptimizationStep() {
@@ -139,24 +158,6 @@ public class ReinforcementLearningStrategy implements AnalysisStrategy {
         }
       }
     }
-  }
-
-  private double getChoiceQuality(RLNode parent, int choice) {
-    long subDomainParent = parent.getSubdomainSize();
-    double quality;
-    // This is important:
-    // If the parent does *not* have a child node for a particular choice (i.e. the subtree
-    // rooted at the choice has never been sampled), then the quality for that choice is the initial
-    // probability of being selected i.e. 1/numChoices. This is the same in jpf-reliability
-    if(parent.hasChildForChoice(choice)) {
-      RLNode child = (RLNode)parent.getChild(choice);
-      logger.warning("assuming succ reward *ONLY* for quality calculation (might want to make " +
-          "this optional)");
-      quality = child.getReward().getSucc() / (double)subDomainParent;
-    } else {
-      quality = 1 / (double)parent.getTotalChoicesNum();
-    }
-    return quality;
   }
 
   @Override
