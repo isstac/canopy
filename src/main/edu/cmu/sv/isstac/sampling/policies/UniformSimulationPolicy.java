@@ -18,10 +18,6 @@ public class UniformSimulationPolicy implements SimulationPolicy {
   public UniformSimulationPolicy(long seed) {
     rng = new Random(seed);
   }
-
-  public UniformSimulationPolicy() {
-    rng = new Random();    
-  }
   
   @Override
   public int selectChoice(VM vm, ChoiceGenerator<?> cg, ArrayList<Integer> eligibleChoices) {

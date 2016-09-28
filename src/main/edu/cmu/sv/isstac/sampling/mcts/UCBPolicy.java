@@ -19,11 +19,6 @@ class UCBPolicy implements SelectionPolicy {
     this.biasParameter = biasParameter;
   }
   
-  public UCBPolicy(double biasParameter) {
-    this.rng = new Random();
-    this.biasParameter = biasParameter;
-  }
-  
   @Override
   public Node selectBestChild(Node currNode, ArrayList<Integer> eligibleChoices) {
     double bestUct = Double.NEGATIVE_INFINITY;

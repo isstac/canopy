@@ -42,27 +42,14 @@ public class Utils {
       return conf.getInstance(SIMULATION_POLICY, SimulationPolicy.class);
     }
 
-    boolean useRandomSeed = conf.getBoolean(Options.RNG_RANDOM_SEED, Options.DEFAULT_RANDOM_SEED);
-
-    SimulationPolicy simulationPolicy;
-    if(useRandomSeed) {
-      if(conf.getBoolean(USE_MODELCOUNT_WEIGHTED_SIMULATION)) {
-        SPFModelCounter modelCounter = ModelCounterFactory.getInstance(conf);
-        simulationPolicy = new CountWeightedSimulationPolicy(modelCounter);
-      }
-      else {
-        simulationPolicy = new UniformSimulationPolicy();
-      }
-    } else {
-      long seed = conf.getLong(Options.RNG_SEED, Options.DEFAULT_RNG_SEED);
-      if(conf.getBoolean(USE_MODELCOUNT_WEIGHTED_SIMULATION)) {
-        SPFModelCounter modelCounter = ModelCounterFactory.getInstance(conf);
-        simulationPolicy = new CountWeightedSimulationPolicy(modelCounter, new Random(seed));
-      } else {
-        simulationPolicy = new UniformSimulationPolicy(seed);
-      }
+    long seed = Options.getSeed(conf);
+    if(conf.getBoolean(USE_MODELCOUNT_WEIGHTED_SIMULATION)) {
+      SPFModelCounter modelCounter = ModelCounterFactory.getInstance(conf);
+      return new CountWeightedSimulationPolicy(modelCounter, new Random(seed));
     }
-    return simulationPolicy;
+    else {
+      return new UniformSimulationPolicy(seed);
+    }
   }
 
   public static SelectionPolicy createSelectionPolicy(Config conf) {
@@ -71,14 +58,7 @@ public class Utils {
     }
 
     double uctBias = conf.getDouble(UCT_BIAS, DEFAULT_UCT_BIAS);
-    boolean useRandomSeed = conf.getBoolean(Options.RNG_RANDOM_SEED, Options.DEFAULT_RANDOM_SEED);
-
-
-    if(useRandomSeed) {
-      return new UCBPolicy(uctBias);
-    } else {
-      long seed = conf.getLong(Options.RNG_SEED, Options.DEFAULT_RNG_SEED);
-      return new UCBPolicy(seed, uctBias);
-    }
+    long seed = Options.getSeed(conf);
+    return new UCBPolicy(seed, uctBias);
   }
 }

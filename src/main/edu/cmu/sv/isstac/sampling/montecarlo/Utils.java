@@ -21,16 +21,8 @@ public class Utils {
       return conf.getInstance(SIMULATION_POLICY, SimulationPolicy.class);
     }
 
-    boolean useRandomSeed = conf.getBoolean(Options.RNG_RANDOM_SEED, Options.DEFAULT_RANDOM_SEED);
-
-    SimulationPolicy simulationPolicy;
-    if (useRandomSeed) {
-      simulationPolicy = new UniformSimulationPolicy();
-    } else {
-      long seed = conf.getLong(Options.RNG_SEED, Options.DEFAULT_RNG_SEED);
-      simulationPolicy = new UniformSimulationPolicy(seed);
-    }
-    return simulationPolicy;
+    long seed = Options.getSeed(conf);
+    return new UniformSimulationPolicy(seed);
   }
 
 }
