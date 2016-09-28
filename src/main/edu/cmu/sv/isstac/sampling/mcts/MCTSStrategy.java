@@ -11,9 +11,11 @@ import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
+import edu.cmu.sv.isstac.sampling.search.BackPropagator;
 import edu.cmu.sv.isstac.sampling.search.TerminationType;
 import edu.cmu.sv.isstac.sampling.structure.DefaultNodeFactory;
 import edu.cmu.sv.isstac.sampling.structure.Node;
+import edu.cmu.sv.isstac.sampling.structure.NodeCreationException;
 import edu.cmu.sv.isstac.sampling.structure.NodeFactory;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.util.JPFLogger;
@@ -41,23 +43,12 @@ public class MCTSStrategy implements AnalysisStrategy {
     };
   }
 
-  @FunctionalInterface
-  private interface RewardUpdater {
-    void update(Node n, long reward);
-  }
-  private static final Map<TerminationType, RewardUpdater> rewardUpdaters = new HashedMap<>();
-  static {
-    rewardUpdaters.put(TerminationType.SUCCESS, (n, reward) -> n.getReward().incrementSucc(reward));
-    rewardUpdaters.put(TerminationType.ERROR, (n, reward) -> n.getReward().incrementFail(reward));
-    rewardUpdaters.put(TerminationType.CONSTRAINT_HIT, (n, reward) -> n.getReward().incrementGrey(reward));
-  }
-
   private static final Logger logger = JPFLogger.getLogger(MCTSStrategy.class.getName());
   
   private MCTS_STATE mctsState;
   private Node last = null;
   private Node root = null;
-  private final NodeFactory nodeFactory;
+  private final NodeFactory<Node> nodeFactory;
   
   private final SelectionPolicy selectionPolicy;
   private final SimulationPolicy simulationPolicy;
@@ -86,7 +77,13 @@ public class MCTSStrategy implements AnalysisStrategy {
       // is not available
       if(expandedFlag) {
         assert mctsState == MCTS_STATE.SIMULATION;
-        last = this.nodeFactory.create(last, cg, expandedChoice);
+        try {
+          last = this.nodeFactory.create(last, cg, expandedChoice);
+        } catch (NodeCreationException e) {
+          String msg = "Could not create node";
+          logger.severe(msg);
+          throw new MCTSAnalysisException(msg);
+        }
         expandedFlag = false;
       }
       
@@ -103,8 +100,14 @@ public class MCTSStrategy implements AnalysisStrategy {
       if(mctsState == MCTS_STATE.SELECTION) {
         
         // create root
-        if(root == null) { 
-          root = last = this.nodeFactory.create(null, cg, -1); 
+        if(root == null) {
+          try {
+            root = last = this.nodeFactory.create(null, cg, -1);
+          } catch (NodeCreationException e) {
+            String msg = "Could not create root node";
+            logger.severe(msg);
+            throw new MCTSAnalysisException(msg);
+          }
         }
         
         // Check if node is a "frontier", i.e. it has eligible, unexpanded children
@@ -182,15 +185,18 @@ public class MCTSStrategy implements AnalysisStrategy {
     // only be created in the event that MCT reaches
     // and actual leaf in the symbolic execution tree
     if(expandedFlag) {
-      last = this.nodeFactory.create(last, null, expandedChoice);
+      try {
+        last = this.nodeFactory.create(last, null, expandedChoice);
+      } catch (NodeCreationException e) {
+        String msg = "Could not create node at path termination";
+        logger.severe(msg);
+        throw new MCTSAnalysisException(msg);
+      }
       expandedFlag = false;
     }
-    RewardUpdater updater = rewardUpdaters.get(termType);
-    // Perform backup phase
-    for(Node n = last; n != null; n = n.getParent()) {
-      updater.update(n, amplifiedReward);
-      n.incVisitedNum(pathVolume);
-    }
+
+    // Perform backup phase, back propagating rewards and updated visited num according to vol.
+    BackPropagator.cumulativeRewardPropagation(last, amplifiedReward, pathVolume, termType);
 
     // Reset exploration to drive a new round of sampling
     this.mctsState = MCTS_STATE.SELECTION;
