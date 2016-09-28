@@ -88,8 +88,8 @@ public class CountWeightedSimulationPolicy implements SimulationPolicy {
       }
     }
 
-    LOGGER.info("simulation policy selected choice " + choice + " for condition at line " +
-        currentCg.getInsn().getLineNumber());
+    LOGGER.fine("Count weighted policy selected " + "choice " + choice +
+        "for condition at line " + currentCg.getInsn().getLineNumber());
     return choice;
   }
 

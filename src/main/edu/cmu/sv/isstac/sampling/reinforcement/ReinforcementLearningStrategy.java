@@ -80,6 +80,9 @@ public class ReinforcementLearningStrategy implements AnalysisStrategy {
 
       lastNode = node;
       lastChoice = selectedChoice;
+
+      logger.fine("Reinforcement learning policy selected choice " + lastChoice +
+          "for condition at line " + cg.getInsn().getLineNumber());
       cg.select(lastChoice);
     } else {
       String msg = "Unexpected CG: " + cg.getClass().getName();
