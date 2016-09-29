@@ -42,9 +42,15 @@ class UCBPolicy implements SelectionPolicy {
     
     // NOTE: the best child is determined in terms of its reward for successful termination
     long q = child.getReward().getSucc();
+
     long nc = child.getVisitedNum();
     long np = parent.getVisitedNum();
-    double uct = ((double)q/nc) + this.biasParameter * Math.sqrt(2 * Math.log(np) / nc);
+
+    double exploitation = ((double) q / nc);
+    double exploration = this.biasParameter * Math.sqrt(2 * Math.log(np) / nc);
+
+    double uct =  exploitation + exploration;
+
     return uct;
   }
 

@@ -20,7 +20,6 @@ public class DepthRewardFunction implements RewardFunction {
   public long computeReward(VM vm) {
     int depth = vm.getSearch().getDepth();
 
-
     return depth;
   }
 }
