@@ -17,6 +17,7 @@ import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
 import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.SamplingAnalysis;
 import edu.cmu.sv.isstac.sampling.analysis.SampleStatistics;
+import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
 import edu.cmu.sv.isstac.sampling.termination.TimeBoundedTerminationStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.util.JPFLogger;
@@ -27,14 +28,14 @@ import gov.nasa.jpf.util.JPFLogger;
 public class BatchProcessor {
   public static final Logger logger = JPFLogger.getLogger(BatchProcessor.class.getName());
 
-  private static final int DEFAULT_ITERATIONS = 5;
+  private static final int DEFAULT_ITERATIONS = 45;
 
   //This one is important: it determines the initial
   //seed for the rng that will generate seeds for the experiments
   //Note that in order to reproduce the results, not only must the seed
   //of course be the same, but also the *order* of the experiments must
   //be the same!
-  private static final int DEFAULT_SEED = 171;
+  private static final int DEFAULT_SEED = 179;
 
   public static void main(String[] args) throws AnalysisCreationException {
     if(args.length < 2 || args.length > 3) {
@@ -61,13 +62,16 @@ public class BatchProcessor {
   private static List<Experiment> createDefaultExperiments() {
     List<Experiment> experiments = new ArrayList<>();
     //MCTS: pruning, reward amplification, weighted simulation
-//    experiments.add(new MCTSExperiment(true, true, true));
+      experiments.add(new MCTSExperiment(true, true, true, Math.sqrt(2)));
     //MCTS: pruning, reward amplification, weighted simulation
-    experiments.add(new MCTSExperiment(true, true, false, 1/Math.sqrt(2)));
+   // experiments.add(new MCTSExperiment(true, true, false, 1/Math.sqrt(2)));
     //MCTS: pruning, reward amplification
 //    experiments.add(new MCTSExperiment(true, true, false));
     //MCTS: pruning
-//    experiments.add(new MCTSExperiment(true, false, false));
+  //  experiments.add(new MCTSExperiment(true, false, false, 1/Math.sqrt(2)));
+
+    //MCTS: pruning, no exploration term
+  //  experiments.add(new MCTSExperiment(true, false, false, 0));
 
     //Reinforcement Learning: pruning, reward amplification
 //    experiments.add(new RLExperiment(true, true, 50, 0.5, 0.5));
@@ -114,8 +118,7 @@ public class BatchProcessor {
           //Add the statistics reporter
           SampleStatistics statistics = new SampleStatistics();
           analysisBuilder.addEventObserver(statistics);
-          analysisBuilder.setTerminationStrategy(new TimeBoundedTerminationStrategy(2, TimeUnit
-              .MINUTES));
+          analysisBuilder.setTerminationStrategy(new SampleSizeTerminationStrategy(3000));
           SamplingAnalysis analysis = analysisBuilder.build(conf, analysisStrategy);
           analysis.run();
 
