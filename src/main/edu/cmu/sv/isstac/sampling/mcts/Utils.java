@@ -45,7 +45,7 @@ public class Utils {
     long seed = Options.getSeed(conf);
     if(conf.getBoolean(USE_MODELCOUNT_WEIGHTED_SIMULATION)) {
       SPFModelCounter modelCounter = ModelCounterFactory.getInstance(conf);
-      return new CountWeightedSimulationPolicy(modelCounter, new Random(seed));
+      return new CountWeightedSimulationPolicy(modelCounter, seed);
     }
     else {
       return new UniformSimulationPolicy(seed);

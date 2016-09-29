@@ -38,8 +38,8 @@ public class CountWeightedSimulationPolicy implements SimulationPolicy {
   private final LoadingCache<PathCondition, BigRational> countCache;
   private final Random rng;
 
-  public CountWeightedSimulationPolicy(SPFModelCounter modelCounter, Random random) {
-    this.rng = random;
+  public CountWeightedSimulationPolicy(SPFModelCounter modelCounter, long seed) {
+    this.rng = new Random(seed);
 
     this.countCache = CacheBuilder.newBuilder()
         .build(new CacheLoader<PathCondition, BigRational>() {
@@ -51,14 +51,6 @@ public class CountWeightedSimulationPolicy implements SimulationPolicy {
             return modelCounter.analyzeSpfPC(pc);
           }
         });
-  }
-
-  public CountWeightedSimulationPolicy(SPFModelCounter modelCounter) {
-    this(modelCounter, new Random());
-  }
-
-  public CountWeightedSimulationPolicy(SPFModelCounter modelCounter, long seed) {
-    this(modelCounter, new Random(seed));
   }
 
   @Override
@@ -133,7 +125,6 @@ public class CountWeightedSimulationPolicy implements SimulationPolicy {
     try {
       countBefore = this.countCache.get(pcBeforeChoice);
       countAfter = this.countCache.get(pcAfterChoice);
-
     } catch (ExecutionException e) {
       LOGGER.severe(e.getMessage());
       throw new SimulationPolicyException(e);
