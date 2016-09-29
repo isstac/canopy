@@ -9,7 +9,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.Options;
-import edu.cmu.sv.isstac.sampling.mcts.MCTSShell;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.util.JPFLogger;
 import modelcounting.analysis.Analyzer;
@@ -25,7 +24,7 @@ import modelcounting.utils.Configuration;
  * @author Kasper Luckow
  */
 public class ModelCounterFactory {
-  private static final Logger LOGGER = JPFLogger.getLogger(ModelCounterFactory.class.getName());
+  private static final Logger logger = JPFLogger.getLogger(ModelCounterFactory.class.getName());
 
   public static final String PROBLEMSETTINGS_CONF = Options.MODEL_COUNTING_PREFIX + ".problemsettings";
 
@@ -63,31 +62,32 @@ public class ModelCounterFactory {
 
   public static SPFModelCounter getInstance(Config config) throws ModelCounterCreationException {
 
-    // If we already constructed a model counter, just reuse it
-    if(modelCounters.containsKey(config)) {
-      return modelCounters.get(config);
-    }
-
     SPFModelCounter modelCounter;
     if(config.hasValue(PROBLEMSETTINGS_CONF)) {
       String problemSettingsPath = config.getString(PROBLEMSETTINGS_CONF);
+      // If we already constructed a model counter, just reuse it
+      if(modelCounters.containsKey(problemSettingsPath)) {
+        logger.info("Reusing model counter for problem settings file " + problemSettingsPath);
+        return modelCounters.get(config);
+      }
       ProblemSetting problemSettings = null;
       try {
         problemSettings = ProblemSetting.loadFromFile(problemSettingsPath);
       } catch (IOException | RecognitionException e) {
-        LOGGER.severe(e.getMessage());
+        logger.severe(e.getMessage());
         throw new ModelCounterCreationException(e);
       }
       modelCounter = createModelCounterWithProblemSettings(config, problemSettings);
 
+      // Cache the model counter instance
+      modelCounters.put(config, modelCounter);
     } else {
       //We use the model counter decorator to *lazily* create an model counter instance that
       //automatically generates uniform usage profiles.
+      logger.info("Using lazy model counter that creates uniform UP from variables" +
+          " of PC at model count invocation. This may not be what you want!");
       modelCounter = new UniformUPModelCounterDecorator(config);
     }
-
-    // Cache the model counter intstance
-    modelCounters.put(config, modelCounter);
 
     return modelCounter;
   }
@@ -99,8 +99,6 @@ public class ModelCounterFactory {
     int numOfKernels = getKernels(config);
     ModelCounterType modelCounterType = getModelCounterType(config);
 
-    boolean useModelCountCaching = useCountCaching(config);
-
     Analyzer analyzer;
     switch (modelCounterType) {
       case SEQUENTIAL:
@@ -109,7 +107,7 @@ public class ModelCounterFactory {
               problemSettings.getUsageProfile(), numOfKernels);
         } catch (LatteException | InterruptedException | OmegaException | RecognitionException
             e) {
-          LOGGER.severe(e.getMessage());
+          logger.severe(e.getMessage());
           throw new ModelCounterCreationException(e);
         }
         break;
@@ -122,7 +120,7 @@ public class ModelCounterFactory {
               problemSettings.getUsageProfile(), threads, cacheFillerPercentage, numOfKernels);
         } catch (ExecutionException | InterruptedException
             | RecognitionException | LatteException | OmegaException e) {
-          LOGGER.severe(e.getMessage());
+          logger.severe(e.getMessage());
           throw new ModelCounterCreationException(e);
         }
         break;
@@ -132,28 +130,17 @@ public class ModelCounterFactory {
               problemSettings.getUsageProfile(), numOfKernels);
         } catch (LatteException | InterruptedException | OmegaException | RecognitionException
             e) {
-          LOGGER.severe(e.getMessage());
+          logger.severe(e.getMessage());
           throw new ModelCounterCreationException(e);
         }
         break;
       default:
         String msg = "Unsupported model counter type " + modelCounterType;
-        LOGGER.severe(msg);
+        logger.severe(msg);
         throw new ModelCounterCreationException(msg);
     }
     SPFModelCounter spfmodelCounter = new SPFModelCounterDecorator(analyzer);
-
-    //If caching is used, we decorate the model counter with this ability
-    //otherwise, just return it as is
-    if(useModelCountCaching) {
-      return new CachingModelCounterDecorator(spfmodelCounter);
-    } else {
-      return spfmodelCounter;
-    }
-  }
-
-  private static boolean useCountCaching(Config config) {
-    return config.getBoolean(Options.CACHE_MODELCOUNTS, Options.DEFAULT_CACHE_MODELCOUNTS);
+    return spfmodelCounter;
   }
 
   private static Configuration getModelCounterConfig(Config config) {

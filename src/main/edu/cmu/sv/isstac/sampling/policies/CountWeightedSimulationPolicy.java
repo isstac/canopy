@@ -35,22 +35,12 @@ public class CountWeightedSimulationPolicy implements SimulationPolicy {
   private static final Logger LOGGER = JPFLogger.getLogger(
       CountWeightedSimulationPolicy.class.getName());
 
-  private final LoadingCache<PathCondition, BigRational> countCache;
+  private final SPFModelCounter modelCounter;
   private final Random rng;
 
   public CountWeightedSimulationPolicy(SPFModelCounter modelCounter, long seed) {
+    this.modelCounter = modelCounter;
     this.rng = new Random(seed);
-
-    this.countCache = CacheBuilder.newBuilder()
-        .build(new CacheLoader<PathCondition, BigRational>() {
-          @Override
-          public BigRational load(PathCondition pc) throws AnalysisException {
-            if(pc.header == null) {
-              return BigRational.ONE;
-            }
-            return modelCounter.analyzeSpfPC(pc);
-          }
-        });
   }
 
   @Override
@@ -114,18 +104,12 @@ public class CountWeightedSimulationPolicy implements SimulationPolicy {
       return 0;
     }
 
-    /* this is from jpf-reliability. I dont think the check is necessary
-    if(pcAfterChoice == null || pcAfterChoice.header == null) {
-			return 1;
-		}
-    */
-
     BigRational countBefore;
     BigRational countAfter;
     try {
-      countBefore = this.countCache.get(pcBeforeChoice);
-      countAfter = this.countCache.get(pcAfterChoice);
-    } catch (ExecutionException e) {
+      countBefore = this.modelCounter.analyzeSpfPC(pcBeforeChoice);
+      countAfter = this.modelCounter.analyzeSpfPC(pcAfterChoice);
+    } catch (AnalysisException e) {
       LOGGER.severe(e.getMessage());
       throw new SimulationPolicyException(e);
     }
