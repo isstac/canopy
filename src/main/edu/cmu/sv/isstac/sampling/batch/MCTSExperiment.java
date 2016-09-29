@@ -1,5 +1,7 @@
 package edu.cmu.sv.isstac.sampling.batch;
 
+import java.text.DecimalFormat;
+
 import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
 import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.mcts.MCTSStrategy;
@@ -18,11 +20,14 @@ public class MCTSExperiment implements Experiment {
   private final boolean pruning;
   private final boolean rewardAmplifcation;
   private final boolean weightedSimulation;
+  private final double biasparameter;
 
-  public MCTSExperiment(boolean pruning, boolean rewardAmplification, boolean weightedSimulation) {
+  public MCTSExperiment(boolean pruning, boolean rewardAmplification, boolean weightedSimulation,
+   double biasparameter) {
     this.pruning = pruning;
     this.rewardAmplifcation = rewardAmplification;
     this.weightedSimulation = weightedSimulation;
+    this.biasparameter = biasparameter;
   }
 
   @Override
@@ -31,6 +36,8 @@ public class MCTSExperiment implements Experiment {
         Boolean.toString(this.rewardAmplifcation));
     config.setProperty(Utils.USE_MODELCOUNT_WEIGHTED_SIMULATION,
         Boolean.toString(this.weightedSimulation));
+
+    config.setProperty(Utils.UCT_BIAS, Double.toString(biasparameter));
 
     config.setProperty(Options.RNG_SEED, Integer.toString(seed));
 
@@ -46,7 +53,9 @@ public class MCTSExperiment implements Experiment {
 
   @Override
   public String getName() {
+
     return "MCTS[pruning=" + this.pruning + ";rewardAmp=" + this.rewardAmplifcation + ";" +
-        "weightSim=" + this.weightedSimulation + "]";
+        "weightSim=" + this.weightedSimulation + ";bias=" + new DecimalFormat("#.##").format(this
+        .biasparameter) + "]";
   }
 }

@@ -34,7 +34,7 @@ public class BatchProcessor {
   //Note that in order to reproduce the results, not only must the seed
   //of course be the same, but also the *order* of the experiments must
   //be the same!
-  private static final int DEFAULT_SEED = 41;
+  private static final int DEFAULT_SEED = 171;
 
   public static void main(String[] args) throws AnalysisCreationException {
     if(args.length < 2 || args.length > 3) {
@@ -63,7 +63,7 @@ public class BatchProcessor {
     //MCTS: pruning, reward amplification, weighted simulation
 //    experiments.add(new MCTSExperiment(true, true, true));
     //MCTS: pruning, reward amplification, weighted simulation
-    experiments.add(new MCTSExperiment(true, false, true));
+    experiments.add(new MCTSExperiment(true, true, false, 1/Math.sqrt(2)));
     //MCTS: pruning, reward amplification
 //    experiments.add(new MCTSExperiment(true, true, false));
     //MCTS: pruning
@@ -114,7 +114,7 @@ public class BatchProcessor {
           //Add the statistics reporter
           SampleStatistics statistics = new SampleStatistics();
           analysisBuilder.addEventObserver(statistics);
-          analysisBuilder.setTerminationStrategy(new TimeBoundedTerminationStrategy(5, TimeUnit
+          analysisBuilder.setTerminationStrategy(new TimeBoundedTerminationStrategy(2, TimeUnit
               .MINUTES));
           SamplingAnalysis analysis = analysisBuilder.build(conf, analysisStrategy);
           analysis.run();
