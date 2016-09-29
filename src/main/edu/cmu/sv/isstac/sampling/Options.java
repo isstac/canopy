@@ -22,6 +22,8 @@ public class Options {
   public static final String TERMINATION_STRATEGY = SAMPLING_CONF_PREFIX + ".termination";
 
   public static final String MODEL_COUNTING_PREFIX = SAMPLING_CONF_PREFIX + ".modelcounting";
+  public static final String CACHE_MODELCOUNTS = MODEL_COUNTING_PREFIX +
+      ".caching";
   public static final String USE_MODELCOUNT_AMPLIFICATION = MODEL_COUNTING_PREFIX +
       ".amplifyrewards";
 
@@ -39,6 +41,7 @@ public class Options {
   public static final ChoicesStrategy DEFAULT_CHOICES_STRATEGY = PruningChoicesStrategy.getInstance();
 
   public static final boolean DEFAULT_USE_MODELCOUNT_AMPLIFICATION = true;
+  public static final boolean DEFAULT_CACHE_MODELCOUNTS = true;
 
   public static final boolean DEFAULT_SHOW_STATISTICS = true;
   public static final boolean DEFAULT_SHOW_LIVE_STATISTICS = true;

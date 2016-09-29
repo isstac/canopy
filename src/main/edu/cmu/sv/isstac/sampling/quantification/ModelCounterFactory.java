@@ -3,6 +3,8 @@ package edu.cmu.sv.isstac.sampling.quantification;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
@@ -55,7 +57,18 @@ public class ModelCounterFactory {
 
   //TODO: Add option for cleaning up the gigantic load of temp files
 
+  //We use this map to cache instantiated model counters (per problem settings) for maximum reuse
+  //and to harness the full potential of caching of counts
+  private static Map<Config, SPFModelCounter> modelCounters = new HashMap<>();
+
   public static SPFModelCounter getInstance(Config config) throws ModelCounterCreationException {
+
+    // If we already constructed a model counter, just reuse it
+    if(modelCounters.containsKey(config)) {
+      return modelCounters.get(config);
+    }
+
+    SPFModelCounter modelCounter;
     if(config.hasValue(PROBLEMSETTINGS_CONF)) {
       String problemSettingsPath = config.getString(PROBLEMSETTINGS_CONF);
       ProblemSetting problemSettings = null;
@@ -65,22 +78,28 @@ public class ModelCounterFactory {
         LOGGER.severe(e.getMessage());
         throw new ModelCounterCreationException(e);
       }
-
-      return createModelCounterWithProblemSettings(config, problemSettings);
+      modelCounter = createModelCounterWithProblemSettings(config, problemSettings);
 
     } else {
       //We use the model counter decorator to *lazily* create an model counter instance that
       //automatically generates uniform usage profiles.
-      return new UniformUPModelCounterDecorator(config);
+      modelCounter = new UniformUPModelCounterDecorator(config);
     }
+
+    // Cache the model counter intstance
+    modelCounters.put(config, modelCounter);
+
+    return modelCounter;
   }
 
-  static SPFModelCounter createModelCounterWithProblemSettings(Config config, ProblemSetting
+  public static SPFModelCounter createModelCounterWithProblemSettings(Config config, ProblemSetting
       problemSettings) throws ModelCounterCreationException {
     Configuration configuration = getModelCounterConfig(config);
 
     int numOfKernels = getKernels(config);
     ModelCounterType modelCounterType = getModelCounterType(config);
+
+    boolean useModelCountCaching = useCountCaching(config);
 
     Analyzer analyzer;
     switch (modelCounterType) {
@@ -122,10 +141,22 @@ public class ModelCounterFactory {
         LOGGER.severe(msg);
         throw new ModelCounterCreationException(msg);
     }
-    return new SPFModelCounterDecorator(analyzer);
+    SPFModelCounter spfmodelCounter = new SPFModelCounterDecorator(analyzer);
+
+    //If caching is used, we decorate the model counter with this ability
+    //otherwise, just return it as is
+    if(useModelCountCaching) {
+      return new CachingModelCounterDecorator(spfmodelCounter);
+    } else {
+      return spfmodelCounter;
+    }
   }
 
-  static Configuration getModelCounterConfig(Config config) {
+  private static boolean useCountCaching(Config config) {
+    return config.getBoolean(Options.CACHE_MODELCOUNTS, Options.DEFAULT_CACHE_MODELCOUNTS);
+  }
+
+  private static Configuration getModelCounterConfig(Config config) {
     Configuration configuration = new Configuration();
     configuration.setTemporaryDirectory(config.getString(TMP_DIR_CONF, TMP_DIR_DEF_CONF));
     configuration.setOmegaExectutablePath(config.getString(OMEGA_PATH_CONF, config.getString
@@ -135,7 +166,7 @@ public class ModelCounterFactory {
     return configuration;
   }
 
-  static ModelCounterType getModelCounterType(Config config) {
+  private static ModelCounterType getModelCounterType(Config config) {
     if (config.hasValue(MODEL_COUNTER_TYPE)) {
       return ModelCounterType.valueOf(config.getString(MODEL_COUNTER_TYPE));
     } else {
@@ -143,7 +174,7 @@ public class ModelCounterFactory {
     }
   }
 
-  static int getKernels(Config config) {
+  private static int getKernels(Config config) {
     return config.getInt(KERNELS_CONF, KERNELS_DEF_CONF);
   }
 }
