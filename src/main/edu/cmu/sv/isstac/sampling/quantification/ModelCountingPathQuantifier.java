@@ -16,8 +16,8 @@ import modelcounting.utils.BigRational;
  * @author Kasper Luckow
  */
 public class ModelCountingPathQuantifier implements PathQuantifier {
-  private static final Logger LOGGER = JPF.getLogger(ModelCountingAmplifierDecorator.class
-      .getName());
+  private static final Logger LOGGER = JPF.getLogger(ModelCountingPathQuantifier
+      .class.getName());
 
   private final SPFModelCounter modelCounter;
 
