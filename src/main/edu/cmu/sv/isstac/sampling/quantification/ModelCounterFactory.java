@@ -1,7 +1,9 @@
 package edu.cmu.sv.isstac.sampling.quantification;
 
 import org.antlr.runtime.RecognitionException;
+import org.apache.commons.io.FileUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,9 +35,10 @@ public class ModelCounterFactory {
       ".kernels";
   public static final int KERNELS_DEF_CONF = 1;
 
-  //TODO: should fix these three. They are reused from other projects
   public static final String TMP_DIR_CONF = Options.MODEL_COUNTING_PREFIX + ".tmpDir";
-  public static final String TMP_DIR_DEF_CONF = "/tmp";
+  public static final String TMP_DIR_DEF_CONF = "/tmp/modelcounter";
+  public static final String KEEP_TMP_DIR_CONF = TMP_DIR_CONF + ".keep";
+  public static final boolean KEEP_TMP_DIR_DEF = false;
 
   public static final String OMEGA_PATH_CONF = Options.MODEL_COUNTING_PREFIX + ".omegaPath";
   public static final String OMEGA_PATH_DEF_CONF = "symbolic.reliability.omegaPath";
@@ -54,7 +57,7 @@ public class ModelCounterFactory {
 
   public static final ModelCounterType MODEL_COUNTER_TYPE_DEF = ModelCounterType.SEQUENTIAL;
 
-  //TODO: Add option for cleaning up the gigantic load of temp files
+
 
   //We use this map to cache instantiated model counters (per problem settings) for maximum reuse
   //and to harness the full potential of caching of counts
@@ -68,7 +71,7 @@ public class ModelCounterFactory {
       // If we already constructed a model counter, just reuse it
       if(modelCounters.containsKey(problemSettingsPath)) {
         logger.info("Reusing model counter for problem settings file " + problemSettingsPath);
-        return modelCounters.get(config);
+        return modelCounters.get(problemSettingsPath);
       }
       ProblemSetting problemSettings = null;
       try {
@@ -90,6 +93,12 @@ public class ModelCounterFactory {
     }
 
     return modelCounter;
+  }
+
+  public static void cleanUpTempFiles(Config config) throws IOException {
+    String tempFilesPath = config.getString(TMP_DIR_CONF, TMP_DIR_DEF_CONF);
+    logger.info("Removing model counter tmp dir: " + tempFilesPath);
+    FileUtils.deleteDirectory(new File(tempFilesPath));
   }
 
   static SPFModelCounter createModelCounterWithProblemSettings(Config config, ProblemSetting

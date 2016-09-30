@@ -1,5 +1,6 @@
 package edu.cmu.sv.isstac.sampling;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.logging.Logger;
@@ -150,13 +151,29 @@ public class SamplingAnalysis {
   }
 
   private final JPF jpf;
+  private final Config config;
 
   private SamplingAnalysis(Config config, SamplingListener samplingListener) {
     this.jpf = JPFSamplerFactory.create(config);
+    this.config = config;
     this.jpf.addListener(samplingListener);
   }
 
   public void run() {
+
+    // Run the analysis
     jpf.run();
+
+    // Clean up temp files from model counting
+    // TODO: maybe move this to somewhere more sensible
+    if(!config.getBoolean(ModelCounterFactory.KEEP_TMP_DIR_CONF,
+        ModelCounterFactory.KEEP_TMP_DIR_DEF)) {
+      try {
+        ModelCounterFactory.cleanUpTempFiles(config);
+      } catch (IOException e) {
+        logger.severe(e.getMessage());
+        throw new AnalysisException(e);
+      }
+    }
   }
 }
