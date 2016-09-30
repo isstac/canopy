@@ -97,8 +97,11 @@ public class ModelCounterFactory {
 
   public static void cleanUpTempFiles(Config config) throws IOException {
     String tempFilesPath = config.getString(TMP_DIR_CONF, TMP_DIR_DEF_CONF);
-    logger.info("Removing model counter tmp dir: " + tempFilesPath);
-    FileUtils.deleteDirectory(new File(tempFilesPath));
+    File tmpDir = new File(tempFilesPath);
+    if(tmpDir.exists()) {
+      logger.info("Removing model counter tmp dir: " + tempFilesPath);
+      FileUtils.deleteDirectory(tmpDir);
+    }
   }
 
   static SPFModelCounter createModelCounterWithProblemSettings(Config config, ProblemSetting
