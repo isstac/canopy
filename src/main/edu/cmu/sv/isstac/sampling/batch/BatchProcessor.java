@@ -28,14 +28,14 @@ import gov.nasa.jpf.util.JPFLogger;
 public class BatchProcessor {
   public static final Logger logger = JPFLogger.getLogger(BatchProcessor.class.getName());
 
-  private static final int DEFAULT_ITERATIONS = 45;
+  private static final int DEFAULT_ITERATIONS = 5;
 
   //This one is important: it determines the initial
   //seed for the rng that will generate seeds for the experiments
   //Note that in order to reproduce the results, not only must the seed
   //of course be the same, but also the *order* of the experiments must
   //be the same!
-  private static final int DEFAULT_SEED = 179;
+  private static final int DEFAULT_SEED = 112117;
 
   public static void main(String[] args) throws AnalysisCreationException {
     if(args.length < 2 || args.length > 3) {
@@ -62,7 +62,18 @@ public class BatchProcessor {
   private static List<Experiment> createDefaultExperiments() {
     List<Experiment> experiments = new ArrayList<>();
     //MCTS: pruning, reward amplification, weighted simulation
-      experiments.add(new MCTSExperiment(true, true, true, Math.sqrt(2)));
+      experiments.add(new MCTSExperiment(true, false, false, 4));
+    experiments.add(new MCTSExperiment(true, false, false, 0));
+    experiments.add(new MCTSExperiment(true, false, false, 10));
+    experiments.add(new MCTSExperiment(true, false, false, 20));
+    experiments.add(new MCTSExperiment(true, true, false, 4));
+    experiments.add(new MCTSExperiment(true, true, false, 0));
+    experiments.add(new MCTSExperiment(true, true, false, 10));
+    experiments.add(new MCTSExperiment(true, true, false, 20));
+    experiments.add(new MCTSExperiment(true, false, true, 4));
+    experiments.add(new MCTSExperiment(true, false, true, 0));
+    experiments.add(new MCTSExperiment(true, false, true, 10));
+    experiments.add(new MCTSExperiment(true, false, true, 20));
     //MCTS: pruning, reward amplification, weighted simulation
    // experiments.add(new MCTSExperiment(true, true, false, 1/Math.sqrt(2)));
     //MCTS: pruning, reward amplification
@@ -118,7 +129,7 @@ public class BatchProcessor {
           //Add the statistics reporter
           SampleStatistics statistics = new SampleStatistics();
           analysisBuilder.addEventObserver(statistics);
-          analysisBuilder.setTerminationStrategy(new SampleSizeTerminationStrategy(3000));
+          analysisBuilder.setTerminationStrategy(new SampleSizeTerminationStrategy(1000));
           SamplingAnalysis analysis = analysisBuilder.build(conf, analysisStrategy);
           analysis.run();
 
