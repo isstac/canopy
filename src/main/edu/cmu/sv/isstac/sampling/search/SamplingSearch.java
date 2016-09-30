@@ -66,7 +66,7 @@ public class SamplingSearch extends Search {
 
         //All paths have been explored, so search finishes
         if(pruner.isFullyPruned()) {
-          logger.info("Sym exe tree is fully explored---search finishes");
+          logger.info("Sym exe tree is fully explored due to pruning. Search finishes");
           break;
         }
 
