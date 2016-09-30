@@ -58,7 +58,7 @@ public class ModelCounterFactory {
 
   //We use this map to cache instantiated model counters (per problem settings) for maximum reuse
   //and to harness the full potential of caching of counts
-  private static Map<Config, SPFModelCounter> modelCounters = new HashMap<>();
+  private static Map<String, SPFModelCounter> modelCounters = new HashMap<>();
 
   public static SPFModelCounter getInstance(Config config) throws ModelCounterCreationException {
 
@@ -80,7 +80,7 @@ public class ModelCounterFactory {
       modelCounter = createModelCounterWithProblemSettings(config, problemSettings);
 
       // Cache the model counter instance
-      modelCounters.put(config, modelCounter);
+      modelCounters.put(problemSettingsPath, modelCounter);
     } else {
       //We use the model counter decorator to *lazily* create an model counter instance that
       //automatically generates uniform usage profiles.
@@ -92,7 +92,7 @@ public class ModelCounterFactory {
     return modelCounter;
   }
 
-  public static SPFModelCounter createModelCounterWithProblemSettings(Config config, ProblemSetting
+  static SPFModelCounter createModelCounterWithProblemSettings(Config config, ProblemSetting
       problemSettings) throws ModelCounterCreationException {
     Configuration configuration = getModelCounterConfig(config);
 
