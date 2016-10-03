@@ -141,12 +141,6 @@ public final class SamplingListener extends PropertyListenerAdapter {
         throw new SamplingException("Unknown result type " + termType);
     }
 
-
-    // Notify observers with sample done event
-    for(AnalysisEventObserver obs : this.observers) {
-      obs.sampleDone(vm.getSearch(), numberOfSamples, reward, pathVolume, bestResult);
-    }
-
     if(reward > bestResult.getReward()) {
       bestResult.setReward(reward);
       bestResult.setSampleNumber(result.getNumberOfSamples());
@@ -157,6 +151,11 @@ public final class SamplingListener extends PropertyListenerAdapter {
       // Supposedly getPC defensively (deep) copies the current PC
       PathCondition pc = PathCondition.getPC(vm);
       bestResult.setPathCondition(pc);
+    }
+
+    // Notify observers with sample done event
+    for(AnalysisEventObserver obs : this.observers) {
+      obs.sampleDone(vm.getSearch(), numberOfSamples, reward, pathVolume, bestResult);
     }
 
     this.analysisStrategy.pathTerminated(termType, reward, pathVolume, amplifiedReward, search);
