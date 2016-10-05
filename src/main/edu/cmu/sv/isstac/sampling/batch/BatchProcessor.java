@@ -143,7 +143,7 @@ public class BatchProcessor {
           //Add the statistics reporter
           SampleStatistics statistics = new SampleStatistics();
           analysisBuilder.addEventObserver(statistics);
-          analysisBuilder.setTerminationStrategy(new SampleSizeTerminationStrategy(1000));
+          analysisBuilder.setTerminationStrategy(new SampleSizeTerminationStrategy(SAMPLE_SIZE_PER_EXPERIMENT));
           SamplingAnalysis analysis = analysisBuilder.build(conf, analysisStrategy);
           analysis.run();
 
