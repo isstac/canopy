@@ -18,7 +18,6 @@ import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.SamplingAnalysis;
 import edu.cmu.sv.isstac.sampling.analysis.SampleStatistics;
 import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
-import edu.cmu.sv.isstac.sampling.termination.TimeBoundedTerminationStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.util.JPFLogger;
 
@@ -28,21 +27,21 @@ import gov.nasa.jpf.util.JPFLogger;
 public class BatchProcessor {
   public static final Logger logger = JPFLogger.getLogger(BatchProcessor.class.getName());
 
-  private static final int DEFAULT_ITERATIONS = 5;
-
   //This one is important: it determines the initial
   //seed for the rng that will generate seeds for the experiments
   //Note that in order to reproduce the results, not only must the seed
   //of course be the same, but also the *order* of the experiments must
   //be the same!
   private static final int DEFAULT_SEED = 112117;
+  private static final int SAMPLE_SIZE_PER_EXPERIMENT = 1000;
+  private static final int DEFAULT_ITERATIONS_PER_EXPERIMENT = 5;
 
   public static void main(String[] args) throws AnalysisCreationException {
     if(args.length < 2 || args.length > 3) {
       printUsage();
       return;
     }
-    int iterations = DEFAULT_ITERATIONS;
+    int iterations = DEFAULT_ITERATIONS_PER_EXPERIMENT;
     File inputFolder = new File(args[0]);
     File outputFolder = null;
 
@@ -59,36 +58,51 @@ public class BatchProcessor {
     performBatchProcessing(inputFolder, outputFolder, iterations, experiments, DEFAULT_SEED);
   }
 
+
   private static List<Experiment> createDefaultExperiments() {
     List<Experiment> experiments = new ArrayList<>();
-    //MCTS: pruning, reward amplification, weighted simulation
-      experiments.add(new MCTSExperiment(true, false, false, 4));
+    //MCTS: just pruning
     experiments.add(new MCTSExperiment(true, false, false, 0));
+    experiments.add(new MCTSExperiment(true, false, false, Math.sqrt(2)));
+    experiments.add(new MCTSExperiment(true, false, false, 5));
     experiments.add(new MCTSExperiment(true, false, false, 10));
     experiments.add(new MCTSExperiment(true, false, false, 20));
-    experiments.add(new MCTSExperiment(true, true, false, 4));
-    experiments.add(new MCTSExperiment(true, true, false, 0));
-    experiments.add(new MCTSExperiment(true, true, false, 10));
-    experiments.add(new MCTSExperiment(true, true, false, 20));
-    experiments.add(new MCTSExperiment(true, false, true, 4));
+    experiments.add(new MCTSExperiment(true, false, false, 30));
+    experiments.add(new MCTSExperiment(true, false, false, 50));
+
+    //MCTS: pruning, weighted simulation
     experiments.add(new MCTSExperiment(true, false, true, 0));
+    experiments.add(new MCTSExperiment(true, false, true, Math.sqrt(2)));
+    experiments.add(new MCTSExperiment(true, false, true, 5));
     experiments.add(new MCTSExperiment(true, false, true, 10));
     experiments.add(new MCTSExperiment(true, false, true, 20));
-    //MCTS: pruning, reward amplification, weighted simulation
-   // experiments.add(new MCTSExperiment(true, true, false, 1/Math.sqrt(2)));
+    experiments.add(new MCTSExperiment(true, false, true, 30));
+    experiments.add(new MCTSExperiment(true, false, true, 50));
+
     //MCTS: pruning, reward amplification
-//    experiments.add(new MCTSExperiment(true, true, false));
-    //MCTS: pruning
-  //  experiments.add(new MCTSExperiment(true, false, false, 1/Math.sqrt(2)));
+    experiments.add(new MCTSExperiment(true, true, false, 0));
+    experiments.add(new MCTSExperiment(true, true, false, Math.sqrt(2)));
+    experiments.add(new MCTSExperiment(true, true, false, 5));
+    experiments.add(new MCTSExperiment(true, true, false, 10));
+    experiments.add(new MCTSExperiment(true, true, false, 20));
+    experiments.add(new MCTSExperiment(true, true, false, 30));
+    experiments.add(new MCTSExperiment(true, true, false, 50));
 
-    //MCTS: pruning, no exploration term
-  //  experiments.add(new MCTSExperiment(true, false, false, 0));
+    //MCTS: pruning, reward amplification, weighted simulation
+    experiments.add(new MCTSExperiment(true, true, true, 0));
+    experiments.add(new MCTSExperiment(true, true, true, Math.sqrt(2)));
+    experiments.add(new MCTSExperiment(true, true, true, 5));
+    experiments.add(new MCTSExperiment(true, true, true, 10));
+    experiments.add(new MCTSExperiment(true, true, true, 20));
+    experiments.add(new MCTSExperiment(true, true, true, 30));
+    experiments.add(new MCTSExperiment(true, true, true, 50));
 
-    //Reinforcement Learning: pruning, reward amplification
-//    experiments.add(new RLExperiment(true, true, 50, 0.5, 0.5));
+    // Monte Carlo experiment
+    experiments.add(new MonteCarloExperiment());
 
-    //Monte carlo: pruning
-//    experiments.add(new MonteCarloExperiment());
+    //Reinforcement Learning: pruning, reward amplification, 50 samples per opt., epsilon 0.5,
+    // history 0.5
+    // experiments.add(new RLExperiment(true, true, 50, 0.5, 0.5));
 
     return experiments;
   }
