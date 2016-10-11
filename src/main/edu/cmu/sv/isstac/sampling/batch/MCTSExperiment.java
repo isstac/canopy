@@ -17,6 +17,7 @@ import gov.nasa.jpf.Config;
 public class MCTSExperiment implements Experiment {
   private static final int MAX_SAMPLES_NO_PRUNING = 2000;
 
+  //TODO: pruning is currently always enabled. Make support for the non-pruning case
   private final boolean pruning;
   private final boolean rewardAmplifcation;
   private final boolean weightedSimulation;
