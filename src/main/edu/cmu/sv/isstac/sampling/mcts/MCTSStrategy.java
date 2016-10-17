@@ -18,6 +18,7 @@ import edu.cmu.sv.isstac.sampling.structure.Node;
 import edu.cmu.sv.isstac.sampling.structure.NodeCreationException;
 import edu.cmu.sv.isstac.sampling.structure.NodeFactory;
 import gov.nasa.jpf.search.Search;
+import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.VM;
@@ -120,7 +121,10 @@ public class MCTSStrategy implements AnalysisStrategy {
           expandedFlag = true;
           
           // After expansion, we proceed to simulation step of MCTS
-          mctsState = MCTS_STATE.SIMULATION; 
+          mctsState = MCTS_STATE.SIMULATION;
+
+          //Turn solver on so simulation is done with constraint solving
+          PathCondition.setReplay(false);
         } else {
           
           // If it was not a frontier node, we perform the selection step of MCTS
@@ -200,6 +204,9 @@ public class MCTSStrategy implements AnalysisStrategy {
 
     // Reset exploration to drive a new round of sampling
     this.mctsState = MCTS_STATE.SELECTION;
+
+    //Turn solver off during selection since we are just traversing the topmost tree.
+    PathCondition.setReplay(true);
     this.last = this.root;
   }
   
@@ -213,6 +220,9 @@ public class MCTSStrategy implements AnalysisStrategy {
 
   @Override
   public void newSampleStarted(Search samplingSearch) {
+
+    //Turn solver off during selection since we are just traversing the topmost tree.
+    PathCondition.setReplay(true);
     // We don't need to track anything here
   }
 }

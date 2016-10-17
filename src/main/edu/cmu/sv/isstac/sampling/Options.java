@@ -30,10 +30,10 @@ public class Options {
   public static final String SHOW_LIVE_STATISTICS = SAMPLING_CONF_PREFIX + ".livestats";
   public static final String SHOW_STATISTICS = SAMPLING_CONF_PREFIX + ".stats";
 
-  // Defaults
-  public static final RewardFunction DEFAULT_REWARD_FUNCTION = new DepthRewardFunction();
-  public static final TerminationStrategy DEFAULT_TERMINATION_STRATEGY
-      = new NeverTerminateStrategy();
+  // Defaults. We rely on Config's instantiation that uses reflection and passes jpf config
+  public static final String DEFAULT_REWARD_FUNCTION = DepthRewardFunction.class.getName();
+  public static final String DEFAULT_TERMINATION_STRATEGY = NeverTerminateStrategy
+      .class.getName();
 
   public static final String CHOICES_STRATEGY = SAMPLING_CONF_PREFIX + ".choicesstrategy";
   public static final ChoicesStrategy DEFAULT_CHOICES_STRATEGY = PruningChoicesStrategy.getInstance();

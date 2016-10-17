@@ -1,8 +1,10 @@
 package edu.cmu.sv.isstac.sampling;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
@@ -21,6 +23,7 @@ import edu.cmu.sv.isstac.sampling.search.SamplingListener;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
+import gov.nasa.jpf.JPFListener;
 import gov.nasa.jpf.util.JPFLogger;
 
 /**
@@ -64,26 +67,30 @@ public class SamplingAnalysis {
 
     public SamplingAnalysis build(Config jpfConfig, AnalysisStrategy analysisStrategy)
         throws AnalysisCreationException {
-      if(rewardFunction == null) {
-        if(jpfConfig.hasValue(Options.REWARD_FUNCTION)) {
-          this.rewardFunction = jpfConfig.getInstance(Options.REWARD_FUNCTION,
-              RewardFunction.class);
-        } else {
-          this.rewardFunction = Options.DEFAULT_REWARD_FUNCTION;
+
+      List<JPFListener> jpfListeners = new ArrayList<>();
+
+      if (rewardFunction == null) {
+        this.rewardFunction = jpfConfig.getInstance(Options.REWARD_FUNCTION,
+            RewardFunction.class, Options.DEFAULT_REWARD_FUNCTION);
+
+        //TODO: should fix this mess---it seems weird to add a reward function
+        //if it implements jpflistener, but seems to be the easiest fix for depth
+        //reward function that also supports measured methods i.e. not blindly relying on jpf's
+        // notion of depth. We could also change this by expanding analysis event observers but
+        // would ultimately give the same functionality (although a bit cleaner I believe)
+        if(this.rewardFunction instanceof JPFListener) {
+          jpfListeners.add((JPFListener)this.rewardFunction);
         }
       }
 
-      if(terminationStrategy == null) {
-        if(jpfConfig.hasValue(Options.TERMINATION_STRATEGY)) {
-          this.terminationStrategy = jpfConfig.getInstance(Options.TERMINATION_STRATEGY,
-              TerminationStrategy.class);
-        } else {
-          this.terminationStrategy = Options.DEFAULT_TERMINATION_STRATEGY;
-        }
+      if (terminationStrategy == null) {
+        this.terminationStrategy = jpfConfig.getInstance(Options.TERMINATION_STRATEGY,
+            TerminationStrategy.class, Options.DEFAULT_TERMINATION_STRATEGY);
       }
 
-      if(choicesStrategy == null) {
-        if(jpfConfig.hasValue(Options.CHOICES_STRATEGY)) {
+      if (choicesStrategy == null) {
+        if (jpfConfig.hasValue(Options.CHOICES_STRATEGY)) {
           choicesStrategy = jpfConfig.getInstance(Options.CHOICES_STRATEGY, ChoicesStrategy.class);
         } else {
           //This is pretty ugly, but right now I'm not sure how we can get around it
@@ -98,11 +105,11 @@ public class SamplingAnalysis {
         Options.choicesStrategy = choicesStrategy;
       }
 
-      if(pathQuantifier == null) {
-        if(jpfConfig.hasValue(Options.PATH_QUANTIFIER)) {
+      if (pathQuantifier == null) {
+        if (jpfConfig.hasValue(Options.PATH_QUANTIFIER)) {
           pathQuantifier = jpfConfig.getInstance(Options.PATH_QUANTIFIER, PathQuantifier.class);
         } else {
-          if(jpfConfig.getBoolean(Options.USE_MODELCOUNT_AMPLIFICATION,
+          if (jpfConfig.getBoolean(Options.USE_MODELCOUNT_AMPLIFICATION,
               Options.DEFAULT_USE_MODELCOUNT_AMPLIFICATION)) {
 
             //Create model counter
@@ -122,29 +129,31 @@ public class SamplingAnalysis {
 
       boolean liveAnalysis = eventObservers.stream()
           .anyMatch(eventObserver -> eventObserver instanceof LiveAnalysisStatistics);
-      if(!liveAnalysis
+      if (!liveAnalysis
           && jpfConfig.getBoolean(Options.SHOW_LIVE_STATISTICS,
-              Options.DEFAULT_SHOW_LIVE_STATISTICS)) {
+          Options.DEFAULT_SHOW_LIVE_STATISTICS)) {
         this.eventObservers.add(new LiveAnalysisStatistics());
       }
 
       boolean finalStats = eventObservers.stream()
           .anyMatch(eventObserver -> eventObserver instanceof SampleStatisticsOutputter);
 
-      if(!finalStats
+      if (!finalStats
           && jpfConfig.getBoolean(Options.SHOW_STATISTICS,
           Options.DEFAULT_SHOW_STATISTICS)) {
         this.eventObservers.add(new SampleStatisticsOutputter(new SampleStatistics(), System.out));
       }
 
-      if(jpfConfig.hasValue(Options.EVENT_OBSERVERS)) {
+      if (jpfConfig.hasValue(Options.EVENT_OBSERVERS)) {
         this.eventObservers.addAll(jpfConfig.getInstances(Options.EVENT_OBSERVERS,
             AnalysisEventObserver.class));
       }
 
       SamplingListener samplingListener = new SamplingListener(analysisStrategy, rewardFunction,
           pathQuantifier, terminationStrategy, choicesStrategy, eventObservers);
-      SamplingAnalysis samplingAnalysis = new SamplingAnalysis(jpfConfig, samplingListener);
+      jpfListeners.add(samplingListener);
+
+      SamplingAnalysis samplingAnalysis = new SamplingAnalysis(jpfConfig, jpfListeners);
 
       return samplingAnalysis;
     }
@@ -153,10 +162,10 @@ public class SamplingAnalysis {
   private final JPF jpf;
   private final Config config;
 
-  private SamplingAnalysis(Config config, SamplingListener samplingListener) {
+  private SamplingAnalysis(Config config, Collection<JPFListener> jpfListeners) {
     this.jpf = JPFSamplerFactory.create(config);
     this.config = config;
-    this.jpf.addListener(samplingListener);
+    jpfListeners.forEach(e -> this.jpf.addListener(e));
   }
 
   public void run() {
@@ -166,7 +175,7 @@ public class SamplingAnalysis {
 
     // Clean up temp files from model counting
     // TODO: maybe move this to somewhere more sensible
-    if(!config.getBoolean(ModelCounterFactory.KEEP_TMP_DIR_CONF,
+    if (!config.getBoolean(ModelCounterFactory.KEEP_TMP_DIR_CONF,
         ModelCounterFactory.KEEP_TMP_DIR_DEF)) {
       try {
         ModelCounterFactory.cleanUpTempFiles(config);
