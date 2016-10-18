@@ -73,15 +73,15 @@ public class SamplingAnalysis {
       if (rewardFunction == null) {
         this.rewardFunction = jpfConfig.getInstance(Options.REWARD_FUNCTION,
             RewardFunction.class, Options.DEFAULT_REWARD_FUNCTION);
+      }
 
-        //TODO: should fix this mess---it seems weird to add a reward function
-        //if it implements jpflistener, but seems to be the easiest fix for depth
-        //reward function that also supports measured methods i.e. not blindly relying on jpf's
-        // notion of depth. We could also change this by expanding analysis event observers but
-        // would ultimately give the same functionality (although a bit cleaner I believe)
-        if(this.rewardFunction instanceof JPFListener) {
-          jpfListeners.add((JPFListener)this.rewardFunction);
-        }
+      //TODO: should fix this mess---it seems weird to add a reward function
+      //if it implements jpflistener, but seems to be the easiest fix for depth
+      //reward function that also supports measured methods i.e. not blindly relying on jpf's
+      // notion of depth. We could also change this by expanding analysis event observers but
+      // would ultimately give the same functionality (although a bit cleaner I believe)
+      if(this.rewardFunction instanceof JPFListener) {
+        jpfListeners.add((JPFListener) this.rewardFunction);
       }
 
       if (terminationStrategy == null) {

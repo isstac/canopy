@@ -83,11 +83,13 @@ public class DepthRewardFunction implements RewardFunction, VMListener {
       String meth = enteredMethod.getBaseName();
       if(measuredMethods.contains(meth)) {
         if(startDepth != DEPTH_NOT_SET) {
-          String msg = "Entered measured method twice. Illegal state";
-          LOGGER.severe(msg);
-          throw new RewardComputationException(msg);
+          String msg = "Entered measured method twice. *Not* setting new start depth. This may " +
+              "not be what you want!";
+          LOGGER.warning(msg);
         }
-        this.startDepth = vm.getSearch().getDepth();
+        else {
+          this.startDepth = vm.getSearch().getDepth();
+        }
       }
     }
   }
