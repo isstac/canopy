@@ -63,12 +63,12 @@ public class BatchProcessor {
     List<Experiment> experiments = new ArrayList<>();
     //MCTS: just pruning
     //experiments.add(new MCTSExperiment(true, false, false, 0));
-    experiments.add(new MCTSExperiment(true, false, false, Math.sqrt(2)));
-    experiments.add(new MCTSExperiment(true, false, false, 5));
-    experiments.add(new MCTSExperiment(true, false, false, 10));
-    experiments.add(new MCTSExperiment(true, false, false, 20));
-    experiments.add(new MCTSExperiment(true, false, false, 50));
-    experiments.add(new MCTSExperiment(true, false, false, 100));
+//    experiments.add(new MCTSExperiment(true, false, false, Math.sqrt(2)));
+//    experiments.add(new MCTSExperiment(true, false, false, 5));
+//    experiments.add(new MCTSExperiment(true, false, false, 10));
+//    experiments.add(new MCTSExperiment(true, false, false, 20));
+//    experiments.add(new MCTSExperiment(true, false, false, 50));
+//    experiments.add(new MCTSExperiment(true, false, false, 100));
 
     // Monte Carlo experiment
     experiments.add(new MonteCarloExperiment());

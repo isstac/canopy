@@ -60,7 +60,8 @@ public class MonteCarloStrategy implements AnalysisStrategy {
   }
 
   @Override
-  public void pathTerminated(TerminationType termType, long reward, long pathVolume, long amplifiedReward, Search searchState) {
+  public void pathTerminated(TerminationType termType, long reward, long pathVolume, long
+      amplifiedReward, Search searchState, boolean hasBeenExploredBefore) {
     // We don't do anything when a sample terminates
   }
 }

@@ -7,8 +7,6 @@ import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
 import java.util.concurrent.TimeUnit;
 
-import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
-import edu.cmu.sv.isstac.sampling.analysis.SamplingResult;
 import gov.nasa.jpf.search.Search;
 
 /**
@@ -35,7 +33,7 @@ public class SampleStatistics implements AnalysisEventObserver {
   private SamplingResult finalResult;
 
   @Override
-  public void sampleDone(Search searchState, long samples, long propagatedReward, long pathVolume, SamplingResult.ResultContainer currentBestResult) {
+  public void sampleDone(Search searchState, long samples, long propagatedReward, long pathVolume, SamplingResult.ResultContainer currentBestResult, boolean hasBeenExplored) {
     sumStats.addValue(propagatedReward);
     if(propagatedReward > bestReward) {
       bestReward = propagatedReward;

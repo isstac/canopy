@@ -49,6 +49,17 @@ public class PruningChoicesStrategy implements ChoicesStrategy, PruningStrategy 
   }
 
   @Override
+  public boolean hasTerminatedPathBeenExplored(Path path) {
+    // We just return false here, because, by construction, a path can never be explored multiple
+    // times when using pruning. The "safe" way of doing this would be to actually consult the
+    // pruned set, but we would potentially have to check all path prefixes, because, in its
+    // current implementation, we only keep the prefix path in the set when the subtree (i.e. all
+    // suffixes of that prefix) are pruned. In other words, it is slightly more efficient to
+    // return false here
+    return false;
+  }
+
+  @Override
   public boolean isPruned(Path p) {
     return pruned.contains(p);
   }

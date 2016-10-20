@@ -1,6 +1,5 @@
 package edu.cmu.sv.isstac.sampling.analysis;
 
-import java.io.OutputStream;
 import java.io.PrintStream;
 
 import gov.nasa.jpf.search.Search;
@@ -28,9 +27,10 @@ public class SampleStatisticsOutputter extends SampleStatistics {
   @Override
   public void sampleDone(Search searchState, long samples,
                          long propagatedReward, long pathVolume,
-                         SamplingResult.ResultContainer currentBestResult) {
+                         SamplingResult.ResultContainer currentBestResult,
+                         boolean hasBeenExplored) {
     this.sampleStatistics.sampleDone(searchState, samples,
-        propagatedReward, pathVolume, currentBestResult);
+        propagatedReward, pathVolume, currentBestResult, hasBeenExplored);
   }
 
   @Override

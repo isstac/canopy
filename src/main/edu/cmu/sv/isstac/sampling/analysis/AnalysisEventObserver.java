@@ -8,7 +8,7 @@ import gov.nasa.jpf.search.Search;
  */
 public interface AnalysisEventObserver {
   public void sampleDone(Search searchState, long samples, long propagatedReward, long pathVolume,
-                         SamplingResult.ResultContainer currentBestResult);
+                         SamplingResult.ResultContainer currentBestResult, boolean hasBeenExplored);
 
   public void analysisDone(SamplingResult result);
 

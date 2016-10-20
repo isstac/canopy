@@ -24,7 +24,9 @@ public class LiveAnalysisStatistics extends AbstractAnalysisProcessor {
   }
   
   @Override
-  public void sampleDone(Search searchState, long samples, long propagatedReward, long pathVolume, ResultContainer currentBestResult) {
+  public void sampleDone(Search searchState, long samples, long propagatedReward,
+                         long pathVolume, ResultContainer currentBestResult,
+                         boolean hasBeenExplored) {
     chart.update(samples, propagatedReward, pathVolume);
   }
   

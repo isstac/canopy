@@ -11,4 +11,5 @@ import gov.nasa.jpf.vm.ChoiceGenerator;
  */
 public interface ChoicesStrategy {
   public ArrayList<Integer> getEligibleChoices(ChoiceGenerator<?> cg);
+  public boolean hasTerminatedPathBeenExplored(Path path);
 }

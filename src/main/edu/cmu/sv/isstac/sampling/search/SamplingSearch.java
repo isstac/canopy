@@ -21,7 +21,7 @@ import gov.nasa.jpf.vm.VM;
  * Based on a modified version of DFSearch in jpf-core
  */
 public class SamplingSearch extends Search {
-  private final Logger logger = JPFLogger.getLogger(SamplingSearch.class.getName());
+  private static final Logger logger = JPFLogger.getLogger(SamplingSearch.class.getName());
 
   private RestorableVMState initState;
   private PruningStrategy pruner;
@@ -30,10 +30,27 @@ public class SamplingSearch extends Search {
     super(config, vm);
 
     // Set up pruner---if any
+    // This is super ugly, but mentioned elsewhere, this seem to be the only way we can pass this
+    // information to SamplingSearch, because we never get the possibility of instantiating it
+    // ourselves; JPF does this automatically :/
+    // WARNING: the choices strategy *MUST* be configured *before* the JPF object is created
+    // since---in turn---this creates the SamplingSearch object
     if(Options.choicesStrategy instanceof PruningStrategy) {
+      if(!config.getBoolean("symbolic.optimizechoices", true)) {
+        logger.warning("PC Choice optimization not set (option symbolic.optimizechoices). " +
+            "Sampling may proceed to explore ignored states. They are not regarded as terminated " +
+            "paths, but they can influence decisions if they are based on collecting data during " +
+            "sampling and not on actual terminating paths. Also, for MCTS performance is reduced " +
+            "significantly");
+      }
+
+      logger.info("Search object configured with pruning");
+
       pruner = PruningChoicesStrategy.getInstance();
       pruner.reset();
     } else {
+
+      logger.info("Search object configured with no pruning");
       // Create a dummy
       pruner = new NoPruningStrategy();
     }
@@ -59,8 +76,16 @@ public class SamplingSearch extends Search {
     notifyNewSample();
 
     while (!done) {
-      if (checkAndResetBacktrackRequest() || !isNewState() || isEndState() || isIgnoredState()
+      boolean checkAndResetBacktrackRequest = checkAndResetBacktrackRequest();
+      boolean isIgnoredState = isIgnoredState();
+
+      if (checkAndResetBacktrackRequest() || !isNewState() || isEndState() || isIgnoredState
           || depthLimitReached) {
+        if(isIgnoredState) {
+          String msg = "Sampled an ignored state! Pruning this path. This issue can be solved by";
+          logger.severe(msg);
+        }
+
         logger.fine("Sample terminated");
         pruner.performPruning(getVM().getChoiceGenerator());
 

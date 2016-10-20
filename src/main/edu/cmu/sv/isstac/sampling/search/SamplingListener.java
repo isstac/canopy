@@ -47,19 +47,15 @@ public final class SamplingListener extends PropertyListenerAdapter {
   // events if necessary, e.g. emit event after each sample.
   private Collection<AnalysisEventObserver> observers;
 
-
   // The analysis strategy to use, e.g., MCTS
   private final AnalysisStrategy analysisStrategy;
-
-  public SamplingListener(AnalysisStrategy analysisStrategy, RewardFunction rewardFunction, PathQuantifier pathQuantifier,
-                          TerminationStrategy terminationStrategy, ChoicesStrategy choicesStrategy) {
-    this(analysisStrategy, rewardFunction, pathQuantifier, terminationStrategy, choicesStrategy, new HashSet<>());
-  }
 
   public SamplingListener(AnalysisStrategy analysisStrategy, RewardFunction rewardFunction,
                           PathQuantifier pathQuantifier,
                           TerminationStrategy terminationStrategy,
-                          ChoicesStrategy choicesStrategy, Collection<AnalysisEventObserver> observers) {
+                          ChoicesStrategy choicesStrategy,
+                          Collection<AnalysisEventObserver> observers) {
+
     this.analysisStrategy = analysisStrategy;
     this.choicesStrategy = choicesStrategy;
     // Check input
@@ -101,19 +97,27 @@ public final class SamplingListener extends PropertyListenerAdapter {
 
   private void pathTerminated(TerminationType termType, Search search) {
     VM vm = search.getVM();
+
+    // First, let's check if we have seen this path before. We will inform the analysis strategy
+    // and the event observers with this information
+    Path terminatedPath = new Path(vm.getChoiceGenerator());
+    boolean hasBeenExplored = choicesStrategy.hasTerminatedPathBeenExplored(terminatedPath);
+
+    //Increment the number of samples we have performed
+    result.incNumberOfSamples();
+
     // Compute reward based on reward function
     long reward = rewardFunction.computeReward(vm);
 
     // We compute the volume of the path here.
     // This can e.g. be based on model counting
     // The path volume is used in the backup phase,
-    // i.e. the number of times a node has been visited,
+    // i.e. the number of times asa node has been visited,
     // corresponds to the (additive) volume of the path(s)
     // with that node as origin
     long pathVolume = this.pathQuantifier.quantifyPath(vm);
     assert pathVolume > 0;
 
-    result.incNumberOfSamples();
     long numberOfSamples = result.getNumberOfSamples();
 
     // The reward that will actually be propagated
@@ -141,6 +145,13 @@ public final class SamplingListener extends PropertyListenerAdapter {
         throw new SamplingException("Unknown result type " + termType);
     }
 
+
+    // Notify observers with sample done event
+    for(AnalysisEventObserver obs : this.observers) {
+      obs.sampleDone(vm.getSearch(), numberOfSamples, reward, pathVolume,
+          bestResult, hasBeenExplored);
+    }
+
     if(reward > bestResult.getReward()) {
       bestResult.setReward(reward);
       bestResult.setSampleNumber(result.getNumberOfSamples());
@@ -153,12 +164,8 @@ public final class SamplingListener extends PropertyListenerAdapter {
       bestResult.setPathCondition(pc);
     }
 
-    // Notify observers with sample done event
-    for(AnalysisEventObserver obs : this.observers) {
-      obs.sampleDone(vm.getSearch(), numberOfSamples, reward, pathVolume, bestResult);
-    }
-
-    this.analysisStrategy.pathTerminated(termType, reward, pathVolume, amplifiedReward, search);
+    this.analysisStrategy.pathTerminated(termType, reward, pathVolume,
+        amplifiedReward, search, hasBeenExplored);
 
     // Check if we should terminate the search
     // based on the result obtained

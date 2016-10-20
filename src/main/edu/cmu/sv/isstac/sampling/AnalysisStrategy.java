@@ -13,5 +13,6 @@ import gov.nasa.jpf.vm.VM;
 public interface AnalysisStrategy {
   void makeStateChoice(VM vm, ChoiceGenerator<?> cg, ArrayList<Integer> eligibleChoices);
   void newSampleStarted(Search samplingSearch);
-  void pathTerminated(TerminationType termType, long reward, long pathVolume, long amplifiedReward, Search searchState);
+  void pathTerminated(TerminationType termType, long reward, long pathVolume,
+                      long amplifiedReward, Search searchState, boolean hasBeenExploredBefore);
 }

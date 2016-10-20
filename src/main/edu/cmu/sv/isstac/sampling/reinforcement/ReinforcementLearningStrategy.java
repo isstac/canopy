@@ -161,34 +161,46 @@ public class ReinforcementLearningStrategy implements AnalysisStrategy {
   }
 
   @Override
-  public void pathTerminated(TerminationType termType, long reward, long pathVolume,
-                             long amplifiedReward, Search searchState) {
-    //TODO: slightly messy way of making the final node
-    if(!lastNode.hasChildForChoice(lastChoice)) {
-      try {
-        lastNode = nodeFactory.create(lastNode, null, lastChoice);
-      } catch (NodeCreationException e) {
-        String msg = "Could not create final node";
-        logger.severe(msg);
-        throw new RLAnalysisException(msg);
+  public void pathTerminated(TerminationType termType, long reward,
+                             long pathVolume, long amplifiedReward,
+                             Search searchState, boolean hasBeenExploredBefore) {
+
+    // If this path has been seen before (e.g. if pruning was not used), then we don't perform
+    // back progation of rewards!
+    if(!hasBeenExploredBefore) {
+      //TODO: slightly messy way of making the final node
+      if (!lastNode.hasChildForChoice(lastChoice)) {
+        try {
+          lastNode = nodeFactory.create(lastNode, null, lastChoice);
+        } catch (NodeCreationException e) {
+          String msg = "Could not create final node";
+          logger.severe(msg);
+          throw new RLAnalysisException(msg);
+        }
+      } else {
+        lastNode = (RLNode) lastNode.getChild(lastChoice);
       }
-    } else {
-      lastNode = (RLNode)lastNode.getChild(lastChoice);
+
+      // perform backpropagation of the rewards
+      // NOTE: here we are **ACCUMULATING** rewards
+      // Maybe we should take MAX reward of children instead
+      // These are two different approaches
+      // Another important note here is the samplesSinceOptimization is *only* updated for unique
+      // paths i.e. if we sample the same path multiple times (which can happen if pruning is not
+      // enabled, in which case hasBeenExploredBefore can be true), we currently don't use that
+      // information for anything. This may not be what we want, e.g., maybe we would like to
+      // increment samplesSinceOptimization regardless of whether it has been seen before or not
+      BackPropagator.cumulativeRewardPropagation(lastNode, amplifiedReward, pathVolume, termType);
+
+      samplesSinceOptimization++;
+
+      // We perform optimization (or reinforcement) of choices after samplesPerOptimization
+      if (samplesSinceOptimization >= this.samplesPerOptimization) {
+        performOptimizationStep();
+        samplesSinceOptimization = 0;
+      }
     }
 
-    // perform backpropagation of the rewards
-    // NOTE: here we are **ACCUMULATING** rewards
-    // Maybe we should take MAX reward of children instead
-    // These are two different approaches
-    BackPropagator.cumulativeRewardPropagation(lastNode, amplifiedReward, pathVolume, termType);
-
-    samplesSinceOptimization++;
-
-    // We perform optimization (or reinforcement) of choices after samplesPerOptimization
-    if(samplesSinceOptimization >= this.samplesPerOptimization) {
-      performOptimizationStep();
-      samplesSinceOptimization = 0;
-    }
     // reset exploration to drive a new round of sampling
     this.lastNode = this.root;
   }
