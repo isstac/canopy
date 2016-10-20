@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -33,8 +34,8 @@ public class BatchProcessor {
   //of course be the same, but also the *order* of the experiments must
   //be the same!
   private static final int DEFAULT_SEED = 112119;
-  private static final int SAMPLE_SIZE_PER_EXPERIMENT = 2000;
-  private static final int DEFAULT_ITERATIONS_PER_EXPERIMENT = 50;
+  private static final int SAMPLE_SIZE_PER_EXPERIMENT = 2;
+  private static final int DEFAULT_ITERATIONS_PER_EXPERIMENT = 1;
 
   public static void main(String[] args) throws AnalysisCreationException {
     if(args.length < 2 || args.length > 3) {
@@ -42,7 +43,7 @@ public class BatchProcessor {
       return;
     }
     int iterations = DEFAULT_ITERATIONS_PER_EXPERIMENT;
-    File inputFolder = new File(args[0]);
+    File input = new File(args[0]);
     File outputFolder = null;
 
     if(args.length == 3) {
@@ -55,20 +56,36 @@ public class BatchProcessor {
     assert outputFolder != null;
     List<Experiment> experiments = createDefaultExperiments();
 
-    performBatchProcessing(inputFolder, outputFolder, iterations, experiments, DEFAULT_SEED);
-  }
+    Collection<File> jpfConfigs = new ArrayList<>();
+    if(input.isFile()) {
+      //If input is just a file, this is the only one that will be used for batch run
+      jpfConfigs.add(input);
 
+    } else if(input.isDirectory()) {
+      //If input is a directory, then load *all* files with .jpf extension
+      for(File jpfFile : input.listFiles()) {
+        if (!jpfFile.getName().endsWith(".jpf")) {
+          logger.info("Skipping file " + jpfFile.getName());
+          continue;
+        }
+        logger.info("Processing jpf file: " + jpfFile.getName());
+        jpfConfigs.add(jpfFile);
+      }
+    }
+
+    performBatchProcessing(jpfConfigs, outputFolder, iterations, experiments, DEFAULT_SEED);
+  }
 
   private static List<Experiment> createDefaultExperiments() {
     List<Experiment> experiments = new ArrayList<>();
     //MCTS: just pruning
     //experiments.add(new MCTSExperiment(true, false, false, 0));
-//    experiments.add(new MCTSExperiment(true, false, false, Math.sqrt(2)));
-//    experiments.add(new MCTSExperiment(true, false, false, 5));
-//    experiments.add(new MCTSExperiment(true, false, false, 10));
-//    experiments.add(new MCTSExperiment(true, false, false, 20));
-//    experiments.add(new MCTSExperiment(true, false, false, 50));
-//    experiments.add(new MCTSExperiment(true, false, false, 100));
+    experiments.add(new MCTSExperiment(true, false, false, Math.sqrt(2)));
+    experiments.add(new MCTSExperiment(true, false, false, 5));
+    experiments.add(new MCTSExperiment(true, false, false, 10));
+    experiments.add(new MCTSExperiment(true, false, false, 20));
+    experiments.add(new MCTSExperiment(true, false, false, 50));
+    experiments.add(new MCTSExperiment(true, false, false, 100));
 
     // Monte Carlo experiment
     experiments.add(new MonteCarloExperiment());
@@ -80,18 +97,13 @@ public class BatchProcessor {
     return experiments;
   }
 
-  public static void performBatchProcessing(File inputFolder, File resultsFolder, int iterations,
-                                       List<Experiment> experiments, long initSeed) throws AnalysisCreationException {
+  public static void performBatchProcessing(Collection<File> jpfConfigs, File resultsFolder, int
+      iterations, List<Experiment> experiments, long initSeed) throws AnalysisCreationException {
     Random rng = new Random(initSeed);
 
     Stopwatch stopwatch = Stopwatch.createStarted();
 
-    for(File jpfFile : inputFolder.listFiles()) {
-      if(!jpfFile.getName().endsWith(".jpf")) {
-        logger.info("skipping file " + jpfFile.getName());
-        continue;
-      }
-
+    for(File jpfFile : jpfConfigs) {
       logger.info("Processing jpf file: " + jpfFile.getName());
 
       //Seriously messed up ctors for Config class.
