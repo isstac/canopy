@@ -181,30 +181,31 @@ public class MCTSStrategy implements AnalysisStrategy {
   public void pathTerminated(TerminationType termType, long reward,
                              long pathVolume, long amplifiedReward,
                              Search searchState, boolean hasBeenExploredBefore) {
+    // Create a final node.
+    // It marks a leaf in the Monte Carlo Tree AND
+    // in the symbolic execution tree, i.e. it will
+    // only be created in the event that MCT reaches
+    // and actual leaf in the symbolic execution tree
+    if (expandedFlag) {
+      try {
+        last = this.nodeFactory.create(last, null, expandedChoice);
+      } catch (NodeCreationException e) {
+        String msg = "Could not create node at path termination";
+        logger.severe(msg);
+        throw new MCTSAnalysisException(msg);
+      }
+      expandedFlag = false;
+    }
+
     // If this path has been seen before (e.g. if pruning was not used), then we don't perform
     // back progation of rewards!
-    if(!hasBeenExploredBefore) {
-
-      // Create a final node.
-      // It marks a leaf in the Monte Carlo Tree AND
-      // in the symbolic execution tree, i.e. it will
-      // only be created in the event that MCT reaches
-      // and actual leaf in the symbolic execution tree
-      if (expandedFlag) {
-        try {
-          last = this.nodeFactory.create(last, null, expandedChoice);
-        } catch (NodeCreationException e) {
-          String msg = "Could not create node at path termination";
-          logger.severe(msg);
-          throw new MCTSAnalysisException(msg);
-        }
-        expandedFlag = false;
-      }
-
-      // Perform backup phase, back propagating rewards and updated visited num according to vol.
-      BackPropagator.cumulativeRewardPropagation(last, amplifiedReward, pathVolume, termType);
-
+    if(hasBeenExploredBefore) {
+      amplifiedReward = 0;
+      logger.warning("Path has been explored before (Pruning is turned off? If not, this is an " +
+          "error). MCTS does not propagate reward *only* the visitcount/pathvolume!");
     }
+    // Perform backup phase, back propagating rewards and updated visited num according to vol.
+    BackPropagator.cumulativeRewardPropagation(last, amplifiedReward, pathVolume, termType);
 
     // Reset exploration to drive a new round of sampling
     this.mctsState = MCTS_STATE.SELECTION;
