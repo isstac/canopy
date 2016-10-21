@@ -199,6 +199,9 @@ public class ReinforcementLearningStrategy implements AnalysisStrategy {
         performOptimizationStep();
         samplesSinceOptimization = 0;
       }
+    } else {
+      logger.warning("Path has been explored before (Pruning is turned off? If not, this is an " +
+          "error). Reinforcement learning does not propagate reward!");
     }
 
     // reset exploration to drive a new round of sampling
