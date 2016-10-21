@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
+import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 
 /**
@@ -12,6 +14,8 @@ import gov.nasa.jpf.vm.ChoiceGenerator;
  *
  */
 public class AllChoicesStrategy implements ChoicesStrategy {
+
+  private static final Logger logger = JPFLogger.getLogger(AllChoicesStrategy.class.getName());
 
   private Set<Path> exploredPaths = new HashSet<>();
 
