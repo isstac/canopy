@@ -38,7 +38,7 @@ public class Options {
   public static final String CHOICES_STRATEGY = SAMPLING_CONF_PREFIX + ".choicesstrategy";
   public static final ChoicesStrategy DEFAULT_CHOICES_STRATEGY = PruningChoicesStrategy.getInstance();
 
-  public static final boolean DEFAULT_USE_MODELCOUNT_AMPLIFICATION = true;
+  public static final boolean DEFAULT_USE_MODELCOUNT_AMPLIFICATION = false;
 
   public static final boolean DEFAULT_SHOW_STATISTICS = true;
   public static final boolean DEFAULT_SHOW_LIVE_STATISTICS = true;
