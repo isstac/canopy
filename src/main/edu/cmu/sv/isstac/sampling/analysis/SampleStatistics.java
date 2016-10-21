@@ -6,13 +6,16 @@ import com.google.common.base.Stopwatch;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import gov.nasa.jpf.search.Search;
+import gov.nasa.jpf.util.JPFLogger;
 
 /**
  * @author Kasper Luckow
  */
 public class SampleStatistics implements AnalysisEventObserver {
+  public static final Logger logger = JPFLogger.getLogger(SampleStatistics.class.getName());
 
   private static final TimeUnit TIMEUNIT = TimeUnit.SECONDS;
 
@@ -33,15 +36,22 @@ public class SampleStatistics implements AnalysisEventObserver {
   private SamplingResult finalResult;
 
   @Override
-  public void sampleDone(Search searchState, long samples, long propagatedReward, long pathVolume, SamplingResult.ResultContainer currentBestResult, boolean hasBeenExplored) {
-    sumStats.addValue(propagatedReward);
-    if(propagatedReward > bestReward) {
-      bestReward = propagatedReward;
-      bestRewardSampleNum = samples;
-      bestRewardTime = stopwatch.elapsed(TIMEUNIT);
-      numberOfBestRewards = 1;
-    } else if(propagatedReward == bestReward) {
-      numberOfBestRewards++;
+  public void sampleDone(Search searchState, long samples, long propagatedReward,
+                         long pathVolume, SamplingResult.ResultContainer currentBestResult,
+                         boolean hasBeenExplored) {
+    if(!hasBeenExplored) {
+      sumStats.addValue(propagatedReward);
+      if (propagatedReward > bestReward) {
+        bestReward = propagatedReward;
+        bestRewardSampleNum = samples;
+        bestRewardTime = stopwatch.elapsed(TIMEUNIT);
+        numberOfBestRewards = 1;
+      } else if (propagatedReward == bestReward) {
+        numberOfBestRewards++;
+      }
+    } else {
+      logger.warning("Sampling statistics will *not* record explored path---is that what we " +
+          "want?");
     }
   }
 

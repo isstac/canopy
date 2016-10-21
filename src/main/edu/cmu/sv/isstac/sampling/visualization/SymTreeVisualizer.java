@@ -167,7 +167,9 @@ public class SymTreeVisualizer implements MCTSEventObserver {
   }
 
   @Override
-  public void sampleDone(Search searchState, long samples, long propagatedReward, long pathVolume, SamplingResult.ResultContainer currentBestResult, boolean hasBeenExplored) {
+  public void sampleDone(Search searchState, long samples, long propagatedReward,
+                         long pathVolume, SamplingResult.ResultContainer currentBestResult,
+                         boolean hasBeenExplored) {
     // No thanks... ugly (see note in MCTSEventObserver)
   }
 

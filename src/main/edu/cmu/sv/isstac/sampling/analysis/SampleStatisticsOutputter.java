@@ -1,8 +1,10 @@
 package edu.cmu.sv.isstac.sampling.analysis;
 
 import java.io.PrintStream;
+import java.util.logging.Logger;
 
 import gov.nasa.jpf.search.Search;
+import gov.nasa.jpf.util.JPFLogger;
 
 /**
  * @author Kasper Luckow
@@ -30,7 +32,7 @@ public class SampleStatisticsOutputter extends SampleStatistics {
                          SamplingResult.ResultContainer currentBestResult,
                          boolean hasBeenExplored) {
     this.sampleStatistics.sampleDone(searchState, samples,
-        propagatedReward, pathVolume, currentBestResult, hasBeenExplored);
+          propagatedReward, pathVolume, currentBestResult, hasBeenExplored);
   }
 
   @Override
