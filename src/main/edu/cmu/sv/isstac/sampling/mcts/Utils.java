@@ -32,6 +32,7 @@ public class Utils {
 
   public static final String USE_MODELCOUNT_WEIGHTED_SIMULATION = MCTS_CONF_PRFX +
       ".weightedsampling";
+  public static final boolean DEFAULT_USE_MODELCOUNT_WEIGHTED_SIMULATION = false;
 
   public static final String USE_TREE_VISUALIZATION = MCTS_CONF_PRFX + ".treevisualizer";
   public static final boolean DEFAULT_USE_TREE_VISUALIZATION = false;
@@ -43,7 +44,8 @@ public class Utils {
     }
 
     long seed = Options.getSeed(conf);
-    if(conf.getBoolean(USE_MODELCOUNT_WEIGHTED_SIMULATION)) {
+    if(conf.getBoolean(USE_MODELCOUNT_WEIGHTED_SIMULATION,
+        DEFAULT_USE_MODELCOUNT_WEIGHTED_SIMULATION)) {
       SPFModelCounter modelCounter = ModelCounterFactory.getInstance(conf);
       return new CountWeightedSimulationPolicy(modelCounter, seed);
     }
