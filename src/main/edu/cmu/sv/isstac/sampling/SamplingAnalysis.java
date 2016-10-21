@@ -65,8 +65,8 @@ public class SamplingAnalysis {
       return this;
     }
 
-    public SamplingAnalysis build(Config jpfConfig, AnalysisStrategy analysisStrategy)
-        throws AnalysisCreationException {
+    public SamplingAnalysis build(Config jpfConfig, AnalysisStrategy analysisStrategy,
+                                  JPFFactory jpfFactory) throws AnalysisCreationException {
 
       List<JPFListener> jpfListeners = new ArrayList<>();
 
@@ -153,7 +153,7 @@ public class SamplingAnalysis {
           pathQuantifier, terminationStrategy, choicesStrategy, eventObservers);
       jpfListeners.add(samplingListener);
 
-      SamplingAnalysis samplingAnalysis = new SamplingAnalysis(jpfConfig, jpfListeners);
+      SamplingAnalysis samplingAnalysis = new SamplingAnalysis(jpfConfig, jpfListeners, jpfFactory);
 
       return samplingAnalysis;
     }
@@ -162,8 +162,9 @@ public class SamplingAnalysis {
   private final JPF jpf;
   private final Config config;
 
-  private SamplingAnalysis(Config config, Collection<JPFListener> jpfListeners) {
-    this.jpf = JPFSamplerFactory.create(config);
+  private SamplingAnalysis(Config config, Collection<JPFListener> jpfListeners,
+                           JPFFactory jpfFactory) {
+    this.jpf = jpfFactory.buildInstance(config);
     this.config = config;
     jpfListeners.forEach(e -> this.jpf.addListener(e));
   }

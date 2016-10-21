@@ -1,6 +1,7 @@
 package edu.cmu.sv.isstac.sampling.reinforcement;
 
 import edu.cmu.sv.isstac.sampling.AnalysisCreationException;
+import edu.cmu.sv.isstac.sampling.JPFSamplerFactory;
 import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.SamplingAnalysis;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
@@ -31,7 +32,7 @@ public class ReinforcementLearningShell implements JPFShell {
     SPFModelCounter modelCounter = ModelCounterFactory.getInstance(config);
     this.samplingAnalysis = samplingAnalysisBuilder.build(config,
         new ReinforcementLearningStrategy(samplesPerOptimization, epsilon,
-            historyWeight, modelCounter, Options.getSeed(config)));
+            historyWeight, modelCounter, Options.getSeed(config)), new JPFSamplerFactory());
   }
 
   @Override

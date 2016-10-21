@@ -1,6 +1,7 @@
 package edu.cmu.sv.isstac.sampling.montecarlo;
 
 import edu.cmu.sv.isstac.sampling.AnalysisCreationException;
+import edu.cmu.sv.isstac.sampling.JPFSamplerFactory;
 import edu.cmu.sv.isstac.sampling.SamplingAnalysis;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterCreationException;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
@@ -24,7 +25,7 @@ public class MonteCarloShell implements JPFShell {
     SamplingAnalysis.Builder samplingAnalysisBuilder = new SamplingAnalysis.Builder();
 
     this.samplingAnalysis = samplingAnalysisBuilder.build(config, new MonteCarloStrategy
-        (simulationPolicy));
+        (simulationPolicy), new JPFSamplerFactory());
   }
 
   @Override

@@ -1,6 +1,7 @@
 package edu.cmu.sv.isstac.sampling.mcts;
 
 import edu.cmu.sv.isstac.sampling.AnalysisCreationException;
+import edu.cmu.sv.isstac.sampling.JPFSamplerFactory;
 import edu.cmu.sv.isstac.sampling.SamplingAnalysis;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterCreationException;
@@ -30,7 +31,7 @@ public class MCTSShell implements JPFShell {
       analysisBuilder.addEventObserver(new SymTreeVisualizer());
     }
 
-    this.samplingAnalysis = analysisBuilder.build(config, mcts);
+    this.samplingAnalysis = analysisBuilder.build(config, mcts, new JPFSamplerFactory());
   }
 
   @Override

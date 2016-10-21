@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AnalysisCreationException;
 import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
+import edu.cmu.sv.isstac.sampling.JPFSamplerFactory;
 import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.SamplingAnalysis;
 import edu.cmu.sv.isstac.sampling.analysis.SampleStatistics;
@@ -129,7 +130,7 @@ public class BatchProcessor {
           SampleStatistics statistics = new SampleStatistics();
           analysisBuilder.addEventObserver(statistics);
           analysisBuilder.setTerminationStrategy(new SampleSizeTerminationStrategy(SAMPLE_SIZE_PER_EXPERIMENT));
-          SamplingAnalysis analysis = analysisBuilder.build(conf, analysisStrategy);
+          SamplingAnalysis analysis = analysisBuilder.build(conf, analysisStrategy, new JPFSamplerFactory());
           analysis.run();
 
           writeStatisticsToFile(statistics, iteration, seed, targetName, experiment.getName(),
