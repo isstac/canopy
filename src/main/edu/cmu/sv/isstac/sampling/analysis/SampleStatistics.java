@@ -26,6 +26,8 @@ public class SampleStatistics implements AnalysisEventObserver {
   private long bestRewardTime = 0;
   private long bestReward = -1;
   private long totalSampleNum = 0;
+
+  private long uniqueSampleNum = 0;
   private double avgThroughput = 0.0;
   private long totalAnalysisTime = 0;
 
@@ -39,7 +41,10 @@ public class SampleStatistics implements AnalysisEventObserver {
   public void sampleDone(Search searchState, long samples, long propagatedReward,
                          long pathVolume, SamplingResult.ResultContainer currentBestResult,
                          boolean hasBeenExplored) {
+    totalSampleNum++;
+
     if(!hasBeenExplored) {
+      uniqueSampleNum++;
       sumStats.addValue(propagatedReward);
       if (propagatedReward > bestReward) {
         bestReward = propagatedReward;
@@ -50,8 +55,8 @@ public class SampleStatistics implements AnalysisEventObserver {
         numberOfBestRewards++;
       }
     } else {
-      logger.warning("Sampling statistics will *not* record explored path---is that what we " +
-          "want?");
+      logger.warning("Sampling statistics will *not* record explored path except for total " +
+          "sample num---is that what we want?");
     }
   }
 
@@ -60,7 +65,7 @@ public class SampleStatistics implements AnalysisEventObserver {
     long totalAnalysisTimeMS = stopwatch.elapsed(TimeUnit.MILLISECONDS);
     totalAnalysisTime = TIMEUNIT.convert(totalAnalysisTimeMS, TimeUnit.MILLISECONDS);
     stopwatch.stop();
-    totalSampleNum = result.getNumberOfSamples();
+//    totalSampleNum = result.getNumberOfSamples();
     if(totalAnalysisTimeMS > 0) {
       long msToS = TIMEUNIT.toMillis(1);
       avgThroughput = (totalSampleNum / (double)totalAnalysisTimeMS) * msToS;
@@ -110,6 +115,10 @@ public class SampleStatistics implements AnalysisEventObserver {
     return totalSampleNum;
   }
 
+  public long getUniqueSampleNum() {
+    return uniqueSampleNum;
+  }
+
   public double getAvgThroughput() {
     return avgThroughput;
   }
@@ -130,7 +139,8 @@ public class SampleStatistics implements AnalysisEventObserver {
         .add("max. reward sample #", getBestRewardSampleNum())
         .add("max. reward time", getBestRewardTime())
         .add("# same max. rewards", getNumberOfBestRewards())
-        .add("total sample number", getTotalSampleNum())
+        .add("total samples", getTotalSampleNum())
+        .add("total unique samples", getUniqueSampleNum())
         .add("total analysis time", getTotalAnalysisTime())
         .add("avg. throughput", getAvgThroughput())
         .add("reward mean", getRewardMean())

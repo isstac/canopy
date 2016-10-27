@@ -167,6 +167,7 @@ public class BatchProcessor {
             "bestRewardTime[" + statistics.getTimeUnit().toString() + "]," +
             "bestRewardCount," +
             "totalSampleNum/paths," +
+            "totalUniqueSampleNum/paths," +
             "totalAnalysisTime[" + statistics.getTimeUnit().toString() + "]," +
             "avgThroughput[#samples/" + statistics.getTimeUnit().toString() + "]," +
             "seed," +
@@ -189,6 +190,7 @@ public class BatchProcessor {
         .append(statistics.getBestRewardTime()).append(',')
         .append(statistics.getNumberOfBestRewards()).append(',')
         .append(statistics.getTotalSampleNum()).append(',')
+        .append(statistics.getUniqueSampleNum()).append(',')
         .append(statistics.getTotalAnalysisTime()).append(',')
         .append(doubleFormat.format(statistics.getAvgThroughput())).append(',')
         .append(seed).append(',')

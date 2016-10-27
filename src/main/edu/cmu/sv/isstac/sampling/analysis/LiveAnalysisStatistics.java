@@ -31,12 +31,12 @@ public class LiveAnalysisStatistics extends AbstractAnalysisProcessor {
   public void sampleDone(Search searchState, long samples, long propagatedReward,
                          long pathVolume, ResultContainer currentBestResult,
                          boolean hasBeenExplored) {
-     if(!hasBeenExplored) {
+    // if(!hasBeenExplored) {
        chart.update(samples, propagatedReward, pathVolume);
-     } else {
-       logger.warning("Live tracker chart will not show already explored path---is that what we " +
-           "want?");
-     }
+//     } else {
+//       logger.warning("Live tracker chart will not show already explored path---is that what we " +
+//           "want?");
+//     }
   }
   
   @Override  
