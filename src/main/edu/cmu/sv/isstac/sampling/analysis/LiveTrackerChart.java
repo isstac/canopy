@@ -174,28 +174,39 @@ public class LiveTrackerChart extends ApplicationFrame {
     return histogramChart;
   }
   
-  public void update(long x, long reward, long pathVolume) {
+  public void update(long x, long reward, long pathVolume, boolean hasBeenExplored) {
     if(bufferSize >= maxBufferSize) {
-      updateCharts(xBuf, yBuf, pathVolumeBuf);
-      long elapsedTime = this.stopwatch.elapsed(TimeUnit.MILLISECONDS);
-      this.stopwatch.reset().start();
-
-      //Compute throughput
-      double throughput = bufferSize / ((double)elapsedTime / 1000);
-      throughputSamplesNum++;
-      rollingThroughputAvg -= rollingThroughputAvg / throughputSamplesNum;
-      rollingThroughputAvg += throughput / (double)throughputSamplesNum;
-
-      throughputTxtLabel.setText(throughputTxt + " " + doubleFormat.format(throughput));
-      avgThroughputTxtLabel.setText(avgThroughputTxt + " " + doubleFormat.format
-          (rollingThroughputAvg));
-      bufferSize = 0;
+      updateChartsAndLabels(xBuf, yBuf, pathVolumeBuf);
     } else {
-      xBuf[bufferSize] = x;
-      yBuf[bufferSize] = reward;
-      pathVolumeBuf[bufferSize] = pathVolume;
-      bufferSize++;
+      //This is important for the non pruning case:
+      // we *don't* update the chart if the path has been explored before, otherwise the results
+      // shown would not really correspond to the statistics output. We still however keep
+      // updating the throughput etc and display that on the chart
+      if(!hasBeenExplored) {
+        xBuf[bufferSize] = x;
+        yBuf[bufferSize] = reward;
+        pathVolumeBuf[bufferSize] = pathVolume;
+        bufferSize++;
+      }
     }
+  }
+
+  private void updateChartsAndLabels(long[] x, long[] y, long[] pathVolume) {
+    updateCharts(xBuf, yBuf, pathVolumeBuf);
+
+    long elapsedTime = this.stopwatch.elapsed(TimeUnit.MILLISECONDS);
+    this.stopwatch.reset().start();
+
+    //Compute throughput
+    double throughput = bufferSize / ((double)elapsedTime / 1000);
+    throughputSamplesNum++;
+    rollingThroughputAvg -= rollingThroughputAvg / throughputSamplesNum;
+    rollingThroughputAvg += throughput / (double)throughputSamplesNum;
+
+    throughputTxtLabel.setText(throughputTxt + " " + doubleFormat.format(throughput));
+    avgThroughputTxtLabel.setText(avgThroughputTxt + " " + doubleFormat.format
+        (rollingThroughputAvg));
+    bufferSize = 0;
   }
 
   //TODO: buffering is not working atm -- seems a bit complicated
@@ -228,5 +239,9 @@ public class LiveTrackerChart extends ApplicationFrame {
     avgRewardTxtLabel.setText(avgRewardSampleTxt + doubleFormat.format(rollingAvg));
     maxMarker.setValue(maxReward);
     avgMarker.setValue(rollingAvg);
+  }
+
+  public void flush() {
+    updateChartsAndLabels(xBuf, yBuf, pathVolumeBuf);
   }
 }

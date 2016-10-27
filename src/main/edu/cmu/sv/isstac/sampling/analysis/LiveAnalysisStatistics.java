@@ -26,21 +26,18 @@ public class LiveAnalysisStatistics extends AbstractAnalysisProcessor {
     chart.pack();    
     chart.setVisible(true);
   }
-  
+
   @Override
   public void sampleDone(Search searchState, long samples, long propagatedReward,
                          long pathVolume, ResultContainer currentBestResult,
                          boolean hasBeenExplored) {
-    // if(!hasBeenExplored) {
-       chart.update(samples, propagatedReward, pathVolume);
-//     } else {
-//       logger.warning("Live tracker chart will not show already explored path---is that what we " +
-//           "want?");
-//     }
+    chart.update(samples, propagatedReward, pathVolume, hasBeenExplored);
   }
   
   @Override  
-  public void analysisDone(SamplingResult result) { }
+  public void analysisDone(SamplingResult result) {
+    chart.flush();
+  }
 
   @Override
   public void analysisStarted(Search search) { }
