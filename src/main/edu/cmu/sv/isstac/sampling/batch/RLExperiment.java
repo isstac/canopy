@@ -2,6 +2,7 @@ package edu.cmu.sv.isstac.sampling.batch;
 
 import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
 import edu.cmu.sv.isstac.sampling.Options;
+import edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterCreationException;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterFactory;
@@ -32,6 +33,10 @@ public class RLExperiment implements Experiment {
 
   @Override
   public AnalysisStrategy createAnalysisStrategy(Config config, int seed) {
+    if(!pruning) {
+      config.setProperty(Options.CHOICES_STRATEGY, AllChoicesStrategy.class.getName());
+    }
+
     config.setProperty(Options.USE_MODELCOUNT_AMPLIFICATION,
         Boolean.toString(this.rewardAmplifcation));
     config.setProperty(Options.RNG_SEED, Integer.toString(seed));

@@ -89,7 +89,7 @@ public class BatchProcessor {
     experiments.add(new MCTSExperiment(true, false, false, 100));
 
     // Monte Carlo experiment
-    experiments.add(new MonteCarloExperiment());
+    experiments.add(new MonteCarloExperiment(true));
 
     //Reinforcement Learning: pruning, reward amplification, 50 samples per opt., epsilon 0.5,
     // history 0.5
