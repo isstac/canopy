@@ -40,6 +40,6 @@ public class MonteCarloExperiment implements Experiment {
 
   @Override
   public String getName() {
-    return "MonteCarlo";
+    return "MonteCarlo[pruning=" + this.pruning + "]";
   }
 }
