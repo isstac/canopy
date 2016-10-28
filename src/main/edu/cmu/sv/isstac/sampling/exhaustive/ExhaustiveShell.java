@@ -24,17 +24,7 @@ public class ExhaustiveShell implements JPFShell {
   public ExhaustiveShell(Config config) throws AnalysisCreationException, ModelCounterCreationException {
 
     // Create dummy strategy
-    AnalysisStrategy strategy = new AnalysisStrategy() {
-      @Override
-      public void makeStateChoice(VM vm, ChoiceGenerator<?> cg, ArrayList<Integer> eligibleChoices) { }
-
-      @Override
-      public void newSampleStarted(Search samplingSearch) { }
-
-      @Override
-      public void pathTerminated(TerminationType termType, long reward, long pathVolume, long
-          amplifiedReward, Search searchState, boolean hasBeenExploredBefore) { }
-    };
+    AnalysisStrategy strategy = new ExhaustiveStrategy();
 
     SamplingAnalysis.Builder analysisBuilder =
         new SamplingAnalysis.Builder();
