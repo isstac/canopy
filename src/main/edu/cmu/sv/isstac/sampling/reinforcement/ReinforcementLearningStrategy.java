@@ -7,17 +7,17 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
+import edu.cmu.sv.isstac.sampling.exploration.Path;
 import edu.cmu.sv.isstac.sampling.quantification.SPFModelCounter;
 import edu.cmu.sv.isstac.sampling.search.BackPropagator;
 import edu.cmu.sv.isstac.sampling.search.TerminationType;
 import edu.cmu.sv.isstac.sampling.structure.DefaultNodeFactory;
 import edu.cmu.sv.isstac.sampling.structure.NodeCreationException;
+import edu.cmu.sv.isstac.sampling.structure.NodeFactory;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.VM;
-
-import static edu.cmu.sv.isstac.sampling.structure.CGClassification.isPCNode;
 
 /**
  * @author Kasper Luckow
@@ -31,7 +31,7 @@ public class ReinforcementLearningStrategy implements AnalysisStrategy {
   private final double epsilon;
   private final double historyWeight;
 
-  private RLNodeFactoryDecorator nodeFactory;
+  private NodeFactory<RLNode> nodeFactory;
 
   private RLNode root;
   private RLNode lastNode;
@@ -41,16 +41,18 @@ public class ReinforcementLearningStrategy implements AnalysisStrategy {
 
   private final Random rng;
 
-  private Map<Integer, RLNode> nodes = new HashMap<>();
+  // Not happy with mapping entire paths to notes. Essentially we just want a map from a CG to an
+  // rl node, but the stateid field of CG's seems not to give us a unique id. *sigh*
+  private Map<Path, RLNode> nodes = new HashMap<>();
 
   public ReinforcementLearningStrategy(int samplesPerOptimization, double epsilon,
-                                       double historyWeight, SPFModelCounter modelCounter, long seed) {
+                                       double historyWeight, NodeFactory<RLNode> nodeFactory, long seed) {
     this.samplesPerOptimization = samplesPerOptimization;
     this.epsilon = epsilon;
     this.historyWeight = historyWeight;
     this.rng = new Random(seed);
 
-    this.nodeFactory = new RLNodeFactoryDecorator(new DefaultNodeFactory(), modelCounter);
+    this.nodeFactory = nodeFactory;
   }
 
   @Override
@@ -90,28 +92,8 @@ public class ReinforcementLearningStrategy implements AnalysisStrategy {
     }
   }
 
-  private double getChoiceQuality(RLNode parent, int choice) {
-    long subDomainParent = parent.getSubdomainSize();
-    assert subDomainParent > 0;
-
-    double quality;
-    // This is important:
-    // If the parent does *not* have a child node for a particular choice (i.e. the subtree
-    // rooted at the choice has never been sampled), then the quality for that choice is the initial
-    // probability of being selected i.e. 1/numChoices. This is the same in jpf-reliability
-    if(parent.hasChildForChoice(choice)) {
-      RLNode child = (RLNode)parent.getChild(choice);
-      logger.warning("assuming succ reward *ONLY* for quality calculation (might want to make " +
-          "this optional)");
-      quality = child.getReward().getSucc() / (double)subDomainParent;
-    } else {
-      quality = 1 / (double)parent.getTotalChoicesNum();
-    }
-    return quality;
-  }
-
   private void performOptimizationStep() {
-
+    logger.info("Performing optimization step");
     // Iterate over all nodes in the tree and update the probabilities for selecting choices
     // (children)
     for(RLNode node : this.nodes.values()) {
@@ -125,7 +107,7 @@ public class ReinforcementLearningStrategy implements AnalysisStrategy {
         // Find choice with max quality
         // Assume that choices are 0..TotalChoices
         for(int choice = 0; choice < node.getTotalChoicesNum(); choice++) {
-          double quality = getChoiceQuality(node, choice);
+          double quality = node.getChoiceQuality(choice);
           if(quality > maxQuality) {
             maxQuality = quality;
             maxQualityChoice = choice;
@@ -143,7 +125,7 @@ public class ReinforcementLearningStrategy implements AnalysisStrategy {
             if(choice == maxQualityChoice) {
               updatedProb += 1.0 - this.epsilon;
             }
-            double quality = getChoiceQuality(node, choice);
+            double quality = node.getChoiceQuality(choice);
             updatedProb += this.epsilon * (quality / qualitySum);
 
             double oldProb = node.getChoiceProbability(choice);
@@ -209,7 +191,8 @@ public class ReinforcementLearningStrategy implements AnalysisStrategy {
   }
 
   private RLNode getNode(ChoiceGenerator<?> cg, RLNode lastNode, int lastChoice) {
-    RLNode node = nodes.get(cg.getStateId());
+    Path path = new Path(cg);
+    RLNode node = nodes.get(path);
     if(node == null) {
       try {
         //TODO: maybe we don't need to keep track of the root
@@ -223,6 +206,8 @@ public class ReinforcementLearningStrategy implements AnalysisStrategy {
         logger.severe(msg);
         throw new RLAnalysisException(msg);
       }
+
+      nodes.put(path, node);
     }
     return node;
   }

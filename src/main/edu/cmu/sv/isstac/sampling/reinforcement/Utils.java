@@ -18,8 +18,13 @@ public class Utils {
   public static final String EPSILON = RL_CONF_PREFIX + ".epsilon";
   public static final String HISTORY = RL_CONF_PREFIX + ".history";
 
+  public static final String USE_MODELCOUNTING = RL_CONF_PREFIX +
+      ".modelcounting";
+
   // Some defaults
   public static final int DEFAULT_SAMPLES_PER_OPTIMIZATION = 100;
   public static final double DEFAULT_EPSILON = 0.5;
   public static final double DEFAULT_HISTORY = 0.5;
+
+  public static final boolean DEFAULT_USE_MODELCOUNTING = false;
 }

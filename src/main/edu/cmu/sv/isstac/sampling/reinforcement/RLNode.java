@@ -4,37 +4,36 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.reward.Reward;
 import edu.cmu.sv.isstac.sampling.structure.Node;
+import edu.cmu.sv.isstac.sampling.structure.NodeAdapter;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
+import gov.nasa.jpf.util.JPFLogger;
+import gov.nasa.jpf.vm.ChoiceGenerator;
 
 /**
  * @author Kasper Luckow
  *
- * Wraps a node and gives it the ability to provide probabilities for choices
+ * Wraps a node and gives it the ability to provide probabilities for choices. Maybe we should
+ * subclass instead of using a decorator
  */
-public class RLNode implements Node {
-  private final Node decoratee;
+public class RLNode extends NodeAdapter {
+  private static final Logger logger = JPFLogger.getLogger(RLNode.class.getName());
 
   private Map<Integer, Double> choice2prob = new HashMap<>();
 
-  private final long subdomainSize;
-
-  public RLNode(Node decoratee, long subdomainSize) {
-    this.decoratee = decoratee;
-    this.subdomainSize = subdomainSize;
+  public RLNode(Node parent, ChoiceGenerator<?> cg, int choice) {
+    super(parent, cg, choice);
 
     //Set uniform initial probability for all choices
-    double prob = 1/(double)decoratee.getTotalChoicesNum();
-    for(int choice = 0; choice < this.decoratee.getTotalChoicesNum(); choice++) {
-      choice2prob.put(choice, prob);
+    double prob = 1/(double)getTotalChoicesNum();
+    for(int c = 0; c < this.getTotalChoicesNum(); c++) {
+      choice2prob.put(c, prob);
     }
   }
 
-  public long getSubdomainSize() {
-    return this.subdomainSize;
-  }
 
   public double getProbabilitySum(List<Integer> choices) {
     // God, streams are beautiful
@@ -49,58 +48,23 @@ public class RLNode implements Node {
     choice2prob.put(choice, probability);
   }
 
-  @Override
-  public Node getParent() {
-    return decoratee.getParent();
-  }
+  public double getChoiceQuality(int choice) {
+    long visitCount = this.getVisitedNum();
+    assert visitCount > 0;
 
-  @Override
-  public Collection<Node> getChildren() {
-    return decoratee.getChildren();
-  }
-
-  @Override
-  public boolean hasChildForChoice(int choice) {
-    return decoratee.hasChildForChoice(choice);
-  }
-
-  @Override
-  public void addChild(Node child) {
-    this.decoratee.addChild(child);
-  }
-
-  @Override
-  public Node getChild(int choice) {
-    return decoratee.getChild(choice);
-  }
-
-  @Override
-  public int getChoice() {
-    return decoratee.getChoice();
-  }
-
-  @Override
-  public int getTotalChoicesNum() {
-    return decoratee.getTotalChoicesNum();
-  }
-
-  @Override
-  public Reward getReward() {
-    return decoratee.getReward();
-  }
-
-  @Override
-  public long getVisitedNum() {
-    return decoratee.getVisitedNum();
-  }
-
-  @Override
-  public void incVisitedNum(long visitedNum) {
-    decoratee.incVisitedNum(visitedNum);
-  }
-
-  @Override
-  public PathCondition getPathCondition() {
-    return decoratee.getPathCondition();
+    double quality;
+    // This is important:
+    // If the parent does *not* have a child node for a particular choice (i.e. the subtree
+    // rooted at the choice has never been sampled), then the quality for that choice is the initial
+    // probability of being selected i.e. 1/numChoices. This is the same in jpf-reliability
+    if(this.hasChildForChoice(choice)) {
+      RLNode child = (RLNode)this.getChild(choice);
+      logger.fine("assuming succ reward *ONLY* for quality calculation (might want to make " +
+          "this optional)");
+      quality = child.getReward().getSucc() / (double)visitCount;
+    } else {
+      quality = 1 / (double)this.getTotalChoicesNum();
+    }
+    return quality;
   }
 }

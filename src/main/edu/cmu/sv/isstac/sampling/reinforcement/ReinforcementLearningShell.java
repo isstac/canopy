@@ -8,6 +8,9 @@ import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterCreationException;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterFactory;
 import edu.cmu.sv.isstac.sampling.quantification.SPFModelCounter;
+import edu.cmu.sv.isstac.sampling.structure.DefaultNodeFactory;
+import edu.cmu.sv.isstac.sampling.structure.NodeFactory;
+import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPFShell;
 
@@ -29,10 +32,19 @@ public class ReinforcementLearningShell implements JPFShell {
 
     double epsilon = config.getDouble(Utils.EPSILON, Utils.DEFAULT_EPSILON);
     double historyWeight = config.getDouble(Utils.HISTORY, Utils.DEFAULT_HISTORY);
-    SPFModelCounter modelCounter = ModelCounterFactory.getInstance(config);
+
+    NodeFactory<RLNode> factory;
+
+    if(config.getBoolean(Utils.USE_MODELCOUNTING, Utils.DEFAULT_USE_MODELCOUNTING)) {
+      SPFModelCounter modelCounter = ModelCounterFactory.getInstance(config);
+      factory = new RLNodeFactoryMCDecorator(modelCounter);
+    } else {
+      factory = new RLNodeFactory();
+    }
+    samplingAnalysisBuilder.setTerminationStrategy(new SampleSizeTerminationStrategy(2000));
     this.samplingAnalysis = samplingAnalysisBuilder.build(config,
         new ReinforcementLearningStrategy(samplesPerOptimization, epsilon,
-            historyWeight, modelCounter, Options.getSeed(config)), new JPFSamplerFactory());
+            historyWeight, factory, Options.getSeed(config)), new JPFSamplerFactory());
   }
 
   @Override
