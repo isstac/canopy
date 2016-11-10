@@ -19,7 +19,7 @@ import edu.cmu.sv.isstac.sampling.quantification.ModelCountingPathQuantifier;
 import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
 import edu.cmu.sv.isstac.sampling.quantification.SPFModelCounter;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
-import edu.cmu.sv.isstac.sampling.search.SamplingListener;
+import edu.cmu.sv.isstac.sampling.search.SamplingAnalysisListener;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
@@ -149,7 +149,7 @@ public class SamplingAnalysis {
             AnalysisEventObserver.class));
       }
 
-      SamplingListener samplingListener = new SamplingListener(analysisStrategy, rewardFunction,
+      SamplingAnalysisListener samplingListener = new SamplingAnalysisListener(analysisStrategy, rewardFunction,
           pathQuantifier, terminationStrategy, choicesStrategy, eventObservers);
       jpfListeners.add(samplingListener);
 
