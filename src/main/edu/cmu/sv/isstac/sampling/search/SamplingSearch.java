@@ -4,7 +4,6 @@ import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.exploration.NoPruningStrategy;
-import edu.cmu.sv.isstac.sampling.exploration.Path;
 import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningStrategy;
 import gov.nasa.jpf.Config;
@@ -12,7 +11,6 @@ import gov.nasa.jpf.JPFListenerException;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.symbc.bytecode.BytecodeUtils;
 import gov.nasa.jpf.util.JPFLogger;
-import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.RestorableVMState;
 import gov.nasa.jpf.vm.VM;
 
