@@ -51,7 +51,7 @@ public class RLExperiment implements Experiment {
     if(modelCountSubDomain) {
       try {
         SPFModelCounter modelCounter = ModelCounterFactory.getInstance(config);
-        factory = new RLNodeFactoryMCDecorator(modelCounter);
+        factory = new RLNodeFactory();
       } catch (ModelCounterCreationException e) {
         throw new BatchProcessorException(e);
       }
