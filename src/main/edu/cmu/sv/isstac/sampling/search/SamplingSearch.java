@@ -1,9 +1,12 @@
 package edu.cmu.sv.isstac.sampling.search;
 
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.Options;
+import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.NoPruningStrategy;
+import edu.cmu.sv.isstac.sampling.exploration.Path;
 import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningStrategy;
 import gov.nasa.jpf.Config;
@@ -11,6 +14,7 @@ import gov.nasa.jpf.JPFListenerException;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.symbc.bytecode.BytecodeUtils;
 import gov.nasa.jpf.util.JPFLogger;
+import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.RestorableVMState;
 import gov.nasa.jpf.vm.VM;
 
@@ -74,19 +78,65 @@ public class SamplingSearch extends Search {
     notifyNewSample();
 
     while (!done) {
-      boolean checkAndResetBacktrackRequest = checkAndResetBacktrackRequest();
+      //boolean checkAndResetBacktrackRequest = checkAndResetBacktrackRequest();
       boolean isIgnoredState = isIgnoredState();
+      boolean isNewState = isNewState();
+      boolean isEndState = isEndState();
+      Path p1 = new Path(vm.getChoiceGenerator());
+      System.out.println(p1.toString());
 
-      if (checkAndResetBacktrackRequest() || !isNewState() || isEndState() || isIgnoredState
-          || depthLimitReached) {
-        if(isIgnoredState) {
-          String msg = "Sampled an ignored state! Pruning this path. This issue can be solved by";
-          logger.severe(msg);
-        }
-
-        logger.fine("Sample terminated");
+      if(checkAndResetBacktrackRequest() || !isNewState || isIgnoredState)
+      {//!isEndState && (isIgnoredState ||
+        // )) {
+        String msg = "Sampled an ignored state! Pruning this path AND backtracking. This issue " +
+            "can be solved by";
+        logger.severe(msg);
         pruner.performPruning(getVM().getChoiceGenerator());
 
+        if(!backtrack()) { // backtrack not possible, done
+          break;
+        } else {
+          logger.info("Backtracking");
+        }
+
+        assert pruner instanceof ChoicesStrategy;
+        ChoicesStrategy choicesStrategy = (ChoicesStrategy)pruner;
+        ChoiceGenerator<?> nextCg = getVM().getChoiceGenerator();
+        ArrayList<Integer> choices = choicesStrategy.getEligibleChoices(nextCg);
+        if(choices.size() > 0) {
+          //take the first eligible choice and advance the cg to it. We need to advance it
+          // because, when we call cg.select in the listeners, the isDone flag will be set to
+          // true, and therefore forward() will return false! This is a pretty messy way of
+          // circumventing this problem, but imagine that choice 1 was explored (with cg.select)
+          // for a cg. That choice turns out to be an ignored state after forward(). When
+          // backtracking to the cg, isDone is set, and hasmorechoices will therefore return
+          // false because there is no sensible way of advancing a state "back" to the unexplored
+          // choice 0. We do this here.
+          int c = choices.get(0);
+          nextCg.reset();
+          nextCg.advance(c);
+
+        } else {
+          throw new RuntimeException("not sure this should be possible...");
+        }
+
+//        Path p2 = new Path(vm.getChoiceGenerator());
+//        System.out.println(p2.toString());
+
+        depthLimitReached = false;
+        depth--;
+        notifyStateBacktracked();
+      } else if(isEndState || depthLimitReached) {
+        Path p3 = new Path(vm.getChoiceGenerator());
+        System.out.println(p3.toString());
+        logger.fine("Sample terminated");
+        if(isNewState) {
+          logger.info("Pruning end state");
+          pruner.performPruning(getVM().getChoiceGenerator());
+        } else {
+          logger.info("Pruning new state? Is it an end state: " + isEndState  + ". is it ignored:" +
+              isIgnoredState);
+        }
         //All paths have been explored, so search finishes
         if(pruner.isFullyPruned()) {
           logger.info("Sym exe tree is fully explored due to pruning. Search finishes");
@@ -104,8 +154,12 @@ public class SamplingSearch extends Search {
         //Notify listeners that new round of sampling is started
         notifyNewSample();
       }
+//      Path p5 = new Path(vm.getChoiceGenerator());
+//      System.out.println(p5.toString());
 
       if (forward()) {
+        Path p4 = new Path(vm.getChoiceGenerator());
+        System.out.println(p4.toString());
         depth++;
         notifyStateAdvanced();
 
