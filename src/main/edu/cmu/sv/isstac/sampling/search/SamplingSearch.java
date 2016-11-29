@@ -78,25 +78,22 @@ public class SamplingSearch extends Search {
     notifyNewSample();
 
     while (!done) {
-      //boolean checkAndResetBacktrackRequest = checkAndResetBacktrackRequest();
       boolean isIgnoredState = isIgnoredState();
       boolean isNewState = isNewState();
       boolean isEndState = isEndState();
-      Path p1 = new Path(vm.getChoiceGenerator());
-      System.out.println(p1.toString());
 
       if(checkAndResetBacktrackRequest() || !isNewState || isIgnoredState)
       {//!isEndState && (isIgnoredState ||
         // )) {
-        String msg = "Sampled an ignored state! Pruning this path AND backtracking. This issue " +
-            "can be solved by";
-        logger.severe(msg);
+//        String msg = "Sampled an ignored state! Pruning this path AND backtracking. This issue " +
+//            "can be solved by";
+//        logger.severe(msg);
         pruner.performPruning(getVM().getChoiceGenerator());
 
         if(!backtrack()) { // backtrack not possible, done
           break;
         } else {
-          logger.info("Backtracking");
+          //logger.info("Backtracking");
         }
 
         assert pruner instanceof ChoicesStrategy;
@@ -120,22 +117,13 @@ public class SamplingSearch extends Search {
           throw new RuntimeException("not sure this should be possible...");
         }
 
-//        Path p2 = new Path(vm.getChoiceGenerator());
-//        System.out.println(p2.toString());
-
         depthLimitReached = false;
         depth--;
         notifyStateBacktracked();
       } else if(isEndState || depthLimitReached) {
-        Path p3 = new Path(vm.getChoiceGenerator());
-        System.out.println(p3.toString());
-        logger.fine("Sample terminated");
         if(isNewState) {
-          logger.info("Pruning end state");
+//          logger.info("Pruning end state");
           pruner.performPruning(getVM().getChoiceGenerator());
-        } else {
-          logger.info("Pruning new state? Is it an end state: " + isEndState  + ". is it ignored:" +
-              isIgnoredState);
         }
         //All paths have been explored, so search finishes
         if(pruner.isFullyPruned()) {
@@ -149,17 +137,13 @@ public class SamplingSearch extends Search {
         resetJPFState();
 
         depthLimitReached = false;
-        logger.fine("Starting new sample");
+        //logger.fine("Starting new sample");
 
         //Notify listeners that new round of sampling is started
         notifyNewSample();
       }
-//      Path p5 = new Path(vm.getChoiceGenerator());
-//      System.out.println(p5.toString());
 
       if (forward()) {
-        Path p4 = new Path(vm.getChoiceGenerator());
-        System.out.println(p4.toString());
         depth++;
         notifyStateAdvanced();
 
