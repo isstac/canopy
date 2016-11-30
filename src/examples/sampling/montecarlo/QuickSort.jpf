@@ -1,0 +1,13 @@
+classpath=${jpf-security}/build/examples
+sourcepath=${jpf-security}/src/examples
+
+@using jpf-security
+@using jpf-symbc
+
+shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
+symbolic.dp=z3
+
+target=sampling.QuickSortJDK15
+target.args=8
+
+symbolic.method=sampling.java15.util.Arrays.sort(con)

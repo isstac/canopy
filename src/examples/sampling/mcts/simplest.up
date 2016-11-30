@@ -1,0 +1,7 @@
+domain{
+	a_1_SYMINT: 1,101;
+};
+
+usageProfile{
+	a_1_SYMINT>=1: 100/100;
+};

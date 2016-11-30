@@ -1,0 +1,24 @@
+classpath=${jpf-security}/build/examples
+sourcepath=${jpf-security}/src/examples
+
+@using jpf-security
+@using jpf-symbc
+
+target=sampling.HeapInsertJDK15
+
+shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+
+symbolic.dp=z3
+target.args=12
+
+symbolic.method=sampling.java15.util.PriorityQueue.add(con),sampling.java15.util.PriorityQueue.addMask(con)
+symbolic.heuristic.measuredmethods=sampling.java15.util.PriorityQueue.add(con)
+
+symbolic.security.sampling.stats=true
+symbolic.security.sampling.livestats=true
+
+symbolic.security.sampling.modelcounting.amplifyrewards=false
+
+symbolic.security.sampling.mcts.weightedsampling=false
+
+symbolic.security.sampling.mcts.treevisualizer=false

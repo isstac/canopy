@@ -1,0 +1,32 @@
+@using jpf-security
+@using jpf-symbc
+
+shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+#shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
+
+classpath=${jpf-security}/build/examples
+target=sampling.backtracking.BacktrackingExample
+
+symbolic.dp=z3
+
+symbolic.method=sampling.backtracking.BacktrackingExample.test(sym)
+symbolic.optimizechoices = false
+#symbolic.debug = true
+
+symbolic.security.sampling.mcts.uct.bias=5
+
+#symbolic.security.sampling.measuredmethods=mcts.java15.util.Arrays.sort(con)
+#symbolic.security.sampling.termination.samplingsize=1000
+#symbolic.security.sampling.rewardfunc=edu.cmu.sv.isstac.sampling.reward.SymbolicIfRewardFunction
+
+#symbolic.security.sampling.choicesstrategy=edu.cmu.sv.isstac.sampling.exploration
+#.AllChoicesStrategy
+
+symbolic.security.sampling.stats=true
+symbolic.security.sampling.livestats=false
+
+symbolic.security.sampling.modelcounting.amplifyrewards=false
+
+symbolic.security.sampling.mcts.weightedsampling=false
+
+symbolic.security.sampling.mcts.treevisualizer=false

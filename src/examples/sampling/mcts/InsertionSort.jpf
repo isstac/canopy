@@ -1,0 +1,26 @@
+classpath=${jpf-security}/build/examples
+sourcepath=${jpf-security}/src/examples
+
+@using jpf-security
+@using jpf-symbc
+
+shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+
+target.args=7
+
+target=sampling.InsertionSort
+symbolic.method=sampling.InsertionSort.sort(con)
+
+symbolic.dp=z3
+
+symbolic.optimizechoices=false
+
+
+symbolic.security.sampling.stats=true
+symbolic.security.sampling.livestats=true
+
+symbolic.security.sampling.modelcounting.amplifyrewards=false
+
+symbolic.security.sampling.mcts.weightedsampling=false
+
+symbolic.security.sampling.mcts.treevisualizer=false

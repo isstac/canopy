@@ -1,0 +1,29 @@
+classpath=${jpf-security}/build/examples
+sourcepath=${jpf-security}/src/examples
+
+target=sampling.Tsp
+
+@using jpf-security
+@using jpf-symbc
+
+symbolic.dp=z3
+
+target.args=5
+
+shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+#shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
+
+symbolic.method=sampling.Tsp$TspSolver.solve()
+
+symbolic.security.sampling.mcts.modelcounting.problemsettings=${jpf-security}/src/examples/mcts/tsp_4.up
+
+symbolic.security.sampling.stats=true
+symbolic.security.sampling.livestats=true
+
+symbolic.security.sampling.modelcounting.amplifyrewards=false
+
+symbolic.security.sampling.mcts.weightedsampling=false
+
+symbolic.security.sampling.mcts.treevisualizer=false
+
+#symbolic.debug=true

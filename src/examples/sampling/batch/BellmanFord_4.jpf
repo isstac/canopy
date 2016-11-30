@@ -1,0 +1,15 @@
+classpath=${jpf-security}/build/examples
+sourcepath=${jpf-security}/src/examples
+
+@using jpf-security
+@using jpf-symbc
+
+target=sampling.batch.BellmanFord
+
+symbolic.dp=z3
+
+target.args=4
+
+symbolic.security.sampling.modelcounting.problemsettings=${jpf-security}/src/examples/sampling/batch/bellmanford_4.up
+
+symbolic.method=sampling.batch.BellmanFord.runBellmanFord(con#con#con)

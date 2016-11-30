@@ -1,0 +1,37 @@
+classpath=${jpf-security}/build/examples
+sourcepath=${jpf-security}/src/examples
+
+@using jpf-security
+@using jpf-symbc
+
+shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+
+target.args=7
+
+target=sampling.Simple2
+symbolic.method=sampling.Simple2.test(sym)
+
+symbolic.dp=z3
+
+symbolic.optimizechoices=false
+
+symbolic.security.sampling.stats=true
+symbolic.security.sampling.livestats=true
+
+symbolic.security.sampling.modelcounting.amplifyrewards=false
+
+symbolic.security.sampling.mcts.weightedsampling=false
+
+symbolic.security.sampling.mcts.treevisualizer=false
+
+#symbolic.debug=true
+
+
+# stuff we dont need
+#symbolic.reliability.tmpDir=${jpf-security}/build/tmp
+#symbolic.reliability.omegaPath=/Users/visserw/Documents/tools/omega/trunk/omega_calc/obj/oc
+#symbolic.reliability.lattePath=/Users/visserw/Documents/tools/latte-integrale-1.7.3/latte-int-1.7.3/code/latte/count
+
+#search.depth_limit=10
+#symbolic.min_int=1
+#symbolic.max_int=100

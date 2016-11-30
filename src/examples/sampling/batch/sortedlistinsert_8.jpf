@@ -1,0 +1,16 @@
+classpath=${jpf-security}/build/examples
+sourcepath=${jpf-security}/src/examples
+
+target=sampling.batch.SortedListInsert
+
+@using jpf-security
+@using jpf-symbc
+
+symbolic.dp=z3
+
+target.args=8
+
+symbolic.security.sampling.modelcounting.problemsettings=${jpf-security}/src/examples/sampling/batch/sortedlistinsert_8.up
+symbolic.method=sampling.batch.SortedListInsert$List.insert(con),sampling.batch.SortedListInsert$List.insertMask(con)
+
+symbolic.heuristic.measuredmethods=mcts.SortList.insert(con)

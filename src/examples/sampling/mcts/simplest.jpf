@@ -1,0 +1,28 @@
+@using jpf-security
+@using jpf-symbc
+
+shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+#shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
+
+classpath=${jpf-security}/build/examples
+target=sampling.Simplest
+
+#search.depth_limit=100
+symbolic.dp=z3
+
+symbolic.security.sampling.modelcounting.problemsettings=${jpf-security}/src/examples/mcts/simplest.up
+
+
+symbolic.method=sampling.Simplest.test(sym)
+#symbolic.optimizechoices = false
+#symbolic.debug = true
+
+
+symbolic.security.sampling.stats=true
+symbolic.security.sampling.livestats=false
+
+symbolic.security.sampling.modelcounting.amplifyrewards=true
+
+symbolic.security.sampling.mcts.weightedsampling=true
+
+symbolic.security.sampling.mcts.treevisualizer=false

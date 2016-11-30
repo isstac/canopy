@@ -1,0 +1,24 @@
+classpath=${jpf-security}/build/examples
+sourcepath=${jpf-security}/src/examples
+
+@using jpf-security
+@using jpf-symbc
+
+target=sampling.regex.Regex
+
+symbolic.dp=z3bitvector
+
+shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+
+vm.max_transition_length = 50000000
+#symbolic.security.sampling.rewardfunc=edu.cmu.sv.isstac.sampling.reward.IfRewardFunction
+#symbolic.optimizechoices=false
+
+symbolic.security.sampling.stats=true
+symbolic.security.sampling.livestats=true
+
+symbolic.security.sampling.modelcounting.amplifyrewards=false
+
+symbolic.security.sampling.mcts.weightedsampling=false
+
+symbolic.security.sampling.mcts.treevisualizer=false

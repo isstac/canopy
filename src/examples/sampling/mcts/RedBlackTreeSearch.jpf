@@ -1,0 +1,28 @@
+classpath=${jpf-security}/build/examples
+sourcepath=${jpf-security}/src/examples
+
+@using jpf-security
+@using jpf-symbc
+
+target=sampling.RedBlackTreeSearch
+
+shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+#symbolic.dp=choco
+
+symbolic.dp=z3
+target.args=8
+
+symbolic.security.sampling.modelcounting.problemsettings=${jpf-security}/src/examples/mcts/FIXIXIXIXIX
+
+symbolic.method=sampling.rbtree.RedBlackTree.treeSearch(con#sym);sampling.rbtree.RedBlackTree.treeInsert(con)
+symbolic.security.sampling.measuredmethods=sampling.rbtree.RedBlackTree.treeSearch(con#sym)
+
+symbolic.security.sampling.stats=true
+symbolic.security.sampling.livestats=true
+
+symbolic.security.sampling.modelcounting.amplifyrewards=false
+
+symbolic.security.sampling.mcts.weightedsampling=false
+
+symbolic.security.sampling.mcts.treevisualizer=false
+

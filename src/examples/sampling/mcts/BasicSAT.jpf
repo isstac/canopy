@@ -1,0 +1,30 @@
+classpath=${jpf-security}/build/examples
+sourcepath=${jpf-security}/src/examples
+
+@using jpf-security
+@using jpf-symbc
+
+shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+
+target=sampling.BasicSAT.BasicSAT
+
+symbolic.dp=z3bitvector
+symbolic.min_int=1
+symbolic.max_int=10
+
+
+symbolic.security.sampling.mcts.uct.bias=5
+
+symbolic.method=sampling.BasicSAT.BasicSAT.ReadArray(sym)
+
+#symbolic.security.sampling.choicesstrategy=edu.cmu.sv.isstac.sampling.exploration
+#.AllChoicesStrategy
+
+symbolic.security.sampling.stats=true
+symbolic.security.sampling.livestats=true
+
+symbolic.security.sampling.modelcounting.amplifyrewards=false
+
+symbolic.security.sampling.mcts.weightedsampling=false
+
+symbolic.security.sampling.mcts.treevisualizer=false

@@ -1,0 +1,14 @@
+classpath=${jpf-security}/build/examples
+sourcepath=${jpf-security}/src/examples
+
+@using jpf-security
+@using jpf-symbc
+
+symbolic.dp=z3
+
+target=sampling.batch.Tsp
+target.args=5
+
+symbolic.security.sampling.modelcounting.problemsettings=${jpf-security}/src/examples/sampling/batch/tsp_5.up
+
+symbolic.method=sampling.batch.Tsp$TspSolver.solve()

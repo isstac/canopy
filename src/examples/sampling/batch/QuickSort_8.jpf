@@ -1,0 +1,13 @@
+classpath=${jpf-security}/build/examples
+sourcepath=${jpf-security}/src/examples
+
+@using jpf-security
+@using jpf-symbc
+
+symbolic.dp=z3
+
+target=sampling.batch.QuickSortJDK15
+target.args=8
+
+symbolic.security.sampling.modelcounting.problemsettings=${jpf-security}/src/examples/sampling/batch/quicksort_8.up
+symbolic.method=sampling.batch.java15.util.Arrays.sort(con)

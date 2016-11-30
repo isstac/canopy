@@ -1,0 +1,15 @@
+classpath=${jpf-security}/build/examples
+sourcepath=${jpf-security}/src/examples
+
+@using jpf-security
+@using jpf-symbc
+
+symbolic.dp=z3
+target.args=8
+
+target=sampling.batch.HeapInsertJDK15
+symbolic.security.sampling.modelcounting.problemsettings=${jpf-security}/src/examples/sampling/batch/heapinsert_8.up
+
+symbolic.method=sampling.batch.java15.util.PriorityQueue.add(con),sampling.batch.java15.util.PriorityQueue.addMask(con)
+
+symbolic.heuristic.measuredmethods=sampling.batch.java15.util.PriorityQueue.add(con)

@@ -1,0 +1,31 @@
+classpath=${jpf-security}/build/examples
+sourcepath=${jpf-security}/src/examples
+
+@using jpf-security
+@using jpf-symbc
+
+shell=edu.cmu.sv.isstac.sampling.reinforcement.ReinforcementLearningShell
+#shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
+symbolic.dp=z3
+
+target=sampling.QuickSortJDK15
+target.args=8
+
+symbolic.security.sampling.rl.samplesperoptimization=100
+symbolic.security.sampling.rl.epsilon=0.3
+symbolic.security.sampling.rl.history=0.3
+symbolic.security.sampling.rl.modelcounting=false
+
+symbolic.security.sampling.modelcounting.problemsettings=${jpf-security}/src/examples/mcts/quicksort.up
+symbolic.method=sampling.java15.util.Arrays.sort(con)
+#symbolic.security.sampling.measuredmethods=mcts.java15.util.Arrays.sort(con)
+
+#symbolic.security.sampling.choicesstrategy=edu.cmu.sv.isstac.sampling.exploration
+#.AllChoicesStrategy
+
+symbolic.security.sampling.stats=true
+symbolic.security.sampling.livestats=true
+
+symbolic.security.sampling.modelcounting.amplifyrewards=false
+
+

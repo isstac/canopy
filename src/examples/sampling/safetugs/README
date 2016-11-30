@@ -1,0 +1,74 @@
+The Main file contains the driver for this example.
+
+The Main file does the following:
+1. Setup the Grid, which is done with Grid(x,y) where x and y is the grid dimensions
+2. Setup the plans
+3. Runs a simulation
+
+an example plan setup is the following
+
+static void setupProbablisticTugs2(Grid g) {
+		t = new Tug[2]; oldState = new int[2];
+		Plan p0 = new Plan(3);
+		Plan p2 = new Plan(3);
+		p0.add(3,2);p0.add(4,2);p0.add(5,2);
+		p2.add(6,2);p2.add(5,2);p2.add(5,1);
+		t[0] = new Tug(0,p0,g,0.9);
+		t[1] = new Tug(1,p2,g,0.9);
+		oldState[0] = t[0].getState();
+		oldState[1] = t[1].getState();
+}
+
+Only the lines that add the plan positions and the definition of a Tug is flexible the rest
+is boiler plate. For example the oldState is used in the simulation to detect progress
+
+Plans consists of Locations and each one is defined by a grid (x,y) location.
+
+A Tug is defined by an "id", its plan and a probability of staying put in its location. 
+The Tugs above are very likely to stay in their positions.
+
+RUNNING the Probabilistic Tug Program
+java JPFProbabilisticProgramming
+
+inside of this there is a method that sets up the probabilistic run
+
+public static Config setupTugs(Config conf) {
+		      // now set all the properties
+		      conf.setProperty("target", "safetugs.Main");
+		      conf.setProperty("classpath", "${jpf-counting}/build/examples;${jpf-counting}/build/classes");
+		      conf.setProperty("sourcepath", "${jpf-counting}/src/examples");
+		      conf.setProperty("listener", ".symbc.ProbabilisticProgrammingListener");	      
+		      conf.setProperty("symbolic.min_int", "-100");
+		      conf.setProperty("symbolic.max_int", "100");
+		      conf.setProperty("vm.storage.class", "nil");
+		 	  return conf;
+}
+
+OUTPUT:
+
+The Listener listens for "uniform" calls which defines the probabilistic variables as well
+as countWin, and countLoss calls. 
+
+We use countWin(stuckCount) to record the probability of each number of stuck moves, i.e.
+when a tug cannot move the stuckCount gets incremented. Output like this
+Winning at 7 -> 0.00011
+Losing at 7 -> 0.00000
+
+means there is a 0.00011 chance of waiting 7 times because of bveing stuck. The Losing output 
+can be ignored. Winning at "0" means the chance of there never being a wait for another tug. This
+is rare, even for deterministic plans you sometimes have to wait.
+
+We have a special case "99" that gives the probability of there being a deadlock, where no tug can move
+Winning at 99 -> 0.99999
+Losing at 99 -> 0.00001
+
+means very low chance of seeing a deadlock and high chance of seeing no deadlock.
+
+
+
+
+
+
+
+
+
