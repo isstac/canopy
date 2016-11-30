@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.util.PathUtil;
+import edu.cmu.sv.isstac.sampling.util.SymbolicVariableCollector;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.util.JPFLogger;
@@ -23,7 +24,6 @@ import modelcounting.domain.ProblemSetting;
 import modelcounting.domain.UsageProfile;
 import modelcounting.domain.exceptions.InvalidUsageProfileException;
 import modelcounting.utils.BigRational;
-import sidechannel.util.SymbolicVariableCollector;
 
 /**
  * @author Kasper Luckow
