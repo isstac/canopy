@@ -1,16 +1,16 @@
-@using jpf-security
-@using jpf-symbc
+@using canopy
+
 
 shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
 #shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
 
-classpath=${jpf-security}/build/examples
+
 target=sampling.Simplest
 
 #search.depth_limit=100
 symbolic.dp=z3
 
-symbolic.security.sampling.modelcounting.problemsettings=${jpf-security}/src/examples/mcts/simplest.up
+symbolic.security.sampling.modelcounting.problemsettings=${canopy}/src/examples/mcts/simplest.up
 
 
 symbolic.method=sampling.Simplest.test(sym)

@@ -1,8 +1,8 @@
-classpath=${jpf-security}/build/examples
-sourcepath=${jpf-security}/src/examples
 
-@using jpf-security
-@using jpf-symbc
+
+
+@using canopy
+
 
 target=sampling.BellmanFord
 
@@ -12,7 +12,7 @@ symbolic.dp=z3
 target.args=5
 symbolic.method=sampling.BellmanFord.runBellmanFord(con#con#con)
 
-symbolic.security.sampling.modelcounting.problemsettings=${jpf-security}/src/examples/mcts/bellmanford.up
+symbolic.security.sampling.modelcounting.problemsettings=${canopy}/src/examples/mcts/bellmanford.up
 
 symbolic.optimizechoices=true
 

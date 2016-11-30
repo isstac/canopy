@@ -1,8 +1,8 @@
-classpath=${jpf-security}/build/examples
-sourcepath=${jpf-security}/src/examples
 
-@using jpf-security
-@using jpf-symbc
+
+
+@using canopy
+
 
 symbolic.dp=z3
 
@@ -10,6 +10,6 @@ target=sampling.batch.BinaryTreeSearch
 
 target.args=14
 
-symbolic.security.sampling.modelcounting.problemsettings=${jpf-security}/src/examples/sampling/batch/binarytreesearch_14.up
+symbolic.security.sampling.modelcounting.problemsettings=${canopy}/src/examples/sampling/batch/binarytreesearch_14.up
 symbolic.method=sampling.batch.BinaryTreeSearch$BinaryTree.search(con);sampling.batch.BinaryTreeSearch$BinaryTree.insert(con)
 symbolic.security.sampling.measuredmethods=sampling.batch.BinaryTreeSearch$BinaryTree.search(con)

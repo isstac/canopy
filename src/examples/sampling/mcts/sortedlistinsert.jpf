@@ -1,8 +1,8 @@
-classpath=${jpf-security}/build/examples
-sourcepath=${jpf-security}/src/examples
 
-@using jpf-security
-@using jpf-symbc
+
+
+@using canopy
+
 
 shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
 #symbolic.dp=choco

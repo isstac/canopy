@@ -1,8 +1,8 @@
-classpath=${jpf-security}/build/examples
-sourcepath=${jpf-security}/src/examples
 
-@using jpf-security
-@using jpf-symbc
+
+
+@using canopy
+
 
 target=sampling.MergeSortJDK15
 

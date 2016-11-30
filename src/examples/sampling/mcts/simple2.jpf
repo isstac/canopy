@@ -1,8 +1,8 @@
-classpath=${jpf-security}/build/examples
-sourcepath=${jpf-security}/src/examples
 
-@using jpf-security
-@using jpf-symbc
+
+
+@using canopy
+
 
 shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
 
@@ -28,7 +28,7 @@ symbolic.security.sampling.mcts.treevisualizer=false
 
 
 # stuff we dont need
-#symbolic.reliability.tmpDir=${jpf-security}/build/tmp
+#symbolic.reliability.tmpDir=${canopy}/build/tmp
 #symbolic.reliability.omegaPath=/Users/visserw/Documents/tools/omega/trunk/omega_calc/obj/oc
 #symbolic.reliability.lattePath=/Users/visserw/Documents/tools/latte-integrale-1.7.3/latte-int-1.7.3/code/latte/count
 

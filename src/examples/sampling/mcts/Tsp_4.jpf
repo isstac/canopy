@@ -1,10 +1,10 @@
-classpath=${jpf-security}/build/examples
-sourcepath=${jpf-security}/src/examples
+
+
 
 target=sampling.Tsp
 
-@using jpf-security
-@using jpf-symbc
+@using canopy
+
 
 symbolic.dp=z3
 
@@ -15,7 +15,7 @@ shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
 
 symbolic.method=sampling.Tsp$TspSolver.solve()
 
-symbolic.security.sampling.mcts.modelcounting.problemsettings=${jpf-security}/src/examples/mcts/tsp_4.up
+symbolic.security.sampling.mcts.modelcounting.problemsettings=${canopy}/src/examples/mcts/tsp_4.up
 
 symbolic.security.sampling.stats=true
 symbolic.security.sampling.livestats=true

@@ -1,10 +1,10 @@
-@using jpf-security
-@using jpf-symbc
+@using canopy
+
 
 #shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
 shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
 
-classpath=${jpf-security}/build/examples
+
 target=mcts.Simple
 
 search.depth_limit=100

@@ -1,6 +1,3 @@
-classpath=${canopy}/build/examples
-sourcepath=${canopy}/src/examples
-
 @using canopy
 
 shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell

@@ -1,8 +1,8 @@
-classpath=${jpf-security}/build/examples
-sourcepath=${jpf-security}/src/examples
 
-@using jpf-security
-@using jpf-symbc
+
+
+@using canopy
+
 
 target=sampling.batch.MergeSortJDK15
 
@@ -11,4 +11,4 @@ symbolic.dp=z3
 symbolic.method=sampling.batch.java15.util.Arrays.sort(con)
 
 target.args=10
-symbolic.security.sampling.modelcounting.problemsettings=${jpf-security}/src/examples/sampling/batch/mergesort_10.up
+symbolic.security.sampling.modelcounting.problemsettings=${canopy}/src/examples/sampling/batch/mergesort_10.up
