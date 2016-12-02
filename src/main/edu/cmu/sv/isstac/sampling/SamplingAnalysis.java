@@ -25,6 +25,7 @@ import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFListener;
+import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.util.JPFLogger;
 
 /**
@@ -180,6 +181,14 @@ public class SamplingAnalysis {
   }
 
   public void run() {
+    Class<?> instrFactory = this.config.getClass("jvm.insn_factory.class");
+    if(!instrFactory.equals(SymbolicInstructionFactory.class)) {
+      String msg = "Incorrect instruction factory " + instrFactory.getName() + ". Must be an " +
+          "instance " + SymbolicInstructionFactory.class.getName() + ". Is your site.properties, " +
+          "jpf.properties or app properties file incorrect?";
+      logger.severe(msg);
+      throw new AnalysisException(msg);
+    }
 
     // Run the analysis
     jpf.run();
