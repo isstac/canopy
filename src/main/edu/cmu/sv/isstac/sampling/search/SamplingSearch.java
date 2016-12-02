@@ -95,26 +95,30 @@ public class SamplingSearch extends Search {
         } else {
           //logger.info("Backtracking");
         }
-
-        assert pruner instanceof ChoicesStrategy;
-        ChoicesStrategy choicesStrategy = (ChoicesStrategy)pruner;
         ChoiceGenerator<?> nextCg = getVM().getChoiceGenerator();
-        ArrayList<Integer> choices = choicesStrategy.getEligibleChoices(nextCg);
-        if(choices.size() > 0) {
-          //take the first eligible choice and advance the cg to it. We need to advance it
-          // because, when we call cg.select in the listeners, the isDone flag will be set to
-          // true, and therefore forward() will return false! This is a pretty messy way of
-          // circumventing this problem, but imagine that choice 1 was explored (with cg.select)
-          // for a cg. That choice turns out to be an ignored state after forward(). When
-          // backtracking to the cg, isDone is set, and hasmorechoices will therefore return
-          // false because there is no sensible way of advancing a state "back" to the unexplored
-          // choice 0. We do this here.
-          int c = choices.get(0);
-          nextCg.reset();
-          nextCg.advance(c);
+        if(pruner instanceof ChoicesStrategy) {
+          ChoicesStrategy choicesStrategy = (ChoicesStrategy) pruner;
+          ArrayList<Integer> choices = choicesStrategy.getEligibleChoices(nextCg);
+          if (choices.size() > 0) {
+            //take the first eligible choice and advance the cg to it. We need to advance it
+            // because, when we call cg.select in the listeners, the isDone flag will be set to
+            // true, and therefore forward() will return false! This is a pretty messy way of
+            // circumventing this problem, but imagine that choice 1 was explored (with cg.select)
+            // for a cg. That choice turns out to be an ignored state after forward(). When
+            // backtracking to the cg, isDone is set, and hasmorechoices will therefore return
+            // false because there is no sensible way of advancing a state "back" to the unexplored
+            // choice 0. We do this here.
+            int c = choices.get(0);
+            nextCg.reset();
+            nextCg.advance(c);
 
+          } else {
+            throw new RuntimeException("not sure this should be possible...");
+          }
         } else {
-          throw new RuntimeException("not sure this should be possible...");
+          // If we are not using pruning, then just advance the cg
+          nextCg.reset();
+          nextCg.advance();
         }
 
         depthLimitReached = false;
