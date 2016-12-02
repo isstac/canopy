@@ -175,13 +175,8 @@ public class SamplingAnalysis {
 
   private SamplingAnalysis(Config config, Collection<JPFListener> jpfListeners,
                            JPFFactory jpfFactory) {
-    this.jpf = jpfFactory.buildInstance(config);
-    this.config = config;
-    jpfListeners.forEach(e -> this.jpf.addListener(e));
-  }
-
-  public void run() {
-    Class<?> instrFactory = this.config.getClass("jvm.insn_factory.class");
+    // Check that config object is using the symbolic instruction factory
+    Class<?> instrFactory = config.getClass("jvm.insn_factory.class");
     if(!instrFactory.equals(SymbolicInstructionFactory.class)) {
       String msg = "Incorrect instruction factory " + instrFactory.getName() + ". Must be an " +
           "instance " + SymbolicInstructionFactory.class.getName() + ". Is your site.properties, " +
@@ -189,6 +184,13 @@ public class SamplingAnalysis {
       logger.severe(msg);
       throw new AnalysisException(msg);
     }
+
+    this.jpf = jpfFactory.buildInstance(config);
+    this.config = config;
+    jpfListeners.forEach(e -> this.jpf.addListener(e));
+  }
+
+  public void run() {
 
     // Run the analysis
     jpf.run();
