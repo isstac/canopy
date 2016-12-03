@@ -38,6 +38,9 @@ public class Options {
   public static final String CHOICES_STRATEGY = SAMPLING_CONF_PREFIX + ".choicesstrategy";
   public static final ChoicesStrategy DEFAULT_CHOICES_STRATEGY = PruningChoicesStrategy.getInstance();
 
+  public static final String USE_BACKTRACKING_SEARCH = SAMPLING_CONF_PREFIX + ".backtrackingsearch";
+
+  public static final boolean DEFAULT_USE_BACKTRACKING_SEARCH = true;
   public static final boolean DEFAULT_USE_MODELCOUNT_AMPLIFICATION = false;
 
   public static final boolean DEFAULT_SHOW_STATISTICS = true;
