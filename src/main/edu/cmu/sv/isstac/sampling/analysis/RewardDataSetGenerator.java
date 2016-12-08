@@ -41,11 +41,11 @@ public class RewardDataSetGenerator extends AbstractAnalysisProcessor {
   public void analysisDone(SamplingResult result) {
     BufferedWriter bw = new BufferedWriter(writer);
     try {
-      bw.write("#sample,reward");
+      bw.write("sample,reward\n");
 
       int sampleNum = 1;
       for(Long reward : rewards) {
-        bw.write(sampleNum + "," + reward.longValue());
+        bw.write(sampleNum + "," + reward.longValue() + "\n");
         sampleNum++;
       }
 
