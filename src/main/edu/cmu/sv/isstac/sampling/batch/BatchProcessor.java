@@ -18,6 +18,7 @@ import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
 import edu.cmu.sv.isstac.sampling.JPFSamplerFactory;
 import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.SamplingAnalysis;
+import edu.cmu.sv.isstac.sampling.analysis.RewardDataSetGenerator;
 import edu.cmu.sv.isstac.sampling.analysis.SampleStatistics;
 import edu.cmu.sv.isstac.sampling.exhaustive.JPFExhaustiveFactory;
 import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
@@ -38,6 +39,7 @@ public class BatchProcessor {
   private static final int DEFAULT_SEED = 112323;
   private static final int SAMPLE_SIZE_PER_EXPERIMENT = Integer.MAX_VALUE;
   private static final int DEFAULT_ITERATIONS_PER_EXPERIMENT = 1;
+  private static final boolean OUTPUT_DATASET = true;
 
   public static void main(String[] args) throws AnalysisCreationException {
     if(args.length < 2 || args.length > 3) {
@@ -137,6 +139,14 @@ public class BatchProcessor {
           //Add the statistics reporter
           SampleStatistics statistics = new SampleStatistics();
           analysisBuilder.addEventObserver(statistics);
+
+          //Output dataset
+          if(OUTPUT_DATASET) {
+            String dataSetFileName = outputFile.replace(".csv", "_dataset.csv");
+            RewardDataSetGenerator rwGen = new RewardDataSetGenerator(dataSetFileName);
+            analysisBuilder.addEventObserver(rwGen);
+          }
+
           analysisBuilder.setTerminationStrategy(
               new SampleSizeTerminationStrategy(SAMPLE_SIZE_PER_EXPERIMENT));
           SamplingAnalysis analysis =
