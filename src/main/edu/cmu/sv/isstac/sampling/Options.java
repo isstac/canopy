@@ -21,6 +21,9 @@ public class Options {
 
   public static final String TERMINATION_STRATEGY = SAMPLING_CONF_PREFIX + ".termination";
 
+  public static final String SAMPLING_SIZE_TERMINATION_STRATEGY = TERMINATION_STRATEGY +
+      ".samplingsize";
+
   public static final String MODEL_COUNTING_PREFIX = SAMPLING_CONF_PREFIX + ".modelcounting";
   public static final String USE_MODELCOUNT_AMPLIFICATION = MODEL_COUNTING_PREFIX +
       ".amplifyrewards";
@@ -34,6 +37,7 @@ public class Options {
   public static final String DEFAULT_REWARD_FUNCTION = DepthRewardFunction.class.getName();
   public static final String DEFAULT_TERMINATION_STRATEGY = NeverTerminateStrategy
       .class.getName();
+
 
   public static final String CHOICES_STRATEGY = SAMPLING_CONF_PREFIX + ".choicesstrategy";
   public static final ChoicesStrategy DEFAULT_CHOICES_STRATEGY = PruningChoicesStrategy.getInstance();

@@ -93,9 +93,8 @@ public class SamplingAnalysis {
 
         //TODO: This is very specific to control the sampling size termination strategy. This is
         // only used for convenience and should be better integrated!
-        if(jpfConfig.hasValue(Options.TERMINATION_STRATEGY + ".samplingsize")) {
-          int samplingSize = jpfConfig.getInt(Options.TERMINATION_STRATEGY + "" +
-              ".samplingsize");
+        if(jpfConfig.hasValue(Options.SAMPLING_SIZE_TERMINATION_STRATEGY)) {
+          int samplingSize = jpfConfig.getInt(Options.SAMPLING_SIZE_TERMINATION_STRATEGY);
           this.terminationStrategy = new SampleSizeTerminationStrategy(samplingSize);
         }
       }
