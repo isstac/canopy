@@ -1,6 +1,8 @@
 package edu.cmu.sv.isstac.sampling.batch;
 
 import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
+import edu.cmu.sv.isstac.sampling.JPFFactory;
+import edu.cmu.sv.isstac.sampling.JPFSamplerFactory;
 import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell;
@@ -36,6 +38,11 @@ public class MonteCarloExperiment implements Experiment {
     } catch (ModelCounterCreationException e) {
       throw new BatchProcessorException(e);
     }
+  }
+
+  @Override
+  public JPFFactory getJPFFactory() {
+    return new JPFSamplerFactory();
   }
 
   @Override

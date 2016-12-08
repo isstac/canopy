@@ -1,6 +1,8 @@
 package edu.cmu.sv.isstac.sampling.batch;
 
 import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
+import edu.cmu.sv.isstac.sampling.JPFFactory;
+import edu.cmu.sv.isstac.sampling.JPFSamplerFactory;
 import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterCreationException;
@@ -62,6 +64,11 @@ public class RLExperiment implements Experiment {
     return new ReinforcementLearningStrategy(samplesPerOptimization, epsilon, historyWeight,
         factory, seed);
 
+  }
+
+  @Override
+  public JPFFactory getJPFFactory() {
+    return new JPFSamplerFactory();
   }
 
   @Override

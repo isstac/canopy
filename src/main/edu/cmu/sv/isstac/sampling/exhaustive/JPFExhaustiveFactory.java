@@ -1,6 +1,7 @@
 package edu.cmu.sv.isstac.sampling.exhaustive;
 
 import edu.cmu.sv.isstac.sampling.JPFFactory;
+import edu.cmu.sv.isstac.sampling.search.DepthSyncedDFSearch;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.search.DFSearch;
@@ -13,12 +14,8 @@ public class JPFExhaustiveFactory implements JPFFactory {
 
   private final Class<? extends Search> searchClass;
 
-  public JPFExhaustiveFactory(Class<? extends Search> searchClass) {
-    this.searchClass = searchClass;
-  }
-
   public JPFExhaustiveFactory() {
-    this(DFSearch.class);
+    searchClass = DepthSyncedDFSearch.class;
   }
 
   @Override

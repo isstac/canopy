@@ -19,6 +19,7 @@ import edu.cmu.sv.isstac.sampling.JPFSamplerFactory;
 import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.SamplingAnalysis;
 import edu.cmu.sv.isstac.sampling.analysis.SampleStatistics;
+import edu.cmu.sv.isstac.sampling.exhaustive.JPFExhaustiveFactory;
 import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.util.JPFLogger;
@@ -34,8 +35,8 @@ public class BatchProcessor {
   //Note that in order to reproduce the results, not only must the seed
   //of course be the same, but also the *order* of the experiments must
   //be the same!
-  private static final int DEFAULT_SEED = 112321;
-  private static final int SAMPLE_SIZE_PER_EXPERIMENT = 1000;
+  private static final int DEFAULT_SEED = 112323;
+  private static final int SAMPLE_SIZE_PER_EXPERIMENT = Integer.MAX_VALUE;
   private static final int DEFAULT_ITERATIONS_PER_EXPERIMENT = 1;
 
   public static void main(String[] args) throws AnalysisCreationException {
@@ -80,20 +81,27 @@ public class BatchProcessor {
   private static List<Experiment> createDefaultExperiments() {
     List<Experiment> experiments = new ArrayList<>();
     //MCTS: just pruning
+    MCTSExperiment mctsExp = new MCTSExperiment(true, false, false, Math.sqrt(2));
+
+//    experiments.add(new BacktrackingDecorator(mctsExp, true, true));
+//    experiments.add(new BacktrackingDecorator(mctsExp, false, true));
+    //experiments.add(new BacktrackingDecorator(mctsExp, false, false));
+//    experiments.add(new BacktrackingDecorator(mctsExp, true, false));
     //experiments.add(new MCTSExperiment(true, false, false, 0));
-    experiments.add(new MCTSExperiment(false, false, false, Math.sqrt(2)));
-    experiments.add(new MCTSExperiment(false, false, false, 5));
-    experiments.add(new MCTSExperiment(false, false, false, 10));
-    experiments.add(new MCTSExperiment(false, false, false, 20));
-    experiments.add(new MCTSExperiment(false, false, false, 50));
-    experiments.add(new MCTSExperiment(false, false, false, 100));
+//    experiments.add(new MCTSExperiment(false, false, false, Math.sqrt(2)));
+//    experiments.add(new MCTSExperiment(false, false, false, 5));
+//    experiments.add(new MCTSExperiment(false, false, false, 10));
+//    experiments.add(new MCTSExperiment(false, false, false, 20));
+//    experiments.add(new MCTSExperiment(false, false, false, 50));
+//    experiments.add(new MCTSExperiment(false, false, false, 100));
 
     // Monte Carlo experiment
-    experiments.add(new MonteCarloExperiment(false));
+//    experiments.add(new MonteCarloExperiment(false));
 
     //Reinforcement Learning: pruning, reward amplification, 50 samples per opt., epsilon 0.5,
     // history 0.5
     // experiments.add(new RLExperiment(true, true, 50, 0.5, 0.5));
+    experiments.add(new ExhaustiveExperiment());
 
     return experiments;
   }
@@ -129,8 +137,11 @@ public class BatchProcessor {
           //Add the statistics reporter
           SampleStatistics statistics = new SampleStatistics();
           analysisBuilder.addEventObserver(statistics);
-          analysisBuilder.setTerminationStrategy(new SampleSizeTerminationStrategy(SAMPLE_SIZE_PER_EXPERIMENT));
-          SamplingAnalysis analysis = analysisBuilder.build(conf, analysisStrategy, new JPFSamplerFactory());
+          analysisBuilder.setTerminationStrategy(
+              new SampleSizeTerminationStrategy(SAMPLE_SIZE_PER_EXPERIMENT));
+          SamplingAnalysis analysis =
+              analysisBuilder.build(conf, analysisStrategy, experiment.getJPFFactory());
+
           analysis.run();
 
           writeStatisticsToFile(statistics, iteration, seed, targetName, experiment.getName(),
