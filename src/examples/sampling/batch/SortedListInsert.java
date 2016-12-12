@@ -46,44 +46,10 @@ import gov.nasa.jpf.symbc.Debug;
  */
 public class SortedListInsert {
 
-    private static class List {
-        private int x;
-        private List next;
-
-        private static final int SENTINEL = Integer.MAX_VALUE;
-
-        private List(int x, List next) {
-            this.x = x;
-            this.next = next;
-        }
-
-        public List() {
-            this(SENTINEL, null);
-        }
-        
-        public void insertMask(int data) {
-          if (data > this.x) {
-              next.insertMask(data);
-          } else {
-              next = new List(x, next);
-              x = data;
-          }
-      }
-
-        public void insert(int data) {
-            if (data > this.x) {
-                next.insert(data);
-            } else {
-                next = new List(x, next);
-                x = data;
-            }
-        }
-    }
-
     public static void main(String[] args) {
         final int N = Integer.parseInt(args[0]);
 
-        List list = new List();
+        SortList list = new SortList();
         for (int i = 0; i < N; i++) {
             list.insertMask(Debug.makeSymbolicInteger("in"+i));//Concolic.input.Integer());
         }
