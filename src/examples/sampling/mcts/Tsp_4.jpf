@@ -1,17 +1,12 @@
-
-
-
 target=sampling.Tsp
 
 @using canopy
 
-
 symbolic.dp=z3
 
-target.args=5
+target.args=4
 
 shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
-#shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
 
 symbolic.method=sampling.Tsp$TspSolver.solve()
 

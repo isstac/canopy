@@ -1,0 +1,14 @@
+
+
+
+@using canopy
+
+
+symbolic.dp=z3
+
+target=sampling.batch.BinaryTreeSearch
+
+target.args=8
+
+symbolic.security.sampling.modelcounting.problemsettings=${canopy}/src/examples/sampling/batch/binarytreesearch_14.up
+symbolic.method=sampling.batch.BinaryTreeSearch$BinaryTree.search(con)

@@ -1,17 +1,17 @@
-
-
-
 @using canopy
-
 
 target=sampling.BinaryTreeSearch
 
 shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
 
 symbolic.dp=z3
-target.args=5
+target.args=6
 
 symbolic.method=sampling.BinaryTreeSearch$BinaryTree.search(con);sampling.BinaryTreeSearch$BinaryTree.insert(con)
+
+#symbolic.security.sampling.termination.samplingsize=2000
+
+#symbolic.security.sampling.mcts.uct.bias=5
 
 symbolic.security.sampling.stats=true
 symbolic.security.sampling.livestats=true
