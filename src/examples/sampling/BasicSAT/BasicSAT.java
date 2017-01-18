@@ -74,9 +74,9 @@ public class BasicSAT {
 		}
 	}
 
-	public void readArray(int[][] arr) {
+	public void readArray(int[][] arr, int vars) {
 		ArrayList<Lit> lits = new ArrayList<Lit>();
-		this.solver.setVarCount(50);
+		this.solver.setVarCount(vars);
 		for (int[] pieces : arr) {
 			lits.clear();
 			for (int x : pieces) {
@@ -121,21 +121,23 @@ public class BasicSAT {
 		}
 	}
 
-	public static void doSymbolic() {
-		BasicSAT solver = new BasicSAT();
-		int[][] D = new int[1][3];
-		for (int i = 0; i < 3; i++) {
+  public static void doSymbolic() {
+    BasicSAT solver = new BasicSAT();
+    final int VARS = 10;
+
+    int[][] D = new int[VARS][1];
+    for (int i = 0; i < VARS; i++) {
       boolean neg = Debug.makeSymbolicBoolean("neg"+i+1);
-      int lit = i;
+      int lit = i + 1;
       if(neg) {
-        D[0][i] = - lit;
+        D[i][0] = - lit;
       } else {
-        D[0][i] = lit;
+        D[i][0] = lit;
       }
 
-		}
-		solver.readArray(D);
-	}
+    }
+    solver.readArray(D, VARS);
+  }
 
 	public static void usage() {
 		System.out.println("Usage: java BasicSAT.BasicSAT <input_file.cnf>");
