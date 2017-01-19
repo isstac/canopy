@@ -83,10 +83,10 @@ public class BasicSAT {
 
 				lits.add(new Lit(Math.abs(x), (x < 0) ? true : false));
 
-				Clause[] clause = new Clause[] { null };
-				Clause.clauseNew(this.solver, lits, false, clause);
-				this.solver.addClause(clause[0]);
 			}
+      Clause[] clause = new Clause[] { null };
+      Clause.clauseNew(this.solver, lits, false, clause);
+      this.solver.addClause(clause[0]);
 		}
 
 		boolean soln = this.solver.search();
