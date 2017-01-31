@@ -9,8 +9,7 @@ import gov.nasa.jpf.search.Search;
  * Basically, this interface overloads the sampleDone event and also provides the node of the last
  * node in the MCTS tree... yes, ugly
  */
-public interface MCTSEventObserver extends AnalysisEventObserver {
+public interface MCTSEventObserver {
 
-  public void sampleDone(Search searchState, long samples, long propagatedReward, long pathVolume, SamplingResult.ResultContainer
-      currentBestResult, Node lastNode);
+  public void sampleDone(Node lastNode);
 }

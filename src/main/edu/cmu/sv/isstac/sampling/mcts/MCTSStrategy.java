@@ -5,11 +5,14 @@ import org.apache.commons.collections15.map.HashedMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
+import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
+import edu.cmu.sv.isstac.sampling.analysis.MCTSEventObserver;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.search.BackPropagator;
 import edu.cmu.sv.isstac.sampling.search.TerminationType;
@@ -56,6 +59,9 @@ public class MCTSStrategy implements AnalysisStrategy {
   private boolean expandedFlag = false;
   private int expandedChoice = -1;
 
+  //This is a bit redundant. The event observers are also used by the SamplingAnalysisListener
+  private Collection<MCTSEventObserver> observers = new LinkedList<>();
+
   public MCTSStrategy(SelectionPolicy selectionPolicy,
                       SimulationPolicy simulationPolicy) {
     this.selectionPolicy = selectionPolicy;
@@ -65,6 +71,10 @@ public class MCTSStrategy implements AnalysisStrategy {
 
     //For now we just stick with the default factory
     this.nodeFactory = new DefaultNodeFactory();
+  }
+
+  public void addObserver(MCTSEventObserver observer) {
+    this.observers.add(observer);
   }
 
   @Override
@@ -207,6 +217,11 @@ public class MCTSStrategy implements AnalysisStrategy {
     }
     // Perform backup phase, back propagating rewards and updated visited num according to vol.
     BackPropagator.cumulativeRewardPropagation(last, amplifiedReward, pathVolume, termType);
+
+    // Notify MCTS observers with sample done event
+    for(MCTSEventObserver obs : this.observers) {
+      obs.sampleDone(last);
+    }
 
     // Reset exploration to drive a new round of sampling
     this.mctsState = MCTS_STATE.SELECTION;

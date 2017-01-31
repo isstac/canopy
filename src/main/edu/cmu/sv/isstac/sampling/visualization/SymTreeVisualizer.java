@@ -90,8 +90,7 @@ public class SymTreeVisualizer implements MCTSEventObserver {
   }
 
   @Override
-  public void sampleDone(Search searchState, long samples, long propagatedReward, long pathVolume,
-                         SamplingResult.ResultContainer currentBestResult, Node lastNode) {
+  public void sampleDone(Node lastNode) {
     mxCell prevVertex = null;
 
     graph.getModel().beginUpdate();
@@ -133,7 +132,6 @@ public class SymTreeVisualizer implements MCTSEventObserver {
       //}
       graph.getModel().endUpdate();
     }
-    samples++;
   }
 
   private static String getStyle(Node n) {
@@ -164,22 +162,5 @@ public class SymTreeVisualizer implements MCTSEventObserver {
     } else {
       return "true";
     }
-  }
-
-  @Override
-  public void sampleDone(Search searchState, long samples, long propagatedReward,
-                         long pathVolume, SamplingResult.ResultContainer currentBestResult,
-                         boolean hasBeenExplored) {
-    // No thanks... ugly (see note in MCTSEventObserver)
-  }
-
-  @Override
-  public void analysisDone(SamplingResult result) {
-    // Do nothing
-  }
-
-  @Override
-  public void analysisStarted(Search search) {
-    // Do nothing
   }
 }

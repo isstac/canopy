@@ -28,7 +28,7 @@ public class MCTSShell implements JPFShell {
         new SamplingAnalysis.Builder();
 
     if(config.getBoolean(Utils.USE_TREE_VISUALIZATION, Utils.DEFAULT_USE_TREE_VISUALIZATION)) {
-      analysisBuilder.addEventObserver(new SymTreeVisualizer());
+      mcts.addObserver(new SymTreeVisualizer());
     }
 
     this.samplingAnalysis = analysisBuilder.build(config, mcts, new JPFSamplerFactory());
