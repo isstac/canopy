@@ -18,6 +18,7 @@ import javax.swing.*;
 
 import edu.cmu.sv.isstac.sampling.analysis.MCTSEventObserver;
 import edu.cmu.sv.isstac.sampling.analysis.SamplingResult;
+import edu.cmu.sv.isstac.sampling.mcts.MCTSNode;
 import edu.cmu.sv.isstac.sampling.structure.FinalNode;
 import edu.cmu.sv.isstac.sampling.structure.Node;
 import edu.cmu.sv.isstac.sampling.structure.PCNode;
@@ -90,34 +91,30 @@ public class SymTreeVisualizer implements MCTSEventObserver {
   }
 
   @Override
-  public void sampleDone(Node lastNode) {
+  public void sampleDone(MCTSNode lastNode) {
     mxCell prevVertex = null;
 
     graph.getModel().beginUpdate();
     try {
       for(Node node : getNodePath(lastNode)) {
-        //We skip nondeterministic nodes for now
-        if(node instanceof PCNode ||
-            node instanceof FinalNode) {
 
-          PathCondition pc = node.getPathCondition();
-          mxCell curr = this.cgToVertex.get(pc.toString());
-          if (curr == null) {
-            String contents = getNodeContents(node);
-            String style = getStyle(node);
-            curr = (mxCell)graph.insertVertex(parent, pc.toString(), contents, 10, 20, 80, 30,
-                style);
-            this.cgToVertex.put(pc.toString(), curr);
-            if (prevVertex != null) {
-              graph.insertEdge(parent, null, null, prevVertex, curr);
-            }
-          } else {
-            String contents = getNodeContents(node);
-            curr.setValue(contents);
+        PathCondition pc = node.getPathCondition();
+        mxCell curr = this.cgToVertex.get(pc.toString());
+        if (curr == null) {
+          String contents = getNodeContents(node);
+          String style = getStyle(node);
+          curr = (mxCell)graph.insertVertex(parent, pc.toString(), contents, 10, 20, 80, 30,
+              style);
+          this.cgToVertex.put(pc.toString(), curr);
+          if (prevVertex != null) {
+            graph.insertEdge(parent, null, null, prevVertex, curr);
           }
-          graph.updateCellSize(curr);
-          prevVertex = curr;
+        } else {
+          String contents = getNodeContents(node);
+          curr.setValue(contents);
         }
+        graph.updateCellSize(curr);
+        prevVertex = curr;
       }
       layout.execute(graph.getDefaultParent());
     } finally {

@@ -1,5 +1,6 @@
 package edu.cmu.sv.isstac.sampling.analysis;
 
+import edu.cmu.sv.isstac.sampling.mcts.MCTSNode;
 import edu.cmu.sv.isstac.sampling.structure.Node;
 import gov.nasa.jpf.search.Search;
 
@@ -11,5 +12,5 @@ import gov.nasa.jpf.search.Search;
  */
 public interface MCTSEventObserver {
 
-  public void sampleDone(Node lastNode);
+  public void sampleDone(MCTSNode lastNode);
 }

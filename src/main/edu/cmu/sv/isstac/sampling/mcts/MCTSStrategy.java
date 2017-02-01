@@ -237,7 +237,7 @@ public class MCTSStrategy implements AnalysisStrategy {
 
     // Notify MCTS observers with sample done event
     for(MCTSEventObserver obs : this.observers) {
-      obs.sampleDone(last);
+      obs.sampleDone(playOutNode);
     }
 
     // Reset exploration to drive a new round of sampling
