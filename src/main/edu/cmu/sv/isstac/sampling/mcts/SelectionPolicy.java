@@ -10,6 +10,6 @@ import edu.cmu.sv.isstac.sampling.structure.Node;
  */
 public interface SelectionPolicy {
   
-  public Node selectBestChild(Node currNode, ArrayList<Integer> eligibleChoices);
+  public MCTSNode selectBestChild(Node currNode, ArrayList<Integer> eligibleChoices);
   public int expandChild(Node currNode, ArrayList<Integer> eligibleChoices);
 }
