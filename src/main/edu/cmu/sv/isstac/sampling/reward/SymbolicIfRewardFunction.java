@@ -45,14 +45,25 @@ public class SymbolicIfRewardFunction extends PropertyListenerAdapter implements
 
   //frustrating to have to write something like this...
   private static boolean isSymbolicIf(Instruction ifInstr, ThreadInfo threadInfo) {
+    //I'm not sure why this check is needed,
+    //but for some reason top frame can be null!
+    if(threadInfo.getTopFrame() == null) {
+      return false;
+    }
     StackFrame sf = threadInfo.getModifiableTopFrame();
     Object sym1 = null, sym2 = null;
-    if(ifInstr instanceof IfInstruction) {
+
+    //Important check---otherwise core can throw an assertion error when trying to obtain the
+    // operand attributes
+    if(!sf.hasOperandAttr()) {
+      return false;
+    }
+    if (ifInstr instanceof IfInstruction) {
       sym1 = sf.getOperandAttr(0);
       //short circuiting
-      if(sym1 != null) return true;
+      if (sym1 != null) return true;
 
-      if(ifInstr instanceof IF_ICMPEQ ||
+      if (ifInstr instanceof IF_ICMPEQ ||
           ifInstr instanceof IF_ICMPGE ||
           ifInstr instanceof IF_ICMPGT ||
           ifInstr instanceof IF_ICMPLE ||
@@ -60,10 +71,10 @@ public class SymbolicIfRewardFunction extends PropertyListenerAdapter implements
           ifInstr instanceof IF_ICMPNE) {
         sym1 = sf.getOperandAttr(1);
       }
-    } else if(ifInstr instanceof DoubleCompareInstruction) {
+    } else if (ifInstr instanceof DoubleCompareInstruction) {
       sym1 = sf.getOperandAttr(1);
       sym2 = sf.getOperandAttr(3);
-    } else if(ifInstr instanceof FCMPG ||
+    } else if (ifInstr instanceof FCMPG ||
         ifInstr instanceof FCMPL) { //symbolic information is attached to the same operands as IF_* and IF*
       sym1 = sf.getOperandAttr(0);
       sym2 = sf.getOperandAttr(1);
