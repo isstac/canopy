@@ -12,6 +12,7 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPFListenerException;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.symbc.bytecode.BytecodeUtils;
+import gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener;
 import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.RestorableVMState;
@@ -23,6 +24,7 @@ import gov.nasa.jpf.vm.VM;
  */
 public class BacktrackingSamplingSearch extends Search {
   private static final Logger logger = JPFLogger.getLogger(BacktrackingSamplingSearch.class.getName());
+  private final boolean incrementalSolving;
 
   private RestorableVMState initState;
   private PruningStrategy pruner;
@@ -52,6 +54,22 @@ public class BacktrackingSamplingSearch extends Search {
       // Create a dummy
       pruner = new NoPruningStrategy();
     }
+
+    this.incrementalSolving = isIncrementalSolvingEnabled(config);
+    String incSolving = ((!this.incrementalSolving) ? "*NOT* " : "") + "using incremental solving";
+    logger.info(incSolving);
+  }
+
+  private boolean isIncrementalSolvingEnabled(Config conf) {
+    String[] listeners = conf.getStringArray("listener");
+    if(listeners != null) {
+      for (String listener : listeners) {
+        if (listener.equals(IncrementalListener.class.getName())) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   @Override
@@ -178,6 +196,12 @@ public class BacktrackingSamplingSearch extends Search {
     vm.resetNextCG();
     // Reset the variable counter for SPF
     BytecodeUtils.clearSymVarCounter();
+
+    //reset incremental solver if used
+    if(this.incrementalSolving) {
+      assert IncrementalListener.solver != null;
+      IncrementalListener.solver.reset();
+    }
   }
 
   private void notifyNewSample() {

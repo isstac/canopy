@@ -9,7 +9,10 @@ import edu.cmu.sv.isstac.sampling.exploration.PruningStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPFListenerException;
 import gov.nasa.jpf.search.Search;
+import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.bytecode.BytecodeUtils;
+import gov.nasa.jpf.symbc.numeric.PCParser;
+import gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener;
 import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.RestorableVMState;
 import gov.nasa.jpf.vm.VM;
@@ -23,6 +26,7 @@ public class SamplingSearch extends Search {
 
   private RestorableVMState initState;
   private PruningStrategy pruner;
+  private final boolean incrementalSolving;
 
   public SamplingSearch(Config config, VM vm) {
     super(config, vm);
@@ -52,6 +56,22 @@ public class SamplingSearch extends Search {
       // Create a dummy
       pruner = new NoPruningStrategy();
     }
+
+    this.incrementalSolving = isIncrementalSolvingEnabled(config);
+    String incSolving = ((!this.incrementalSolving) ? "*NOT* " : "") + "using incremental solving";
+    logger.info(incSolving);
+  }
+
+  private boolean isIncrementalSolvingEnabled(Config conf) {
+    String[] listeners = conf.getStringArray("listener");
+    if(listeners != null) {
+      for (String listener : listeners) {
+        if (listener.equals(IncrementalListener.class.getName())) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   @Override
@@ -148,6 +168,12 @@ public class SamplingSearch extends Search {
     vm.resetNextCG();
     // Reset the variable counter for SPF
     BytecodeUtils.clearSymVarCounter();
+
+    //reset incremental solver if used
+    if(this.incrementalSolving) {
+      assert IncrementalListener.solver != null;
+      IncrementalListener.solver.reset();
+    }
   }
 
   private void notifyNewSample() {
