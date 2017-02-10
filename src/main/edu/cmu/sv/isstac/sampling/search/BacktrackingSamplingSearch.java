@@ -81,6 +81,13 @@ public class BacktrackingSamplingSearch extends Search {
       return;
     }
 
+    //reset incremental solver before we start
+    //We do this to ensure that state is reset even
+    //if batch processing is used
+    if(this.incrementalSolving) {
+      Options.resetIncrementalSolver();
+    }
+
     // TODO: This is even cooler:
     // we can set the init state upon entering the target method.
     // Then each sample is drawn from here, which would be highly effective
@@ -199,8 +206,7 @@ public class BacktrackingSamplingSearch extends Search {
 
     //reset incremental solver if used
     if(this.incrementalSolving) {
-      assert IncrementalListener.solver != null;
-      IncrementalListener.solver.reset();
+      Options.resetIncrementalSolver();
     }
   }
 
