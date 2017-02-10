@@ -36,9 +36,9 @@ public class BatchProcessor {
   //Note that in order to reproduce the results, not only must the seed
   //of course be the same, but also the *order* of the experiments must
   //be the same!
-  private static final int DEFAULT_SEED = 112323;
-  private static final int SAMPLE_SIZE_PER_EXPERIMENT = Integer.MAX_VALUE;
-  private static final int DEFAULT_ITERATIONS_PER_EXPERIMENT = 1;
+  private static final int DEFAULT_SEED = 1;
+  private static final int SAMPLE_SIZE_PER_EXPERIMENT = 2000;//Integer.MAX_VALUE;
+  private static final int DEFAULT_ITERATIONS_PER_EXPERIMENT = 50;
   private static final boolean OUTPUT_DATASET = true;
 
   public static void main(String[] args) throws AnalysisCreationException {
@@ -83,27 +83,47 @@ public class BatchProcessor {
   private static List<Experiment> createDefaultExperiments() {
     List<Experiment> experiments = new ArrayList<>();
     //MCTS: just pruning
-    MCTSExperiment mctsExp = new MCTSExperiment(true, false, false, Math.sqrt(2));
-
 //    experiments.add(new BacktrackingDecorator(mctsExp, true, true));
 //    experiments.add(new BacktrackingDecorator(mctsExp, false, true));
-    //experiments.add(new BacktrackingDecorator(mctsExp, false, false));
+//    experiments.add(new BacktrackingDecorator(mctsExp, false, false));
 //    experiments.add(new BacktrackingDecorator(mctsExp, true, false));
-    //experiments.add(new MCTSExperiment(true, false, false, 0));
-//    experiments.add(new MCTSExperiment(false, false, false, Math.sqrt(2)));
-//    experiments.add(new MCTSExperiment(false, false, false, 5));
-//    experiments.add(new MCTSExperiment(false, false, false, 10));
-//    experiments.add(new MCTSExperiment(false, false, false, 20));
-//    experiments.add(new MCTSExperiment(false, false, false, 50));
-//    experiments.add(new MCTSExperiment(false, false, false, 100));
+
+
+    /*
+     * Pruning
+     */
+    experiments.add(new MCTSExperiment(true, false, false, Math.sqrt(2)));
+    experiments.add(new MCTSExperiment(true, false, false, 5));
+    experiments.add(new MCTSExperiment(true, false, false, 10));
+    experiments.add(new MCTSExperiment(true, false, false, 20));
+    experiments.add(new MCTSExperiment(true, false, false, 50));
+    experiments.add(new MCTSExperiment(true, false, false, 100));
+
+    experiments.add(new MonteCarloExperiment(true));
+
+    experiments.add(new RLExperiment(true, false, false, 250, 0.5, 0.5));
+    experiments.add(new RLExperiment(true, false, false, 100, 0.5, 0.5));
+    experiments.add(new RLExperiment(true, false, false, 10, 0.5, 0.5));
+    experiments.add(new RLExperiment(true, false, false, 100, 0.1, 0.1));
+    experiments.add(new RLExperiment(true, false, false, 100, 0.9, 0.9));
+    experiments.add(new RLExperiment(true, false, false, 100, 0.9, 0.1));
+    experiments.add(new RLExperiment(true, false, false, 100, 0.1, 0.9));
+    experiments.add(new RLExperiment(true, false, false, 1, 0.1, 0.1));
+    experiments.add(new RLExperiment(true, false, false, 1, 0.5, 0.5));
+
+
+    /*
+     * No pruning
+     */
+    experiments.add(new MCTSExperiment(false, false, false, Math.sqrt(2)));
+    experiments.add(new MCTSExperiment(false, false, false, 5));
+    experiments.add(new MCTSExperiment(false, false, false, 10));
+    experiments.add(new MCTSExperiment(false, false, false, 20));
+    experiments.add(new MCTSExperiment(false, false, false, 50));
+    experiments.add(new MCTSExperiment(false, false, false, 100));
 
     // Monte Carlo experiment
-//    experiments.add(new MonteCarloExperiment(false));
-
-    //Reinforcement Learning: pruning, reward amplification, 50 samples per opt., epsilon 0.5,
-    // history 0.5
-    // experiments.add(new RLExperiment(true, true, 50, 0.5, 0.5));
-    experiments.add(new ExhaustiveExperiment());
+    experiments.add(new MonteCarloExperiment(false));
 
     return experiments;
   }
