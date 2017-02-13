@@ -105,7 +105,15 @@ public class BacktrackingSamplingSearch extends Search {
 
       if (checkAndResetBacktrackRequest() || !isNewState || isIgnoredState) {
         pruner.performPruning(getVM().getChoiceGenerator());
+        //All paths have been explored, so search finishes
+        //Strictly we don't need this check here (it is also done later for a terminating
+        // path---see below), but this is just to shortcircuit the search
+        if (pruner.isFullyPruned()) {
+          logger.info("Sym exe tree is fully explored due to pruning. Search finishes");
+          break;
+        }
 
+        // Perform backtracking
         if (!backtrack()) {
           // backtrack not possible, done
           break;
@@ -129,7 +137,13 @@ public class BacktrackingSamplingSearch extends Search {
             nextCg.advance(c);
 
           } else {
-            throw new SamplingException("Choices strategy returned zero choices");
+            //This happens when we are backtracking to a choicegenerator for which both choices
+            // are already pruned. In that case we want to keep backtracking: call fo forward()
+            // will later return false, thus forcing one more backtracking step.
+
+            // It actually seems superfluous setting the isdone flag here. Later foward will
+            // return false. This is just to be on the safe side.
+            nextCg.setDone();
           }
         } else {
           // If we are not using pruning, then just advance the cg

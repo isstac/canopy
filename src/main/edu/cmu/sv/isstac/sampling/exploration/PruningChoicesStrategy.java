@@ -79,9 +79,11 @@ public class PruningChoicesStrategy implements ChoicesStrategy, PruningStrategy 
   public void performPruning(ChoiceGenerator<?> cg) {
     Path p = new Path(cg);
 
-    assert !pruned.contains(p);
+    //assert !pruned.contains(p);
+//    assert !pruned.contains(p);
     pruned.add(p);
     propagatePruning(p, cg);
+//    propagatePruning(p, cg);
   }
   
   private void propagatePruning(Path currentPath, ChoiceGenerator<?> currentCg) {
@@ -102,10 +104,15 @@ public class PruningChoicesStrategy implements ChoicesStrategy, PruningStrategy 
         children.add(siblingPath);
       }
 
-      //We only need to keep parent, because all subtrees (children) are pruned
-      for(Path child : children) {
-        pruned.remove(child);
-      }
+      //If backtracking is not used, we can optimize how pruning information is kept:
+      // We only need to keep parent, because all subtrees (children) are pruned.
+      // *However*, when backtracking is used we can end up in a state where parents are pruned
+      // but we are currently asking for whether some other cg in a subtree of a pruned node has
+      // non-pruned children. In that case, if we removed this information using the code below,
+      // the backtracker would incorrectly select a choice that actually was pruned.
+//      for(Path child : children) {
+//        pruned.remove(child);
+//      }
       pruned.add(parent.copy());
       backwardsPruningCg = backwardsPruningCg.getPreviousChoiceGenerator();
     }
