@@ -1,7 +1,9 @@
 package edu.cmu.sv.isstac.sampling.reinforcement;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -98,48 +100,63 @@ public class ReinforcementLearningStrategy implements AnalysisStrategy {
     // (children)
     for(RLNode node : this.nodes.values()) {
 
-      //Of course, only reinforce nodes that can make choices (i.e. not final nodes)
-      if(node.getTotalChoicesNum() > 0) {
-        double qualitySum = 0.0;
-        double maxQuality = -1.0;
-        int maxQualityChoice = -1;
+      //If the node is ignored, we skip optimizing it
+      if(!isIgnored(node)) {
 
-        // Find choice with max quality
-        // Assume that choices are 0..TotalChoices
-        for(int choice = 0; choice < node.getTotalChoicesNum(); choice++) {
-          double quality = node.getChoiceQuality(choice);
-          if(quality > maxQuality) {
-            maxQuality = quality;
-            maxQualityChoice = choice;
-          }
-          qualitySum += quality;
-        }
-        if(qualitySum > 0.0) {
+        //Of course, only reinforce nodes that can make choices (i.e. not final nodes)
+        if (node.getTotalChoicesNum() > 0) {
+          double qualitySum = 0.0;
+          double maxQuality = -1.0;
+          int maxQualityChoice = -1;
 
+          // Find choice with max quality
           // Assume that choices are 0..TotalChoices
-          for(int choice = 0; choice < node.getTotalChoicesNum(); choice++) {
-
-            double updatedProb = 0.0;
-
-            //max quality choice gets the best prob
-            if(choice == maxQualityChoice) {
-              updatedProb += 1.0 - this.epsilon;
-            }
+          for (int choice = 0; choice < node.getTotalChoicesNum(); choice++) {
             double quality = node.getChoiceQuality(choice);
-            updatedProb += this.epsilon * (quality / qualitySum);
-
-            double oldProb = node.getChoiceProbability(choice);
-            double newProb = (this.historyWeight * oldProb)
-                + ((1 - this.historyWeight) * updatedProb);
-            node.setChoiceProbability(choice, newProb);
+            if (quality > maxQuality) {
+              maxQuality = quality;
+              maxQualityChoice = choice;
+            }
+            qualitySum += quality;
           }
-        } else {
-          String msg = "Quality sum must be positive";
-          logger.severe(msg);
-          throw new RLAnalysisException(msg);
+          if (qualitySum > 0.0) {
+
+            // Assume that choices are 0..TotalChoices
+            for (int choice = 0; choice < node.getTotalChoicesNum(); choice++) {
+              double updatedProb = 0.0;
+
+              //max quality choice gets the best prob
+              if (choice == maxQualityChoice) {
+                updatedProb += 1.0 - this.epsilon;
+              }
+              double quality = node.getChoiceQuality(choice);
+              updatedProb += this.epsilon * (quality / qualitySum);
+
+              double oldProb = node.getChoiceProbability(choice);
+              double newProb = (this.historyWeight * oldProb)
+                  + ((1 - this.historyWeight) * updatedProb);
+              node.setChoiceProbability(choice, newProb);
+            }
+          } else {
+            String msg = "Quality sum must be positive";
+            logger.severe(msg);
+            throw new RLAnalysisException(msg);
+          }
         }
       }
     }
+  }
+
+  private boolean isIgnored(RLNode node) {
+    //This is pretty weird, but we need a check like this since nodes a created in the tree
+    // *before* spf determines whether the path is infeasible or not. If it is infeasible, and
+    // thus this branch will be ignored, the node should not count in the quality computation and
+    // furthermore, it will never have its visited count incremented since this takes place only
+    // for terminating paths. If the CG optimization is on, then ignored states will never be
+    // sampled and therefore---in this case---this check is unnecessary. However if it is off or
+    // incremental solving is used (which currently enforces CG optimization to be off), then we
+    // will need a check like this to not hit an assertion error when calling getChoiceQuality
+    return node.getVisitedNum() == 0;
   }
 
   @Override
