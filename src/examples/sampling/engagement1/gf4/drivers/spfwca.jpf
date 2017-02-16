@@ -1,10 +1,8 @@
-gabfeed_path=/Users/luckow/projects/isstac/repos/engagement/engagement_1/challenge_problems/gabfeed_4/challenge_program/decompiled/bin
-classpath=${jpf-security}/build/examples;${gabfeed_path}
 
-@using jpf-security
-@using jpf-symbc
+@using spf-wca
+@using canopy
 
-target=com.cyberpointllc.stac.hashmap.HashMapDriverInt
+target=sampling.engagement1.gf4.drivers.HashMapDriverInt
 
 shell=wcanalysis.WorstCaseAnalyzer
 #symbolic.dp=choco
@@ -23,10 +21,11 @@ symbolic.worstcase.policy.inputsize=2
 symbolic.worstcase.input.max=22
 
 symbolic.worstcase.verbose=true
-symbolic.worstcase.outputpath=${jpf-security}/gabfeed4_hashmap_results
+symbolic.worstcase.outputpath=${canopy}/gabfeed4_hashmap_results
 
-symbolic.method=com.cyberpointllc.stac.hashmap.HashMap.get(con),com.cyberpointllc.stac.hashmap.HashMap.put(con#con)
+symbolic.method=sampling.engagement1.gf4.hashmap.HashMap.get(con),sampling.engagement1.gf4.hashmap\
+  .HashMap.put(con#con)
 
-symbolic.heuristic.measuredmethods=com.cyberpointllc.stac.hashmap.HashMap.get(con)
+symbolic.heuristic.measuredmethods=sampling.engagement1.gf4.hashmap.HashMap.get(con)
 search.depth_limit = 5000
 #symbolic.debug=true

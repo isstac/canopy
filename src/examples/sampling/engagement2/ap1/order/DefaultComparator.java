@@ -1,4 +1,4 @@
-package edu.cyberapex.order;
+package sampling.engagement2.ap1.order;
 
 import java.util.*;
 
@@ -8,7 +8,7 @@ public class DefaultComparator<T extends Comparable<? super T>> implements Compa
     
     @Override
     public int compare(final T object1, final T object2) {
-        return object1.compareTo((Object)object2);
+        return object1.compareTo(object2);
     }
     
     static {

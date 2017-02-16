@@ -1,8 +1,24 @@
-// 
+/*
+ * Copyright 2017 Carnegie Mellon University Silicon Valley
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//
 // Decompiled by Procyon v0.5.30
 // 
 
-package com.cyberpointllc.stac.sort;
+package sampling.engagement1.tc3.sort;
 
 import java.util.Collections;
 import java.util.Stack;
@@ -107,7 +123,6 @@ public class Sorter<T>
         final int listLen = initEnd - initStart + 1;
         final SorterHelper0 conditionObj0 = new SorterHelper0(0);
         for (int m = initStart; m < initEnd + 1; ++m) {
-        	/** this part differs from textcrunchr5 **/
             if (listLen <= Math.max(Math.pow(2.0, 10.0), Math.pow(2.0, 14.0))) {
                 if (i < left.size() && k < right.size()) {
                     list.set(m, right.get(k++));
@@ -127,7 +142,6 @@ public class Sorter<T>
             else if (k < right.size()) {
                 list.set(m, right.get(k++));
             }
-            /** **/
         }
     }
     

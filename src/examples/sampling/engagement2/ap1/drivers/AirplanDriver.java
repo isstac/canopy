@@ -1,24 +1,23 @@
 /*
  * This is an auto-generated java file for the SPF Worst Case Analyzer driver.
  */
-package drivers;
+package sampling.engagement2.ap1.drivers;
 
 import gov.nasa.jpf.symbc.Debug;
-import edu.cyberapex.order.Orderer;
+import sampling.engagement2.ap1.order.DefaultComparator;
+import sampling.engagement2.ap1.order.Orderer;
 
 
+public class AirplanDriver {
 
-
-public class Driver_airplan_1 {
-
-   public static void main(final java.lang.String[] args) throws Exception {
+   public static void main(final String[] args) throws Exception {
 
    int N=Integer.parseInt(args[0]);
    final int STRLEN = 2;
 
         
    // initialize
-   final Orderer var0 = new Orderer(edu.cyberapex.order.DefaultComparator.STRING);
+   final Orderer var0 = new Orderer(DefaultComparator.STRING);
    final java.util.ArrayList var1 = new java.util.ArrayList();
    for (int i = 0; i < N; i++) {
       String data0 = Debug.makeSymbolicString("var1:0:"+i, STRLEN);
