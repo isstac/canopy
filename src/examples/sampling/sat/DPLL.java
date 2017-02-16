@@ -54,7 +54,7 @@ public class DPLL
   public static void main(String[] args) {
 
     final int literals = Integer.parseInt(args[0]);
-    final int clausesNum = 3;
+    final int clausesNum =Integer.parseInt(args[1]);
 
     List<Clause> clauses = new LinkedList<>();
 
@@ -122,7 +122,7 @@ public class DPLL
   {
     boolean[] assign = new boolean[n_literals]; /* will contain the assignments if possible */
     
-    if (solveDPLL(n_literals, F, assign))
+    if (solveDPLL2(n_literals, F, assign))
     {
       return assign;
     }
@@ -134,7 +134,7 @@ public class DPLL
    * The core DPLL method
    * return True if a contains a valid assignation, False if F is a contradiction
    */
-  public static boolean solveDPLL(int n_literals, List<Clause> F, boolean[] a)
+  public static boolean solveDPLL2(int n_literals, List<Clause> F, boolean[] a)
   {
     /*
      * Two "tricks" to improve performances avoiding to try
@@ -172,7 +172,7 @@ public class DPLL
      * Recursive step! Tries the two possible assignations of nextLiteral (False and True)
      * and finds out if it creates a valid assignation or a contradiction
      */
-    return solveDPLL(n_literals, F1, a) || solveDPLL(n_literals, F2, a);
+    return solveDPLL2(n_literals, F1, a) || solveDPLL2(n_literals, F2, a);
   }
   
   public static void PureLiteralAssign(List<Clause> F, boolean[] assign, int n)
