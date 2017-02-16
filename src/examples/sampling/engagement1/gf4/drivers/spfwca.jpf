@@ -1,0 +1,32 @@
+gabfeed_path=/Users/luckow/projects/isstac/repos/engagement/engagement_1/challenge_problems/gabfeed_4/challenge_program/decompiled/bin
+classpath=${jpf-security}/build/examples;${gabfeed_path}
+
+@using jpf-security
+@using jpf-symbc
+
+target=com.cyberpointllc.stac.hashmap.HashMapDriverInt
+
+shell=wcanalysis.WorstCaseAnalyzer
+#symbolic.dp=choco
+
+#symbolic.min_int=-100
+#symbolic.max_int=100
+symbolic.dp=z3bitvector
+
+# Set history size for the 	stateful decision policy
+symbolic.wc.policy.history.size=0
+
+#symbolic.worstcase.reusepolicy=true
+#symbolic.worstcase.startat=11
+
+symbolic.worstcase.policy.inputsize=2
+symbolic.worstcase.input.max=22
+
+symbolic.worstcase.verbose=true
+symbolic.worstcase.outputpath=${jpf-security}/gabfeed4_hashmap_results
+
+symbolic.method=com.cyberpointllc.stac.hashmap.HashMap.get(con),com.cyberpointllc.stac.hashmap.HashMap.put(con#con)
+
+symbolic.heuristic.measuredmethods=com.cyberpointllc.stac.hashmap.HashMap.get(con)
+search.depth_limit = 5000
+#symbolic.debug=true

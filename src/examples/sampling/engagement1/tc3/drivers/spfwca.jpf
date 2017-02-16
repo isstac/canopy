@@ -1,0 +1,32 @@
+@using canopy
+@using spf-wca
+target=sampling.engagement1.tc3.drivers.MainSort
+
+symbolic.dp=z3
+#symbolic.bvlength=64
+
+# range: A-Z (65-90)
+symbolic.min_char=65 
+symbolic.max_char=90
+
+#symbolic.debug = true
+
+symbolic.optimizechoices=false
+
+shell=wcanalysis.WorstCaseAnalyzer
+
+#symbolic.worstcase.heuristic.nosolver=true
+
+# Set history size for the stateful decision policy
+symbolic.wc.policy.history.size=1
+
+symbolic.worstcase.policy.inputsize=3
+symbolic.worstcase.input.max=10
+#symbolic.worstcase.startat=3
+#symbolic.worstcase.increment=3
+
+symbolic.worstcase.verbose=true
+symbolic.worstcase.outputpath=${spf-wca}/results/
+
+symbolic.method=sampling.engagement1.tc3.sort.Sorter.sort(con)
+

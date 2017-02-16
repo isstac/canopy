@@ -1,0 +1,51 @@
+#
+# Copyright 2017 Carnegie Mellon University Silicon Valley
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+@using canopy
+
+shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+
+
+#symbolic.dp=z3bitvector
+symbolic.dp=z3inc
+listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
+#symbolic.dp=z3
+
+# range: A-Z (65-90)
+symbolic.min_char=65 
+symbolic.max_char=90
+
+target.args=7
+target=sampling.engagement1.tc3.drivers.MainSort
+symbolic.method=sampling.engagement1.tc3.sort.Sorter.sort(con)
+
+symbolic.security.sampling.mcts.uct.bias=5
+
+symbolic.security.sampling.termination.samplingsize=2000
+symbolic.security.sampling.seed=-1359243304
+
+#symbolic.optimizechoices=false
+symbolic.security.sampling.stats=true
+symbolic.security.sampling.livestats=true
+
+symbolic.security.sampling.modelcounting.amplifyrewards=false
+
+symbolic.security.sampling.mcts.weightedsampling=false
+
+symbolic.security.sampling.mcts.treevisualizer=false
+
+#max reward 63
+
