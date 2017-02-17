@@ -17,21 +17,27 @@
 @using canopy
 
 shell=edu.cmu.sv.isstac.sampling.complexity.ComplexityAnalysisShell
-symbolic.security.sampling.complexity.type=mcts
-symbolic.security.sampling.complexity.inputrange=1,10
-symbolic.security.sampling.complexity.outputdir=${canopy}/insertionsort_results
+symbolic.security.sampling.complexity.type=exhaustive
+symbolic.security.sampling.complexity.inputrange=1,20
+
 
 symbolic.security.sampling.termination.samplingsize=200
 
-target=sampling.InsertionSort
-symbolic.method=sampling.InsertionSort.sort(con)
-
+#symbolic.dp=z3bitvector
 symbolic.dp=z3inc
 listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
+#symbolic.dp=z3
 
-symbolic.optimizechoices=false
+target=sampling.QuickSortJDK15
+target.args=7
 
+symbolic.security.sampling.mcts.uct.bias=5
 
+symbolic.method=sampling.java15.util.Arrays.sort(con)
+
+symbolic.security.sampling.seed=-1359243304
+
+#symbolic.optimizechoices=false
 symbolic.security.sampling.stats=true
 symbolic.security.sampling.livestats=true
 
@@ -40,3 +46,5 @@ symbolic.security.sampling.modelcounting.amplifyrewards=false
 symbolic.security.sampling.mcts.weightedsampling=false
 
 symbolic.security.sampling.mcts.treevisualizer=false
+
+
