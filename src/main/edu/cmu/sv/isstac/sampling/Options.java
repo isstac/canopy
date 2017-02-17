@@ -9,6 +9,7 @@ import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
 import edu.cmu.sv.isstac.sampling.termination.NeverTerminateStrategy;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.Config;
+import gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener;
 
 /**
  * @author Kasper Luckow
@@ -69,5 +70,11 @@ public class Options {
     } else {
       return conf.getLong(Options.RNG_SEED, Options.DEFAULT_RNG_SEED);
     }
+  }
+
+  public static void resetIncrementalSolver() {
+    //reset incremental solver if used
+    assert IncrementalListener.solver != null;
+    IncrementalListener.solver.reset();
   }
 }

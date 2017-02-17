@@ -16,8 +16,6 @@ import gov.nasa.jpf.vm.ChoiceGenerator;
 /**
  * @author Kasper Luckow
  *
- * Wraps a node and gives it the ability to provide probabilities for choices. Maybe we should
- * subclass instead of using a decorator
  */
 public class RLNode extends NodeAdapter {
   private static final Logger logger = JPFLogger.getLogger(RLNode.class.getName());

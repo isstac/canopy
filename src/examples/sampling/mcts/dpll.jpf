@@ -1,0 +1,35 @@
+@using canopy
+#@using jpf-symbc
+
+#shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
+shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+#shell=edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveShell
+
+target=sampling.sat.DPLL
+
+#5 literals and 3 clauses -> 3 * 2^5 = 2^15 paths
+target.args=5,3
+
+symbolic.dp=z3bitvector
+#symbolic.min_int=1
+#symbolic.max_int=1000
+
+symbolic.security.sampling.mcts.uct.bias=0.1
+
+vm.max_transition_length = 50000000
+
+symbolic.method=sampling.sat.DPLL.solveDPLL(con#con)
+
+symbolic.security.sampling.rewardfunc=edu.cmu.sv.isstac.sampling.reward.IfRewardFunction
+
+#symbolic.security.sampling.choicesstrategy=edu.cmu.sv.isstac.sampling.exploration
+#.AllChoicesStrategy
+
+symbolic.security.sampling.stats=true
+#symbolic.security.sampling.livestats=false
+
+symbolic.security.sampling.modelcounting.amplifyrewards=false
+
+symbolic.security.sampling.mcts.weightedsampling=false
+
+symbolic.security.sampling.mcts.treevisualizer=false

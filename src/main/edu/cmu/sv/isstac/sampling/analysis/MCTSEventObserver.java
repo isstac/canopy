@@ -1,5 +1,6 @@
 package edu.cmu.sv.isstac.sampling.analysis;
 
+import edu.cmu.sv.isstac.sampling.mcts.MCTSNode;
 import edu.cmu.sv.isstac.sampling.structure.Node;
 import gov.nasa.jpf.search.Search;
 
@@ -9,8 +10,7 @@ import gov.nasa.jpf.search.Search;
  * Basically, this interface overloads the sampleDone event and also provides the node of the last
  * node in the MCTS tree... yes, ugly
  */
-public interface MCTSEventObserver extends AnalysisEventObserver {
+public interface MCTSEventObserver {
 
-  public void sampleDone(Search searchState, long samples, long propagatedReward, long pathVolume, SamplingResult.ResultContainer
-      currentBestResult, Node lastNode);
+  public void sampleDone(MCTSNode lastNode);
 }

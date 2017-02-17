@@ -20,7 +20,7 @@ class UCBPolicy implements SelectionPolicy {
   }
   
   @Override
-  public Node selectBestChild(Node currNode, ArrayList<Integer> eligibleChoices) {
+  public MCTSNode selectBestChild(Node currNode, ArrayList<Integer> eligibleChoices) {
     double bestUct = Double.NEGATIVE_INFINITY;
     Node bestChild = null;
     
@@ -35,7 +35,7 @@ class UCBPolicy implements SelectionPolicy {
     }
     assert bestChild != null;
     
-    return bestChild;
+    return (MCTSNode)bestChild;
   }
   
   private double computeUCT(Node parent, Node child) {

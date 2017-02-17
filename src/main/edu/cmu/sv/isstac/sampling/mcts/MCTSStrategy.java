@@ -5,11 +5,14 @@ import org.apache.commons.collections15.map.HashedMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
+import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
+import edu.cmu.sv.isstac.sampling.analysis.MCTSEventObserver;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.search.BackPropagator;
 import edu.cmu.sv.isstac.sampling.search.TerminationType;
@@ -46,15 +49,19 @@ public class MCTSStrategy implements AnalysisStrategy {
   private static final Logger logger = JPFLogger.getLogger(MCTSStrategy.class.getName());
   
   private MCTS_STATE mctsState;
-  private Node last = null;
-  private Node root = null;
-  private final NodeFactory<Node> nodeFactory;
+  private MCTSNode last = null;
+  private MCTSNode playOutNode = null;
+  private MCTSNode root = null;
+  private final NodeFactory<MCTSNode> nodeFactory;
   
   private final SelectionPolicy selectionPolicy;
   private final SimulationPolicy simulationPolicy;
   
   private boolean expandedFlag = false;
   private int expandedChoice = -1;
+
+  //This is a bit redundant. The event observers are also used by the SamplingAnalysisListener
+  private Collection<MCTSEventObserver> observers = new LinkedList<>();
 
   public MCTSStrategy(SelectionPolicy selectionPolicy,
                       SimulationPolicy simulationPolicy) {
@@ -64,7 +71,11 @@ public class MCTSStrategy implements AnalysisStrategy {
     this.mctsState = MCTS_STATE.SELECTION;
 
     //For now we just stick with the default factory
-    this.nodeFactory = new DefaultNodeFactory();
+    this.nodeFactory = new MCTSNodeFactory();
+  }
+
+  public void addObserver(MCTSEventObserver observer) {
+    this.observers.add(observer);
   }
 
   @Override
@@ -78,7 +89,9 @@ public class MCTSStrategy implements AnalysisStrategy {
       if(expandedFlag) {
         assert mctsState == MCTS_STATE.SIMULATION;
         try {
-          last = this.nodeFactory.create(last, cg, expandedChoice);
+          last = playOutNode = this.nodeFactory.create(last, cg, expandedChoice);
+          assert playOutNode.isSearchTreeNode() == false;
+          playOutNode.setIsSearchTreeNode(true);
         } catch (NodeCreationException e) {
           String msg = "Could not create node";
           logger.severe(msg);
@@ -129,9 +142,17 @@ public class MCTSStrategy implements AnalysisStrategy {
           choice = last.getChoice();
         }
       } else if(mctsState == MCTS_STATE.SIMULATION) {
-        
         // Select choice according to simulation policy, e.g., randomly
         choice = simulationPolicy.selectChoice(vm, cg, eligibleChoices);
+        try {
+          last = this.nodeFactory.create(last, cg, choice);
+          last.setIsSearchTreeNode(false);
+        } catch (NodeCreationException e) {
+          String msg = "Could not create node";
+          logger.severe(msg);
+          throw new MCTSAnalysisException(msg);
+        }
+
       } else {
         String msg = "Entered invalid MCTS state: " + mctsState;
         logger.severe(msg);
@@ -150,7 +171,13 @@ public class MCTSStrategy implements AnalysisStrategy {
 
   private ArrayList<Integer> getUnexpandedEligibleChoices(Node n, ArrayList<Integer> eligibleChoices) {
     ArrayList<Integer> unexpandedEligibleChoices = new ArrayList<>();
-    Collection<Node> expandedChildren = n.getChildren();
+    Collection<Node> expandedChildren = new HashSet<>();
+    for(Node child : n.getChildren()) {
+      if(((MCTSNode)child).isSearchTreeNode()) {
+        expandedChildren.add(child);
+      }
+    }
+
     Set<Integer> childChoices = new HashSet<>();
     
     //Could expose a method in a node to obtain the following
@@ -208,14 +235,21 @@ public class MCTSStrategy implements AnalysisStrategy {
     // Perform backup phase, back propagating rewards and updated visited num according to vol.
     BackPropagator.cumulativeRewardPropagation(last, amplifiedReward, pathVolume, termType);
 
+    // Notify MCTS observers with sample done event
+    for(MCTSEventObserver obs : this.observers) {
+      obs.sampleDone(playOutNode);
+    }
+
     // Reset exploration to drive a new round of sampling
     this.mctsState = MCTS_STATE.SELECTION;
     this.last = this.root;
+    this.playOutNode = null;
   }
   
   private boolean isFrontierNode(Node node, Collection<Integer> eligibleChoices) {
     for(int eligibleChoice : eligibleChoices) {
-      if(!node.hasChildForChoice(eligibleChoice))
+      if(!node.hasChildForChoice(eligibleChoice) ||
+          ((MCTSNode)node.getChild(eligibleChoice)).isSearchTreeNode() == false)
         return true;
     }
     return false;
