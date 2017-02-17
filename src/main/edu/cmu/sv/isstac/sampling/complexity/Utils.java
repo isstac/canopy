@@ -30,6 +30,9 @@ public class Utils {
   public static final String INPUT_INCREMENT = COMPLEXITY_CONF_PRFX + ".inputincrement";
   public static final int INPUT_INCREMENT_DEFAULT = 1;
 
+  public static final String OUTPUT_DIR = COMPLEXITY_CONF_PRFX + ".outputdir";
+  public static final String DEFAULT_OUTPUT_DIR = COMPLEXITY_CONF_PRFX + "./";
+
   public static final String VISUALIZE = COMPLEXITY_CONF_PRFX + ".visualize";
   public static final boolean VISUALIZE_DEFAULT = true;
 
