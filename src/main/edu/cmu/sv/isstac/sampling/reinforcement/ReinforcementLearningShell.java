@@ -41,7 +41,7 @@ public class ReinforcementLearningShell implements JPFShell {
     } else {
       factory = new RLNodeFactory();
     }
-    samplingAnalysisBuilder.setTerminationStrategy(new SampleSizeTerminationStrategy(2000));
+
     this.samplingAnalysis = samplingAnalysisBuilder.build(config,
         new ReinforcementLearningStrategy(samplesPerOptimization, epsilon,
             historyWeight, factory, Options.getSeed(config)), new JPFSamplerFactory());
