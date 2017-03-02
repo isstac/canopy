@@ -116,6 +116,7 @@ public class MCTSStrategy implements AnalysisStrategy {
         if(root == null) {
           try {
             root = last = this.nodeFactory.create(null, cg, -1);
+            root.setIsSearchTreeNode(true);
           } catch (NodeCreationException e) {
             String msg = "Could not create root node";
             logger.severe(msg);
@@ -215,7 +216,7 @@ public class MCTSStrategy implements AnalysisStrategy {
     // and actual leaf in the symbolic execution tree
     if (expandedFlag) {
       try {
-        last = this.nodeFactory.create(last, null, expandedChoice);
+        playOutNode = last = this.nodeFactory.create(last, null, expandedChoice);
       } catch (NodeCreationException e) {
         String msg = "Could not create node at path termination";
         logger.severe(msg);
