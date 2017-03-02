@@ -63,8 +63,8 @@ public class ComplexityChart extends ApplicationFrame {
 
     //customize the plot with renderers and axis
     XYLineAndShapeRenderer xyLineRenderer1 = new XYLineAndShapeRenderer();
-    xyLineRenderer1.setSeriesShapesVisible(0, false);
-    plot.setRenderer(0, xyLineRenderer1);
+    xyLineRenderer1.setSeriesShapesVisible(SAMPLING_SERIES_ID, true);
+    plot.setRenderer(SAMPLING_SERIES_ID, xyLineRenderer1);
     // fill paint
     // for first series
     XYLineAndShapeRenderer xyLineRenderer2 = new XYLineAndShapeRenderer();
