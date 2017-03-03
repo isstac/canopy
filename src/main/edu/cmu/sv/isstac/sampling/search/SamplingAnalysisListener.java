@@ -90,8 +90,7 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
       // pcchoicegenerators are also replaced so we cannot check references.
       // The current way of caching could be very inefficient for deep paths, potentially defying
       // its purpose
-      if (cache.contains(new Choice(new Path(cg),
-          ((PCChoiceGenerator)cg).getNextChoice()))) {
+      if(cache.contains(new Path(cg))) {
         PathCondition.setReplay(true);
       } else {
         PathCondition.setReplay(false);
@@ -196,9 +195,11 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
     PCChoiceGenerator[] pcs = vm.getChoiceGeneratorsOfType(PCChoiceGenerator.class);
     for(int i = pcs.length  - 1; i >= 0; i--) {
       PCChoiceGenerator cg = pcs[i];
-      Choice c = new Choice(new Path(cg), cg.getNextChoice());
-      if(!cache.contains(c)) {
-        cache.add(c);
+
+      //This could be expensive for long paths (i.e. many CGs)
+      Path path = new Path(cg);
+      if(!cache.contains(path)) {
+        cache.add(path);
       } else {
         // This is a small trick and an optimization. Note that we are adding the CGs to the
         // cache starting from the *end* of the path. If the path
@@ -209,37 +210,7 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
     }
   }
 
-  private static class Choice {
-    final Path path;
-    final int choice;
-
-    public Choice(Path path, int choice) {
-      this.path = path;
-      this.choice = choice;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (obj == null) {
-        return false;
-      }
-      if (obj == this) {
-        return true;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
-      return Objects.equal(path, ((Choice)obj).path) && Objects.equal(choice, ((Choice)obj)
-          .choice);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hashCode(this.path, this.choice);
-    }
-  }
-
-  Set<Choice> cache = new HashSet<>();
+  private Set<Path> cache = new HashSet<>();
 
   @Override
   public void newSampleStarted(Search samplingSearch) {
