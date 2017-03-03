@@ -1,9 +1,13 @@
 package edu.cmu.sv.isstac.sampling.search;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
@@ -17,6 +21,7 @@ import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.search.Search;
+import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.ChoiceGenerator;
@@ -79,6 +84,19 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
 
     // We use the analysis strategy to make the next choice
     this.analysisStrategy.makeStateChoice(vm, cg, eligibleChoices);
+    if(cg instanceof PCChoiceGenerator) {
+      // We shouldn't have to generate the path all the time, but unfortunately,
+      // PCChoicegenerators do not have a unique id we can use. For each sample,
+      // pcchoicegenerators are also replaced so we cannot check references.
+      // The current way of caching could be very inefficient for deep paths, potentially defying
+      // its purpose
+      if (cache.contains(new Choice(new Path(cg),
+          ((PCChoiceGenerator)cg).getNextChoice()))) {
+        PathCondition.setReplay(true);
+      } else {
+        PathCondition.setReplay(false);
+      }
+    }
   }
 
   @Override
@@ -173,7 +191,55 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
     if(terminationStrategy.terminate(vm, this.result)) {
       vm.getSearch().terminate();
     }
+
+    //Update cache
+    PCChoiceGenerator[] pcs = vm.getChoiceGeneratorsOfType(PCChoiceGenerator.class);
+    for(int i = pcs.length  - 1; i >= 0; i--) {
+      PCChoiceGenerator cg = pcs[i];
+      Choice c = new Choice(new Path(cg), cg.getNextChoice());
+      if(!cache.contains(c)) {
+        cache.add(c);
+      } else {
+        // This is a small trick and an optimization. Note that we are adding the CGs to the
+        // cache starting from the *end* of the path. If the path
+        // of the current cg is in the cache, then, by definition, we must have added
+        // any prefix of the CG to the cache as well, so we can break here
+        break;
+      }
+    }
   }
+
+  private static class Choice {
+    final Path path;
+    final int choice;
+
+    public Choice(Path path, int choice) {
+      this.path = path;
+      this.choice = choice;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj == null) {
+        return false;
+      }
+      if (obj == this) {
+        return true;
+      }
+      if (this.getClass() != obj.getClass()) {
+        return false;
+      }
+      return Objects.equal(path, ((Choice)obj).path) && Objects.equal(choice, ((Choice)obj)
+          .choice);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hashCode(this.path, this.choice);
+    }
+  }
+
+  Set<Choice> cache = new HashSet<>();
 
   @Override
   public void newSampleStarted(Search samplingSearch) {
