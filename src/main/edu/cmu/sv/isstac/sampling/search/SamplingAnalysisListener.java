@@ -1,12 +1,10 @@
 package edu.cmu.sv.isstac.sampling.search;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -16,8 +14,8 @@ import edu.cmu.sv.isstac.sampling.analysis.SamplingResult;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
 import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
-import edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
+import edu.cmu.sv.isstac.sampling.search.cache.StateCache;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.search.Search;
@@ -43,6 +41,11 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
 
   private final ChoicesStrategy choicesStrategy;
 
+  // The state cache is used for caching states such that we have minimal solver calls. This
+  // comes at the expense of memory: the cache takes up size proportional to the size of the
+  // symbolic execution tree
+  private final StateCache stateCache;
+
   // Holds the largest rewards found (note: we assume a deterministic system!)
   // for succ, fail and grey. Maybe we only want to keep one of them?
   // In addition it holds various statistics about the exploration
@@ -59,16 +62,20 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
                                   PathQuantifier pathQuantifier,
                                   TerminationStrategy terminationStrategy,
                                   ChoicesStrategy choicesStrategy,
+                                  StateCache stateCache,
                                   Collection<AnalysisEventObserver> observers) {
-
-    this.analysisStrategy = analysisStrategy;
-    this.choicesStrategy = choicesStrategy;
     // Check input
+    Preconditions.checkNotNull(analysisStrategy);
+    Preconditions.checkNotNull(choicesStrategy);
+    Preconditions.checkNotNull(stateCache);
     Preconditions.checkNotNull(rewardFunction);
     Preconditions.checkNotNull(pathQuantifier);
     Preconditions.checkNotNull(terminationStrategy);
     Preconditions.checkNotNull(observers);
 
+    this.analysisStrategy = analysisStrategy;
+    this.choicesStrategy = choicesStrategy;
+    this.stateCache = stateCache;
     this.rewardFunction = rewardFunction;
     this.pathQuantifier = pathQuantifier;
     this.terminationStrategy = terminationStrategy;
@@ -85,12 +92,13 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
     // We use the analysis strategy to make the next choice
     this.analysisStrategy.makeStateChoice(vm, cg, eligibleChoices);
     if(cg instanceof PCChoiceGenerator) {
-      // We shouldn't have to generate the path all the time, but unfortunately,
-      // PCChoicegenerators do not have a unique id we can use. For each sample,
-      // pcchoicegenerators are also replaced so we cannot check references.
-      // The current way of caching could be very inefficient for deep paths, potentially defying
-      // its purpose
-      if(cache.contains(new Path(cg))) {
+      // If the state cache contains the current state of the CG (i.e. the next choice to be
+      // made) we can safely turn off the solver because it means that previously, there was a
+      // path terminated with the state of this CG as a prefix, hence, by definition, the PC was
+      // satisfiable and therefore we don't need to invoke the solver again
+      // We will turn on the solver again as soon as we encounter a CG we have not seen before
+      // according to the cache
+      if(this.stateCache.contains(cg)) {
         PathCondition.setReplay(true);
       } else {
         PathCondition.setReplay(false);
@@ -197,9 +205,8 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
       PCChoiceGenerator cg = pcs[i];
 
       //This could be expensive for long paths (i.e. many CGs)
-      Path path = new Path(cg);
-      if(!cache.contains(path)) {
-        cache.add(path);
+      if(!stateCache.contains(cg)) {
+        stateCache.add(cg);
       } else {
         // This is a small trick and an optimization. Note that we are adding the CGs to the
         // cache starting from the *end* of the path. If the path
@@ -209,8 +216,6 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
       }
     }
   }
-
-  private Set<Path> cache = new HashSet<>();
 
   @Override
   public void newSampleStarted(Search samplingSearch) {
