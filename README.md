@@ -43,7 +43,7 @@ $ ant build
 ## Usage 
 The analysis can be performed by executing the JPF config file that specifies the parameters of the analysis, the constraint solver, the entry point of the system under analysis etc:
 
-```bash
+```
 $ ./jpf-core/bin/jpf <path-to-jpf-file>
 ```
 
@@ -52,22 +52,22 @@ This section shows a couple of examples of using the Monte Carlo Tree Search str
 For all analyses, a window should open showing the live statistics of the results.
 
 To use the Monte Carlo Tree Search algorithm for analyzing Quicksort, execute:
-```bash
+```
 $ ./jpf-core/bin/jpf canopy/src/examples/sampling/mcts/QuickSort.jpf
 ```
 
 To use the Reinforcement Learning algorithm for analyzing Quicksort, execute:
-```bash
+```
 $ ./jpf-core/bin/jpf canopy/src/examples/sampling/rl/QuickSort.jpf
 ```
 
 To use the Pure Monte Carlo algorithm for analyzing Quicksort, execute:
-```bash
+```
 $ ./jpf-core/bin/jpf canopy/src/examples/sampling/montecarlo/QuickSort.jpf
 ```
 
 To run the exhaustive analysis for Quicksort, execute
-```bash
+```
 $ ./jpf-core/bin/jpf canopy/src/examples/sampling/exhaustive/QuickSort.jpf
 ```
 
