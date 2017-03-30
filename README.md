@@ -168,7 +168,7 @@ shell = edu.cmu.sv.isstac.sampling.complexity.ComplexityAnalysisShell
 
 It can be configured using the following options:
 
-* **symbolic.security.sampling.complexity.type** The analysis used for finding the longest path. **MUST** be set to any of `mcts`, `rl`, `mc`, or `exhaustive`
+* **symbolic.security.sampling.complexity.type** The analysis used for finding the longest path. **MUST** be set to one of `mcts`, `rl`, `mc`, or `exhaustive`
 * **symbolic.security.sampling.complexity.inputrange** The range with which to obtain data points. **MUST** be set to, e.g., `1,10` 
 * **symbolic.security.sampling.complexity.inputincrement** The increment with which to pick inputsizes in the `inputrange`. Default: 1
 * **symbolic.security.sampling.complexity.outputdir** The output dir used for storing results data. Default: ./
