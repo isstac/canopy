@@ -166,7 +166,7 @@ public class MCTSStrategy implements AnalysisStrategy {
     } else {
       String msg = "Unexpected CG: " + cg.getClass().getName();
       logger.severe(msg);
-      throw new MCTSAnalysisException(msg);
+//      throw new MCTSAnalysisException(msg);
     }
   }
 
