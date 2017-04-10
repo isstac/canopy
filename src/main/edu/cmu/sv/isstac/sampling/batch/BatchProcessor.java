@@ -21,6 +21,8 @@ import edu.cmu.sv.isstac.sampling.SamplingAnalysis;
 import edu.cmu.sv.isstac.sampling.analysis.RewardDataSetGenerator;
 import edu.cmu.sv.isstac.sampling.analysis.SampleStatistics;
 import edu.cmu.sv.isstac.sampling.exhaustive.JPFExhaustiveFactory;
+import edu.cmu.sv.isstac.sampling.search.cache.HashingCache;
+import edu.cmu.sv.isstac.sampling.search.cache.NoCache;
 import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.util.JPFLogger;
@@ -88,49 +90,53 @@ public class BatchProcessor {
 //    experiments.add(new BacktrackingDecorator(mctsExp, false, false));
 //    experiments.add(new BacktrackingDecorator(mctsExp, true, false));
 
+    Experiment exp = new MCTSExperiment(true, false, false, 5);
+
+    experiments.add(new CachingDecorator(exp, HashingCache.class));
+    experiments.add(new CachingDecorator(exp, NoCache.class));
 
     /*
      * Pruning
      */
-    experiments.add(new MCTSExperiment(true, false, false, Math.sqrt(2)));
-    experiments.add(new MCTSExperiment(true, false, false, 5));
-    experiments.add(new MCTSExperiment(true, false, false, 10));
-    experiments.add(new MCTSExperiment(true, false, false, 20));
-    experiments.add(new MCTSExperiment(true, false, false, 50));
-    experiments.add(new MCTSExperiment(true, false, false, 100));
-
-    experiments.add(new MonteCarloExperiment(true));
-
-    experiments.add(new RLExperiment(true, false, false, 250, 0.5, 0.5));
-    experiments.add(new RLExperiment(true, false, false, 100, 0.5, 0.5));
-    experiments.add(new RLExperiment(true, false, false, 10, 0.5, 0.5));
-    experiments.add(new RLExperiment(true, false, false, 100, 0.1, 0.1));
-    experiments.add(new RLExperiment(true, false, false, 100, 0.9, 0.9));
-    experiments.add(new RLExperiment(true, false, false, 100, 0.9, 0.1));
-    experiments.add(new RLExperiment(true, false, false, 100, 0.1, 0.9));
-    experiments.add(new RLExperiment(true, false, false, 1, 0.1, 0.1));
-    experiments.add(new RLExperiment(true, false, false, 1, 0.5, 0.5));
+//    experiments.add(new MCTSExperiment(true, false, false, Math.sqrt(2)));
+//    experiments.add(new MCTSExperiment(true, false, false, 5));
+//    experiments.add(new MCTSExperiment(true, false, false, 10));
+//    experiments.add(new MCTSExperiment(true, false, false, 20));
+//    experiments.add(new MCTSExperiment(true, false, false, 50));
+//    experiments.add(new MCTSExperiment(true, false, false, 100));
+//
+//    experiments.add(new MonteCarloExperiment(true));
+//
+//    experiments.add(new RLExperiment(true, false, false, 250, 0.5, 0.5));
+//    experiments.add(new RLExperiment(true, false, false, 100, 0.5, 0.5));
+//    experiments.add(new RLExperiment(true, false, false, 10, 0.5, 0.5));
+//    experiments.add(new RLExperiment(true, false, false, 100, 0.1, 0.1));
+//    experiments.add(new RLExperiment(true, false, false, 100, 0.9, 0.9));
+//    experiments.add(new RLExperiment(true, false, false, 100, 0.9, 0.1));
+//    experiments.add(new RLExperiment(true, false, false, 100, 0.1, 0.9));
+//    experiments.add(new RLExperiment(true, false, false, 1, 0.1, 0.1));
+//    experiments.add(new RLExperiment(true, false, false, 1, 0.5, 0.5));
 
 
     /*
      * No pruning
      */
-    experiments.add(new MCTSExperiment(false, false, false, Math.sqrt(2)));
-    experiments.add(new MCTSExperiment(false, false, false, 5));
-    experiments.add(new MCTSExperiment(false, false, false, 10));
-    experiments.add(new MCTSExperiment(false, false, false, 20));
-    experiments.add(new MCTSExperiment(false, false, false, 50));
-    experiments.add(new MCTSExperiment(false, false, false, 100));
+//    experiments.add(new MCTSExperiment(false, false, false, Math.sqrt(2)));
+//    experiments.add(new MCTSExperiment(false, false, false, 5));
+//    experiments.add(new MCTSExperiment(false, false, false, 10));
+//    experiments.add(new MCTSExperiment(false, false, false, 20));
+//    experiments.add(new MCTSExperiment(false, false, false, 50));
+//    experiments.add(new MCTSExperiment(false, false, false, 100));
 
     // Monte Carlo experiment
-    experiments.add(new MonteCarloExperiment(false));
+//    experiments.add(new MonteCarloExperiment(false));
 
     return experiments;
   }
 
   public static void performBatchProcessing(Collection<File> jpfConfigs, File resultsFolder, int
       iterations, List<Experiment> experiments, long initSeed) throws AnalysisCreationException {
-    Random rng = new Random(initSeed);
+    //Random rng = new Random(initSeed);
 
     Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -143,6 +149,9 @@ public class BatchProcessor {
       String outputFile = getOutputFile(jpfFile.getName(), resultsFolder);
 
       for (Experiment experiment : experiments) {
+
+        //To make experiments comparable, we reset the seed. This is maybe not what we want...
+        Random rng = new Random(initSeed);
         for (int iteration = 1; iteration <= iterations; iteration++) {
           logger.info("Processing jpf file " + jpfFile.getName() + " Experiment " + experiment
               .getName() + " iteration " + iteration);

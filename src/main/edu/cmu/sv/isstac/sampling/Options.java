@@ -6,6 +6,9 @@ import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
+import edu.cmu.sv.isstac.sampling.search.cache.HashingCache;
+import edu.cmu.sv.isstac.sampling.search.cache.NoCache;
+import edu.cmu.sv.isstac.sampling.search.cache.StateCache;
 import edu.cmu.sv.isstac.sampling.termination.NeverTerminateStrategy;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.Config;
@@ -42,6 +45,9 @@ public class Options {
 
   public static final String CHOICES_STRATEGY = SAMPLING_CONF_PREFIX + ".choicesstrategy";
   public static final ChoicesStrategy DEFAULT_CHOICES_STRATEGY = PruningChoicesStrategy.getInstance();
+
+  public static final String STATE_CACHE = SAMPLING_CONF_PREFIX + ".statecache";
+  public static final Class<? extends StateCache> DEFAULT_STATE_CACHE = HashingCache.class;
 
   public static final String USE_BACKTRACKING_SEARCH = SAMPLING_CONF_PREFIX + ".backtrackingsearch";
 
