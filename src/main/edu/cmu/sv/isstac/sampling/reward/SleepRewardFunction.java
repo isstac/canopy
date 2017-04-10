@@ -24,6 +24,8 @@
 
 package edu.cmu.sv.isstac.sampling.reward;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.search.SamplingListener;
@@ -31,6 +33,7 @@ import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.JVMInvokeInstruction;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.util.JPFLogger;
+import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -44,28 +47,8 @@ import gov.nasa.jpf.vm.choice.IntIntervalGenerator;
 public class SleepRewardFunction extends PropertyListenerAdapter implements RewardFunction,
     SamplingListener {
 
-  private static final Logger LOGGER = JPFLogger.getLogger(SleepRewardFunction.class.getName());
-
   private long cost = 0;
-
-  @Override
-  public void newSampleStarted(Search samplingSearch) {
-    cost = 0;
-  }
-
-  private class CostChoiceGenerator extends IntIntervalGenerator {
-
-    protected Long cost;
-
-    public CostChoiceGenerator(Long n) {
-      super(0, 0);
-      cost = n;
-    }
-
-    public Long getCost(){
-      return cost;
-    }
-  }
+  private Map<ChoiceGenerator<?>, Long> costMap = new HashMap<>();
 
   @Override
   public void instructionExecuted(VM vm, ThreadInfo currentThread, Instruction nextInstruction,
@@ -79,21 +62,28 @@ public class SleepRewardFunction extends PropertyListenerAdapter implements Rewa
         Object[] values = ((JVMInvokeInstruction)executedInstruction).getArgumentValues(currentThread);
         long sleepTime = (long) values[0];
         cost += sleepTime;
-        //vm.getSystemState().setNextChoiceGenerator(new CostChoiceGenerator(sleepTime));
       }
     }
   }
 
+  @Override
+  public void newSampleStarted(Search samplingSearch) {
+    cost = 0;
+    costMap.clear();
+  }
+
+  @Override
+  public void stateBacktracked(Search search) {
+    this.cost = this.costMap.get(search.getVM().getChoiceGenerator());
+  }
+
+  @Override
+  public void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> currentCG) {
+    this.costMap.put(currentCG, this.cost);
+  }
 
   @Override
   public long computeReward(VM vm) {
     return cost;
-//    CostChoiceGenerator[] cgs = vm.getChoiceGeneratorsOfType(CostChoiceGenerator.class);
-//    long reward = 0;
-//    for(CostChoiceGenerator cg : cgs) {
-//      reward += cg.getCost();
-//    }
-//
-//    return reward;
   }
 }
