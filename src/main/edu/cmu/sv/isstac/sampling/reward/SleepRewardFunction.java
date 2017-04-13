@@ -58,7 +58,10 @@ public class SleepRewardFunction extends PropertyListenerAdapter implements Rewa
 
       String className = methodInfo.getClassName();
       String methodName = methodInfo.getName();
-      if(className.equals("java.lang.Thread") && methodName.equals("sleep")) {
+      if(!methodInfo.isNative() && // We need this check, otherwise we will count both
+          //Thread.sleep in src/classes and in src/peers. This enforces we only count once
+          className.equals("java.lang.Thread") &&
+          methodName.equals("sleep")) {
         Object[] values = ((JVMInvokeInstruction)executedInstruction).getArgumentValues(currentThread);
         long sleepTime = (long) values[0];
         cost += sleepTime;
