@@ -21,6 +21,7 @@ import edu.cmu.sv.isstac.sampling.quantification.SPFModelCounter;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
 import edu.cmu.sv.isstac.sampling.search.SamplingAnalysisListener;
 import edu.cmu.sv.isstac.sampling.search.cache.StateCache;
+import edu.cmu.sv.isstac.sampling.termination.CompositeTerminationStrategy;
 import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.Config;
@@ -97,13 +98,19 @@ public class SamplingAnalysis {
       if (terminationStrategy == null) {
         this.terminationStrategy = jpfConfig.getInstance(Options.TERMINATION_STRATEGY,
             TerminationStrategy.class, Options.DEFAULT_TERMINATION_STRATEGY);
+      }
 
-
-        //TODO: This is very specific to control the sampling size termination strategy. This is
-        // only used for convenience and should be better integrated!
-        if(jpfConfig.hasValue(Options.SAMPLING_SIZE_TERMINATION_STRATEGY)) {
-          int samplingSize = jpfConfig.getInt(Options.SAMPLING_SIZE_TERMINATION_STRATEGY);
-          this.terminationStrategy = new SampleSizeTerminationStrategy(samplingSize);
+      //TODO: This is very specific to control the sampling size termination strategy. This is
+      // only used for convenience and should be better integrated!
+      if(jpfConfig.hasValue(Options.SAMPLING_SIZE_TERMINATION_STRATEGY)) {
+        int samplingSize = jpfConfig.getInt(Options.SAMPLING_SIZE_TERMINATION_STRATEGY);
+        SampleSizeTerminationStrategy sampleTerm = new SampleSizeTerminationStrategy(samplingSize);
+        if(this.terminationStrategy != null) {
+          CompositeTerminationStrategy compStrategy = new CompositeTerminationStrategy(this
+              .terminationStrategy, sampleTerm);
+          this.terminationStrategy = compStrategy;
+        } else {
+          this.terminationStrategy = sampleTerm;
         }
       }
 
