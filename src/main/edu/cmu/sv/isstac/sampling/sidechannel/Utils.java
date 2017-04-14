@@ -27,4 +27,6 @@ public class Utils {
   public static final String CHANNEL_CAPACITY_CONF_PRFX = SIDECHANNEL_CONF_PRFX +
       ".channelcapacity";
   public static final String CHANNEL_CAPACITY_K_CONF_PRFX = CHANNEL_CAPACITY_CONF_PRFX + ".k";
+  public static final String VISUALIZE = CHANNEL_CAPACITY_CONF_PRFX + ".visualize";
+  public static final boolean VISUALIZE_DEFAULT = true;
 }

@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package edu.cmu.sv.isstac.sampling.complexity;
+package edu.cmu.sv.isstac.sampling.sidechannel;
 
-import java.awt.*;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.analysis.AbstractAnalysisProcessor;
-import edu.cmu.sv.isstac.sampling.analysis.LiveTrackerChart;
 import edu.cmu.sv.isstac.sampling.analysis.SamplingResult;
 import edu.cmu.sv.isstac.sampling.analysis.SamplingResult.ResultContainer;
 import edu.cmu.sv.isstac.sampling.termination.GenericLiveChart;
@@ -31,27 +29,27 @@ import gov.nasa.jpf.util.JPFLogger;
  * @author Kasper Luckow
  *
  */
-public class ComplexityChartUpdater extends AbstractAnalysisProcessor {
+public class ChannelCapacityChartUpdater extends AbstractAnalysisProcessor {
 
-  public static final Logger logger = JPFLogger.getLogger(ComplexityChartUpdater.class.getName());
-
-  private final int inputSize;
-
+  public static final Logger logger = JPFLogger.getLogger(ChannelCapacityChartUpdater.class.getName());
   private GenericLiveChart chart;
+  private final ChannelCapacityListener listener;
 
-  public ComplexityChartUpdater(GenericLiveChart chart, int inputSize) {
-    this.inputSize = inputSize;
+  public ChannelCapacityChartUpdater(GenericLiveChart chart, ChannelCapacityListener listener) {
     this.chart = chart;
+    this.listener = listener;
   }
 
   @Override
   public void sampleDone(Search searchState, long samples, long propagatedReward,
                          long pathVolume, ResultContainer currentBestResult,
-                         boolean hasBeenExplored) { }
+                         boolean hasBeenExplored) {
+    chart.update(samples, listener.getChannelCapacity());
+  }
   
   @Override  
   public void analysisDone(SamplingResult result) {
-    chart.update(inputSize, result.getMaxSuccResult().getReward());
+
   }
 
   @Override

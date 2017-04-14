@@ -16,14 +16,17 @@
 
 package edu.cmu.sv.isstac.sampling.sidechannel;
 
+import java.awt.*;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AnalysisCreationException;
 import edu.cmu.sv.isstac.sampling.JPFSamplerFactory;
 import edu.cmu.sv.isstac.sampling.SamplingAnalysis;
+import edu.cmu.sv.isstac.sampling.complexity.ComplexityChart;
 import edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloStrategy;
 import edu.cmu.sv.isstac.sampling.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterCreationException;
+import edu.cmu.sv.isstac.sampling.termination.GenericLiveChart;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPFShell;
@@ -48,6 +51,19 @@ public class SideChannelAnalysisShell implements JPFShell {
     SamplingAnalysis.Builder samplingAnalysisBuilder = new SamplingAnalysis.Builder();
 
     samplingAnalysisBuilder.addEventObserver(ccListener);
+
+    boolean visualize = config.getBoolean(edu.cmu.sv.isstac.sampling.sidechannel.Utils.VISUALIZE,
+        edu.cmu.sv.isstac.sampling.sidechannel.Utils.VISUALIZE_DEFAULT);
+
+    if(visualize) {
+      GenericLiveChart chart = new GenericLiveChart("Channel Capacity Live Chart",
+          "Sample #", "Channel Capacity");
+      //Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+      chart.setPreferredSize(new Dimension(1024, 768));
+      chart.pack();
+      chart.setVisible(true);
+      samplingAnalysisBuilder.addEventObserver(new ChannelCapacityChartUpdater(chart, ccListener));
+    }
 
     if(config.hasValue(Utils.CHANNEL_CAPACITY_K_CONF_PRFX)) {
       double k = config.getDouble(Utils.CHANNEL_CAPACITY_K_CONF_PRFX);
