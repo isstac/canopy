@@ -20,7 +20,7 @@ import edu.cmu.sv.isstac.sampling.quantification.ModelCountingPathQuantifier;
 import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
 import edu.cmu.sv.isstac.sampling.quantification.SPFModelCounter;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
-import edu.cmu.sv.isstac.sampling.search.FrontierDecoratorListener;
+import edu.cmu.sv.isstac.sampling.search.FrontierSamplingAnalysisListener;
 import edu.cmu.sv.isstac.sampling.search.SamplingAnalysisListener;
 import edu.cmu.sv.isstac.sampling.search.cache.StateCache;
 import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
@@ -28,7 +28,6 @@ import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFListener;
-import gov.nasa.jpf.State;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.util.JPFLogger;
 
@@ -182,13 +181,15 @@ public class SamplingAnalysis {
             AnalysisEventObserver.class));
       }
 
-      SamplingAnalysisListener samplingListener = new SamplingAnalysisListener(analysisStrategy, rewardFunction,
-          pathQuantifier, terminationStrategy, choicesStrategy, stateCache, eventObservers);
+      SamplingAnalysisListener samplingListener;
       if(frontierNode != null) {
         //Decorate sampling listener with frontier node capabilities
-        jpfListeners.add(new FrontierDecoratorListener(samplingListener, frontierNode));
+        jpfListeners.add(new FrontierSamplingAnalysisListener(analysisStrategy, rewardFunction,
+            pathQuantifier, terminationStrategy, choicesStrategy, stateCache, eventObservers,
+            frontierNode));
       } else {
-        jpfListeners.add(samplingListener);
+        jpfListeners.add(new SamplingAnalysisListener(analysisStrategy, rewardFunction,
+            pathQuantifier, terminationStrategy, choicesStrategy, stateCache, eventObservers));
       }
 
       SamplingAnalysis samplingAnalysis = new SamplingAnalysis(jpfConfig, jpfListeners, jpfFactory);

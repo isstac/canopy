@@ -24,7 +24,16 @@
 
 package edu.cmu.sv.isstac.sampling.search;
 
+import java.util.Collection;
+
+import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
+import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
+import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
+import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
+import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
+import edu.cmu.sv.isstac.sampling.search.cache.StateCache;
+import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.vm.ChoiceGenerator;
@@ -38,13 +47,19 @@ import gov.nasa.jpf.vm.VM;
  * Delegates everying to the sampling listener being wrapped. However, it ensures that the
  * analysis does not start before reaching the frontier node
  */
-public class FrontierDecoratorListener extends PropertyListenerAdapter implements SamplingListener {
-  private final SamplingAnalysisListener samplingListener;
+public class FrontierDecoratorListener extends SamplingAnalysisListener {
   private final Path frontierNode;
   private final int frontierLength;
 
-  public FrontierDecoratorListener(SamplingAnalysisListener samplingListener, Path frontierNode) {
-    this.samplingListener = samplingListener;
+  public FrontierDecoratorListener(AnalysisStrategy analysisStrategy, RewardFunction rewardFunction,
+                                   PathQuantifier pathQuantifier,
+                                   TerminationStrategy terminationStrategy,
+                                   ChoicesStrategy choicesStrategy,
+                                   StateCache stateCache,
+                                   Collection<AnalysisEventObserver> observers,
+                                   Path frontierNode) {
+    super(analysisStrategy, rewardFunction, pathQuantifier, terminationStrategy, choicesStrategy,
+        stateCache, observers);
     this.frontierNode = frontierNode;
     this.frontierLength = frontierNode.length();
   }
@@ -62,37 +77,7 @@ public class FrontierDecoratorListener extends PropertyListenerAdapter implement
     } else {
       //If we have passed the frontier, rely on how the sampling listener makes choices, e.g.,
       //using mcts
-      samplingListener.choiceGeneratorAdvanced(vm, cg);
+      super.choiceGeneratorAdvanced(vm, cg);
     }
-  }
-
-  @Override
-  public void searchStarted(Search search) {
-    samplingListener.searchStarted(search);
-  }
-
-  @Override
-  public void searchFinished(Search search) {
-    this.samplingListener.searchFinished(search);
-  }
-
-  @Override
-  public void newSampleStarted(Search samplingSearch) {
-    this.samplingListener.newSampleStarted(samplingSearch);
-  }
-
-  @Override
-  public void stateAdvanced(Search search) {
-    this.samplingListener.stateAdvanced(search);
-  }
-
-  @Override
-  public void exceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
-    this.samplingListener.exceptionThrown(vm, currentThread, thrownException);
-  }
-
-  @Override
-  public void searchConstraintHit(Search search) {
-    this.samplingListener.searchConstraintHit(search);
   }
 }
