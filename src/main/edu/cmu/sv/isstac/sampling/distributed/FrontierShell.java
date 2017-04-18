@@ -45,7 +45,7 @@ public class FrontierShell implements JPFShell {
   public void start(String[] args) {
     List<Integer> p = new LinkedList<>();
     p.add(0);
-    p.add(1);
+    p.add(0);
     Path path = new Path(p);
     SamplingWorker worker = new SamplingWorker();
     try {

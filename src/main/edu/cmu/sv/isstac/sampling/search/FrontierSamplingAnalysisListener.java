@@ -47,17 +47,17 @@ import gov.nasa.jpf.vm.VM;
  * Delegates everying to the sampling listener being wrapped. However, it ensures that the
  * analysis does not start before reaching the frontier node
  */
-public class FrontierDecoratorListener extends SamplingAnalysisListener {
+public class FrontierSamplingAnalysisListener extends SamplingAnalysisListener {
   private final Path frontierNode;
   private final int frontierLength;
 
-  public FrontierDecoratorListener(AnalysisStrategy analysisStrategy, RewardFunction rewardFunction,
-                                   PathQuantifier pathQuantifier,
-                                   TerminationStrategy terminationStrategy,
-                                   ChoicesStrategy choicesStrategy,
-                                   StateCache stateCache,
-                                   Collection<AnalysisEventObserver> observers,
-                                   Path frontierNode) {
+  public FrontierSamplingAnalysisListener(AnalysisStrategy analysisStrategy, RewardFunction rewardFunction,
+                                          PathQuantifier pathQuantifier,
+                                          TerminationStrategy terminationStrategy,
+                                          ChoicesStrategy choicesStrategy,
+                                          StateCache stateCache,
+                                          Collection<AnalysisEventObserver> observers,
+                                          Path frontierNode) {
     super(analysisStrategy, rewardFunction, pathQuantifier, terminationStrategy, choicesStrategy,
         stateCache, observers);
     this.frontierNode = frontierNode;
@@ -70,7 +70,7 @@ public class FrontierDecoratorListener extends SamplingAnalysisListener {
     Path curr = new Path(cg);
     int currLength = curr.length();
     if(currLength <= this.frontierLength) {
-      int idx = currLength;
+      int idx = currLength - 1;
       int choice = this.frontierNode.getChoice(idx);
       cg.select(choice);
 

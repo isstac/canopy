@@ -24,6 +24,7 @@
 
 package edu.cmu.sv.isstac.sampling.distributed;
 
+import java.io.Serializable;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -33,7 +34,7 @@ import gov.nasa.jpf.Config;
 /**
  * @author Kasper Luckow
  */
-public interface Worker extends Remote {
+public interface Worker extends Remote, Serializable {
   String getID() throws RemoteException;
   WorkerResult runAnalysis(Path frontierNode, Config config) throws RemoteException;
   void terminate() throws RemoteException;

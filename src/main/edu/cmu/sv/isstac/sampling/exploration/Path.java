@@ -1,5 +1,6 @@
 package edu.cmu.sv.isstac.sampling.exploration;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,7 +14,7 @@ import gov.nasa.jpf.vm.ChoiceGenerator;
  * @author Kasper Luckow
  *
  */
-public class Path {
+public class Path implements Serializable {
   private LinkedList<Integer> store;
   
   public Path(Path other) {

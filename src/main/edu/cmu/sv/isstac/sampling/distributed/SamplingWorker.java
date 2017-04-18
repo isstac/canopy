@@ -53,7 +53,6 @@ public class SamplingWorker {
   public WorkerResult runAnalysis(Path frontierNode, Config config) throws AnalysisCreationException {
     //disable livetracker chart
     config.setProperty(Options.SHOW_LIVE_STATISTICS, "false");
-
     AnalysisFactory af = getAnalysisFactory(config);
 
     SamplingAnalysis.Builder analysisBuilder =
@@ -79,8 +78,6 @@ public class SamplingWorker {
       return new WorkerStatistics(TimeUnit.SECONDS, 0, 0,0,0,0,0,0,0,0,0,0);
     }
 
-    //TODO: There is a race condition here if a remote server requests statistics while the
-    // analysis is running. Should make this synchronized.
     WorkerStatistics workerStatistics = new WorkerStatistics(
         this.statistics.getTimeUnit(),
         this.statistics.getBestRewardSampleNum(),

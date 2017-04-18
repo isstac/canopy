@@ -26,7 +26,11 @@ package edu.cmu.sv.isstac.sampling.distributed;
 
 import com.google.common.base.Preconditions;
 
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AnalysisCreationException;
@@ -42,24 +46,60 @@ public class RMIWorker implements Worker {
 
   private static final Logger LOGGER = JPFLogger.getLogger(RMIWorker.class.getName());
 
-  private final SamplingWorker worker;
+  private transient SamplingWorker worker;
+  private final String id;
 
-  // Not sure if this is needed or not according to the RMI spec
-  public RMIWorker() throws RemoteException {
-    this.worker = null;
+  public static void main(String args[]) throws RemoteException, NotBoundException, MalformedURLException {
+    int port = Utils.DEFAULT_MASTER_PORT;
+    String hostname = Utils.DEFAULT_HOSTNAME;
+
+    String workerID = "";
+
+    if(args.length < 1) {
+      printUsage();
+      System.exit(1);
+    } else {
+      workerID = args[0];
+    }
+    if(args.length > 1) {
+      hostname = args[1];
+      try {
+        port = Integer.parseInt(args[2]);
+      } catch (NumberFormatException e) {
+        printUsage();
+        throw e;
+      }
+    }
+    String registryURL = "rmi://" + hostname + ":" + port + "/" + Utils.SERVICE_NAME;
+    LOGGER.info("Looking up registry url: " + registryURL);
+    Master server = (Master) Naming.lookup(registryURL);
+
+    Worker rmiWorker = new RMIWorker(workerID);
+    boolean ok = server.register(rmiWorker);
+    if(!ok) {
+      LOGGER.severe("Worker with ID " + workerID + " could not register with master");
+      System.exit(1);
+    }
+    LOGGER.info("Worker with ID " + workerID + " registered with master");
   }
 
-  public RMIWorker(SamplingWorker worker) throws RemoteException {
-    this.worker = worker;
+  public static void printUsage() {
+    System.err.println("Usage: " + RMIWorker.class.getSimpleName() + " <ID> " + "[<hostname> <port>]");
+  }
+
+  public RMIWorker(String id) throws RemoteException {
+    this.id = id;
   }
 
   @Override
   public String getID() throws RemoteException {
-    return null;
+    return this.id;
   }
 
   @Override
   public WorkerResult runAnalysis(Path frontierNode, Config config) throws RemoteException {
+    LOGGER.info("Worker " + this.getID() + " running with frontier " + frontierNode.toString());
+    this.worker = new SamplingWorker();
     Preconditions.checkNotNull(this.worker);
     try {
       return this.worker.runAnalysis(frontierNode, config);
@@ -69,11 +109,9 @@ public class RMIWorker implements Worker {
     }
   }
 
-
   @Override
   public void terminate() throws RemoteException {
-    Preconditions.checkNotNull(this.worker);
-
+    UnicastRemoteObject.unexportObject(this, true);
   }
 
   @Override

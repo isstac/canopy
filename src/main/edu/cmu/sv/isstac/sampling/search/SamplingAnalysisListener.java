@@ -30,7 +30,7 @@ import gov.nasa.jpf.vm.VM;
 /**
  * @author Kasper Luckow
  */
-public final class SamplingAnalysisListener extends PropertyListenerAdapter implements SamplingListener {
+public class SamplingAnalysisListener extends PropertyListenerAdapter implements SamplingListener {
 
   private static final Logger logger = JPFLogger.getLogger(SamplingAnalysisListener.class.getName());
 
@@ -83,7 +83,7 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
   }
 
   @Override
-  public final void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> cg) {
+  public void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> cg) {
 
     // Get the eligible choices for this CG
     // based on the exploration strategy (e.g., pruning-based)

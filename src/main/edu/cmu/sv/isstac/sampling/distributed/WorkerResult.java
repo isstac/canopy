@@ -24,12 +24,12 @@
 
 package edu.cmu.sv.isstac.sampling.distributed;
 
-import edu.cmu.sv.isstac.sampling.analysis.SampleStatistics;
+import java.io.Serializable;
 
 /**
  * @author Kasper Luckow
  */
-public class WorkerResult {
+public class WorkerResult implements Serializable {
   private final WorkerStatistics samplingResult;
 
   public WorkerResult(WorkerStatistics samplingResult) {

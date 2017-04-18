@@ -24,59 +24,182 @@
 
 package edu.cmu.sv.isstac.sampling.distributed;
 
-import com.google.common.base.Preconditions;
-
+import java.rmi.NotBoundException;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AnalysisCreationException;
 import edu.cmu.sv.isstac.sampling.AnalysisException;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
+import edu.cmu.sv.isstac.sampling.quantification.ModelCounterCreationException;
 import gov.nasa.jpf.Config;
+import gov.nasa.jpf.JPFShell;
 import gov.nasa.jpf.util.JPFLogger;
 
 /**
  * @author Kasper Luckow
  */
-public class RMIWorker implements Worker {
+public class RMIMaster implements Master, JPFShell {
 
-  private static final Logger LOGGER = JPFLogger.getLogger(RMIWorker.class.getName());
+  private static final Logger LOGGER = JPFLogger.getLogger(RMIMaster.class.getName());
 
-  private final SamplingWorker worker;
+  private Map<String, Worker> workers = new HashMap<>();
+  private final Config config;
 
-  // Not sure if this is needed or not according to the RMI spec
-  public RMIWorker() throws RemoteException {
-    this.worker = null;
-  }
+  private static Registry registry;
 
-  public RMIWorker(SamplingWorker worker) throws RemoteException {
-    this.worker = worker;
-  }
+  private ExecutorService threadPool;
+  private CompletionService<WorkerResult> pool;
 
-  @Override
-  public String getID() throws RemoteException {
-    return null;
-  }
+  private int numberOfWorkers;
 
-  @Override
-  public WorkerResult runAnalysis(Path frontierNode, Config config) throws RemoteException {
-    Preconditions.checkNotNull(this.worker);
+  //ctor required for jpf shell
+  public RMIMaster(Config config) throws AnalysisCreationException,
+      ModelCounterCreationException, RemoteException {
+    this.config = config;
+    System.setProperty("java.rmi.server.hostname", "127.0.0.1");
+    int port = config.getInt(Utils.MASTER_PORT_CONF, Utils.DEFAULT_MASTER_PORT);
+
+    Master stub = (Master) UnicastRemoteObject.exportObject(this, port);
+    registry = LocateRegistry.createRegistry(Utils.DEFAULT_MASTER_PORT);//LocateRegistry
+    // .getRegistry();
     try {
-      return this.worker.runAnalysis(frontierNode, config);
-    } catch (AnalysisCreationException e) {
-      LOGGER.severe(e.getMessage());
-      throw new AnalysisException(e);
+      registry.rebind(Utils.SERVICE_NAME, stub);
+    } catch(Exception e) {
+      throw new RemoteException("Did you forget to run rmiregistry?", e);
+    }
+    LOGGER.info(Utils.SERVICE_NAME + " bound to RMI registry");
+
+    this.numberOfWorkers = config.getInt(Utils.CLIENTS_NUM_CONF);
+    LOGGER.info("Expecting " + this.numberOfWorkers + " number of workers to connect");
+
+    // make threadpool
+    this.threadPool = Executors.newFixedThreadPool(numberOfWorkers);
+    this.pool = new ExecutorCompletionService<>(threadPool);
+  }
+
+  @Override
+  public synchronized boolean register(Worker worker) throws RemoteException {
+    if(!workers.containsKey(worker.getID())) {
+      workers.put(worker.getID(), worker);
+      LOGGER.info("Registered worker: " + worker.getID());
+      notifyAll();
+      return true;
+    } else {
+      LOGGER.warning("Did *not* register worker: " + worker.getID());
+      return false;
     }
   }
 
   @Override
-  public void terminate() throws RemoteException {
-    Preconditions.checkNotNull(this.worker);
+  public synchronized boolean unregister(Worker worker) throws RemoteException {
+    if(!workers.containsKey(worker.getID())) {
+      workers.remove(worker.getID());
+      LOGGER.info("Unregistered worker: " + worker.getID());
+      notifyAll();
+      return true;
+    } else {
+      LOGGER.warning("Did *not* unregister worker: " + worker.getID());
+      return false;
+    }
+  }
 
+  private Path[] getFrontierNodes() {
+    Path[] frontiers = new Path[2];
+    List<Integer> first = new LinkedList<>();
+    first.add(0);
+    first.add(0);
+    first.add(0);
+    frontiers[0] = new Path(first);
+
+
+    List<Integer> second = new LinkedList<>();
+    second.add(0);
+    second.add(0);
+    second.add(1);
+    frontiers[1] = new Path(second);
+    return frontiers;
   }
 
   @Override
-  public WorkerStatistics getStatus() throws RemoteException {
-    return this.worker.getStatus();
+  public void start(String[] args) {
+    while(this.workers.size() < this.numberOfWorkers) {
+      try {
+        LOGGER.info(this.workers.size() + "/" + this.numberOfWorkers + " have connected");
+        synchronized (this) {
+          this.wait();
+        }
+      } catch (InterruptedException e) {
+        LOGGER.severe(e.getMessage());
+        throw new AnalysisException(e);
+      }
+    }
+    LOGGER.info("All " + this.workers.size() + " workers have connected. Starting analysis");
+
+    Path[] frontiers = getFrontierNodes();
+    int n = 0;
+    for(Worker worker : this.workers.values()) {
+      this.pool.submit(new WorkerTask(worker, config, frontiers[n++]));
+    }
+
+    for(int i = 0; i < this.workers.size(); i++) {
+      try {
+				/* We will NOT proceed to scheduler improvement before
+				 * ALL clients have returned, hence, the scheduler evaluation
+				 * phase is currently bounded by the execution of the slowest
+				 * client
+				 */
+        WorkerResult taskResult = pool.take().get();
+        System.out.println(taskResult.toString());
+
+      } catch (InterruptedException | ExecutionException e) {
+        //We just proceed....
+        LOGGER.severe(e.getMessage());
+      }
+    }
+
+    //Don't allow more threads to be added to pool---wait until they complete
+    this.threadPool.shutdown();
+
+    try {
+      this.threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      LOGGER.severe(e.getMessage());
+      throw new AnalysisException(e);
+    }
+    LOGGER.info("Analysis done. Master terminates");
+    terminateCluster();
+  }
+
+  public void terminateCluster() {
+    try {
+      for (String label : registry.list()) {
+        Remote remote = registry.lookup(label);
+        this.registry.unbind(label);
+        if(remote instanceof UnicastRemoteObject) {
+          UnicastRemoteObject.unexportObject(remote, true);
+        }
+      }
+      for(Worker worker : this.workers.values()) {
+        worker.terminate();
+      }
+      UnicastRemoteObject.unexportObject(this,true);
+    } catch (RemoteException | NotBoundException e) {
+      LOGGER.severe(e.getMessage());
+    }
   }
 }

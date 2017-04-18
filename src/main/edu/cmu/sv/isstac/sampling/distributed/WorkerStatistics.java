@@ -24,12 +24,13 @@
 
 package edu.cmu.sv.isstac.sampling.distributed;
 
+import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author Kasper Luckow
  */
-public class WorkerStatistics {
+public class WorkerStatistics implements Serializable {
   private final TimeUnit TIMEUNIT;
 
   //Statistics we keep track of

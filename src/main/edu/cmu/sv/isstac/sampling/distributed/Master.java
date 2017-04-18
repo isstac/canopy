@@ -33,9 +33,7 @@ import gov.nasa.jpf.Config;
 /**
  * @author Kasper Luckow
  */
-public interface Worker extends Remote {
-  String getID() throws RemoteException;
-  WorkerResult runAnalysis(Path frontierNode, Config config) throws RemoteException;
-  void terminate() throws RemoteException;
-  WorkerStatistics getStatus() throws RemoteException;
+public interface Master extends Remote {
+  boolean register(Worker worker) throws RemoteException;
+  boolean unregister(Worker worker) throws RemoteException;
 }
