@@ -65,7 +65,6 @@ public class SampleStatistics implements AnalysisEventObserver {
     long totalAnalysisTimeMS = stopwatch.elapsed(TimeUnit.MILLISECONDS);
     totalAnalysisTime = TIMEUNIT.convert(totalAnalysisTimeMS, TimeUnit.MILLISECONDS);
     stopwatch.stop();
-//    totalSampleNum = result.getNumberOfSamples();
     if(totalAnalysisTimeMS > 0) {
       long msToS = TIMEUNIT.toMillis(1);
       avgThroughput = (totalSampleNum / (double)totalAnalysisTimeMS) * msToS;

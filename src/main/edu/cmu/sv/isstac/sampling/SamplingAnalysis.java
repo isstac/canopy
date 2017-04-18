@@ -12,6 +12,7 @@ import edu.cmu.sv.isstac.sampling.analysis.LiveAnalysisStatistics;
 import edu.cmu.sv.isstac.sampling.analysis.SampleStatistics;
 import edu.cmu.sv.isstac.sampling.analysis.SampleStatisticsOutputter;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
+import edu.cmu.sv.isstac.sampling.exploration.Path;
 import edu.cmu.sv.isstac.sampling.quantification.ConcretePathQuantifier;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterCreationException;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterFactory;
@@ -19,6 +20,7 @@ import edu.cmu.sv.isstac.sampling.quantification.ModelCountingPathQuantifier;
 import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
 import edu.cmu.sv.isstac.sampling.quantification.SPFModelCounter;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
+import edu.cmu.sv.isstac.sampling.search.FrontierDecoratorListener;
 import edu.cmu.sv.isstac.sampling.search.SamplingAnalysisListener;
 import edu.cmu.sv.isstac.sampling.search.cache.StateCache;
 import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
@@ -43,7 +45,8 @@ public class SamplingAnalysis {
     private TerminationStrategy terminationStrategy = null;
     private PathQuantifier pathQuantifier = null;
     private RewardFunction rewardFunction = null;
-    private StateCache stateCache;
+    private StateCache stateCache = null;
+    private Path frontierNode = null;
 
     public Builder setRewardFunction(RewardFunction rewardFunction) {
       this.rewardFunction = rewardFunction;
@@ -67,6 +70,11 @@ public class SamplingAnalysis {
 
     public Builder setStateCache(StateCache stateCache) {
       this.stateCache = stateCache;
+      return this;
+    }
+
+    public Builder setFrontierNode(Path frontierNode) {
+      this.frontierNode = frontierNode;
       return this;
     }
 
@@ -176,7 +184,12 @@ public class SamplingAnalysis {
 
       SamplingAnalysisListener samplingListener = new SamplingAnalysisListener(analysisStrategy, rewardFunction,
           pathQuantifier, terminationStrategy, choicesStrategy, stateCache, eventObservers);
-      jpfListeners.add(samplingListener);
+      if(frontierNode != null) {
+        //Decorate sampling listener with frontier node capabilities
+        jpfListeners.add(new FrontierDecoratorListener(samplingListener, frontierNode));
+      } else {
+        jpfListeners.add(samplingListener);
+      }
 
       SamplingAnalysis samplingAnalysis = new SamplingAnalysis(jpfConfig, jpfListeners, jpfFactory);
 
@@ -220,5 +233,9 @@ public class SamplingAnalysis {
         throw new AnalysisException(e);
       }
     }
+  }
+
+  public JPF getJPF() {
+    return jpf;
   }
 }

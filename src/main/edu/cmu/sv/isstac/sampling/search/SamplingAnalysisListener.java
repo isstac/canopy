@@ -242,4 +242,7 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
     pathTerminated(TerminationType.CONSTRAINT_HIT, search);
   }
 
+  public Collection<AnalysisEventObserver> getEventObservers() {
+    return this.observers;
+  }
 }

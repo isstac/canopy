@@ -40,6 +40,10 @@ public class HashingCache implements StateCache {
     this.stateCache = new HashSet<>();
   }
 
+  public HashingCache(Set<Path> initCache) {
+    this.stateCache = new HashSet<>(initCache);
+  }
+
   @Override
   public void add(ChoiceGenerator<?> cg) {
     this.stateCache.add(new Path(cg));
