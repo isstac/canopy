@@ -22,32 +22,23 @@
  * SOFTWARE.
  */
 
-package edu.cmu.sv.isstac.sampling.distributed;
+package edu.cmu.sv.isstac.sampling.distributed.rmi;
 
-import java.util.concurrent.Callable;
+import java.io.Serializable;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
-import edu.cmu.sv.isstac.sampling.distributed.rmi.RMIWorker;
+import edu.cmu.sv.isstac.sampling.distributed.WorkerResult;
+import edu.cmu.sv.isstac.sampling.distributed.WorkerStatistics;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
 import gov.nasa.jpf.Config;
 
 /**
  * @author Kasper Luckow
  */
-public class WorkerTask implements Callable<WorkerResult> {
-
-  private final RMIWorker worker;
-  private final Config config;
-  private final Path frontierNode;
-
-  public WorkerTask(RMIWorker worker, Config config, Path frontierNode) {
-    this.worker = worker;
-    this.config = config;
-    this.frontierNode = frontierNode;
-  }
-
-
-  @Override
-  public WorkerResult call() throws Exception {
-    return worker.runAnalysis(frontierNode, this.config);
-  }
+public interface RMIWorker extends Remote, Serializable {
+  String getID() throws RemoteException;
+  WorkerResult runAnalysis(Path frontierNode, Config config) throws RemoteException;
+  void terminate() throws RemoteException;
+  WorkerStatistics getStatus() throws RemoteException;
 }

@@ -34,13 +34,4 @@ public class Utils {
   public static final String DISTRIBUTED_CONF_PRFX = Options.SAMPLING_CONF_PREFIX + ".dist";
 
   public static final String ANALYSIS_TYPE = DISTRIBUTED_CONF_PRFX + ".type";
-
-  public static final String MASTER_CONF_PRFX = DISTRIBUTED_CONF_PRFX + ".master";
-  public static final String MASTER_PORT_CONF = MASTER_CONF_PRFX + ".port";
-  public static final int DEFAULT_MASTER_PORT = 1099;
-
-  public static final String SERVICE_NAME = RMIMaster.class.getSimpleName();
-
-  public static final String CLIENTS_NUM_CONF = MASTER_CONF_PRFX + ".clientsnum";
-  public static final String DEFAULT_HOSTNAME = "127.0.0.1";
 }

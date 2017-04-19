@@ -22,21 +22,15 @@
  * SOFTWARE.
  */
 
-package edu.cmu.sv.isstac.sampling.distributed;
+package edu.cmu.sv.isstac.sampling.distributed.rmi;
 
-import java.io.Serializable;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-
-import edu.cmu.sv.isstac.sampling.exploration.Path;
-import gov.nasa.jpf.Config;
 
 /**
  * @author Kasper Luckow
  */
-public interface Worker extends Remote, Serializable {
-  String getID() throws RemoteException;
-  WorkerResult runAnalysis(Path frontierNode, Config config) throws RemoteException;
-  void terminate() throws RemoteException;
-  WorkerStatistics getStatus() throws RemoteException;
+public interface RMIMaster extends Remote {
+  boolean register(RMIWorker worker) throws RemoteException;
+  boolean unregister(RMIWorker worker) throws RemoteException;
 }

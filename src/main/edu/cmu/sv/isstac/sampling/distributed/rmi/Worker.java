@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package edu.cmu.sv.isstac.sampling.distributed;
+package edu.cmu.sv.isstac.sampling.distributed.rmi;
 
 import com.google.common.base.Preconditions;
 
@@ -35,6 +35,9 @@ import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AnalysisCreationException;
 import edu.cmu.sv.isstac.sampling.AnalysisException;
+import edu.cmu.sv.isstac.sampling.distributed.SamplingWorker;
+import edu.cmu.sv.isstac.sampling.distributed.WorkerResult;
+import edu.cmu.sv.isstac.sampling.distributed.WorkerStatistics;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.util.JPFLogger;
@@ -42,9 +45,9 @@ import gov.nasa.jpf.util.JPFLogger;
 /**
  * @author Kasper Luckow
  */
-public class RMIWorker implements Worker {
+public class Worker implements RMIWorker {
 
-  private static final Logger LOGGER = JPFLogger.getLogger(RMIWorker.class.getName());
+  private static final Logger LOGGER = JPFLogger.getLogger(Worker.class.getName());
 
   private transient SamplingWorker worker;
   private final String id;
@@ -72,9 +75,9 @@ public class RMIWorker implements Worker {
     }
     String registryURL = "rmi://" + hostname + ":" + port + "/" + Utils.SERVICE_NAME;
     LOGGER.info("Looking up registry url: " + registryURL);
-    Master server = (Master) Naming.lookup(registryURL);
+    RMIMaster server = (RMIMaster) Naming.lookup(registryURL);
 
-    Worker rmiWorker = new RMIWorker(workerID);
+    RMIWorker rmiWorker = new Worker(workerID);
     boolean ok = server.register(rmiWorker);
     if(!ok) {
       LOGGER.severe("Worker with ID " + workerID + " could not register with master");
@@ -84,10 +87,10 @@ public class RMIWorker implements Worker {
   }
 
   public static void printUsage() {
-    System.err.println("Usage: " + RMIWorker.class.getSimpleName() + " <ID> " + "[<hostname> <port>]");
+    System.err.println("Usage: " + Worker.class.getSimpleName() + " <ID> " + "[<hostname> <port>]");
   }
 
-  public RMIWorker(String id) throws RemoteException {
+  public Worker(String id) throws RemoteException {
     this.id = id;
   }
 

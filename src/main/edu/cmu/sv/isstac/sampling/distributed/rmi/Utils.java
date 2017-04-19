@@ -22,18 +22,22 @@
  * SOFTWARE.
  */
 
-package edu.cmu.sv.isstac.sampling.distributed;
-
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-
-import edu.cmu.sv.isstac.sampling.exploration.Path;
-import gov.nasa.jpf.Config;
+package edu.cmu.sv.isstac.sampling.distributed.rmi;
 
 /**
  * @author Kasper Luckow
  */
-public interface Master extends Remote {
-  boolean register(Worker worker) throws RemoteException;
-  boolean unregister(Worker worker) throws RemoteException;
+public class Utils {
+
+  public static final String RMI_CONF_PRFX = edu.cmu.sv.isstac.sampling
+      .distributed.Utils.DISTRIBUTED_CONF_PRFX + ".rmi";
+
+  public static final String MASTER_CONF_PRFX = RMI_CONF_PRFX + ".master";
+  public static final String MASTER_PORT_CONF = MASTER_CONF_PRFX + ".port";
+  public static final int DEFAULT_MASTER_PORT = 1099;
+
+  public static final String SERVICE_NAME = Server.class.getSimpleName();
+
+  public static final String CLIENTS_NUM_CONF = MASTER_CONF_PRFX + ".clientsnum";
+  public static final String DEFAULT_HOSTNAME = "127.0.0.1";
 }

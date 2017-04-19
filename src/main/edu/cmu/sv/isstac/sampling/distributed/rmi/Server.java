@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package edu.cmu.sv.isstac.sampling.distributed;
+package edu.cmu.sv.isstac.sampling.distributed.rmi;
 
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
@@ -44,6 +44,8 @@ import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AnalysisCreationException;
 import edu.cmu.sv.isstac.sampling.AnalysisException;
+import edu.cmu.sv.isstac.sampling.distributed.WorkerResult;
+import edu.cmu.sv.isstac.sampling.distributed.WorkerTask;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterCreationException;
 import gov.nasa.jpf.Config;
@@ -53,11 +55,11 @@ import gov.nasa.jpf.util.JPFLogger;
 /**
  * @author Kasper Luckow
  */
-public class RMIMaster implements Master, JPFShell {
+public class Server implements RMIMaster, JPFShell {
 
-  private static final Logger LOGGER = JPFLogger.getLogger(RMIMaster.class.getName());
+  private static final Logger LOGGER = JPFLogger.getLogger(Server.class.getName());
 
-  private Map<String, Worker> workers = new HashMap<>();
+  private Map<String, RMIWorker> workers = new HashMap<>();
   private final Config config;
 
   private static Registry registry;
@@ -68,13 +70,13 @@ public class RMIMaster implements Master, JPFShell {
   private int numberOfWorkers;
 
   //ctor required for jpf shell
-  public RMIMaster(Config config) throws AnalysisCreationException,
+  public Server(Config config) throws AnalysisCreationException,
       ModelCounterCreationException, RemoteException {
     this.config = config;
     System.setProperty("java.rmi.server.hostname", "127.0.0.1");
     int port = config.getInt(Utils.MASTER_PORT_CONF, Utils.DEFAULT_MASTER_PORT);
 
-    Master stub = (Master) UnicastRemoteObject.exportObject(this, port);
+    RMIMaster stub = (RMIMaster) UnicastRemoteObject.exportObject(this, port);
     registry = LocateRegistry.createRegistry(Utils.DEFAULT_MASTER_PORT);//LocateRegistry
     // .getRegistry();
     try {
@@ -93,7 +95,7 @@ public class RMIMaster implements Master, JPFShell {
   }
 
   @Override
-  public synchronized boolean register(Worker worker) throws RemoteException {
+  public synchronized boolean register(RMIWorker worker) throws RemoteException {
     if(!workers.containsKey(worker.getID())) {
       workers.put(worker.getID(), worker);
       LOGGER.info("Registered worker: " + worker.getID());
@@ -106,7 +108,7 @@ public class RMIMaster implements Master, JPFShell {
   }
 
   @Override
-  public synchronized boolean unregister(Worker worker) throws RemoteException {
+  public synchronized boolean unregister(RMIWorker worker) throws RemoteException {
     if(!workers.containsKey(worker.getID())) {
       workers.remove(worker.getID());
       LOGGER.info("Unregistered worker: " + worker.getID());
@@ -152,7 +154,7 @@ public class RMIMaster implements Master, JPFShell {
 
     Path[] frontiers = getFrontierNodes();
     int n = 0;
-    for(Worker worker : this.workers.values()) {
+    for(RMIWorker worker : this.workers.values()) {
       this.pool.submit(new WorkerTask(worker, config, frontiers[n++]));
     }
 
@@ -194,7 +196,7 @@ public class RMIMaster implements Master, JPFShell {
           UnicastRemoteObject.unexportObject(remote, true);
         }
       }
-      for(Worker worker : this.workers.values()) {
+      for(RMIWorker worker : this.workers.values()) {
         worker.terminate();
       }
       UnicastRemoteObject.unexportObject(this,true);
