@@ -18,6 +18,7 @@ import org.jfree.ui.ApplicationFrame;
 
 import java.awt.*;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -57,10 +58,11 @@ public class LiveTrackerChart extends ApplicationFrame {
   private final Label avgRewardTxtLabel = new Label(avgRewardSampleTxt);
 
   private final int maxBufferSize;
-  private int bufferSize;
+  private int bufferIndex;
   private long xBuf[];
   private long yBuf[];
   private long pathVolumeBuf[];
+  private static final long NOT_SET = Long.MIN_VALUE;
 
   private long maxReward = 0;
   private double rollingAvg = 0;
@@ -83,7 +85,7 @@ public class LiveTrackerChart extends ApplicationFrame {
     this.xBuf = new long[maxBufferSize];
     this.yBuf = new long[maxBufferSize];
     this.pathVolumeBuf = new long[maxBufferSize];
-    this.bufferSize = 0;
+    this.bufferIndex = 0;
     
     ChartPanel timeSeriesPanel = new ChartPanel(createTimeSeries());
     ChartPanel histogramPanel = new ChartPanel(createHistogram());
@@ -175,30 +177,35 @@ public class LiveTrackerChart extends ApplicationFrame {
   }
   
   public void update(long x, long reward, long pathVolume, boolean hasBeenExplored) {
-    if(bufferSize >= maxBufferSize) {
+    //This is important for the non pruning case:
+    // we *don't* update the chart if the path has been explored before, otherwise the results
+    // shown would not really correspond to the statistics output. We still however keep
+    // updating the throughput etc and display that on the chart
+    if(!hasBeenExplored) {
+      xBuf[bufferIndex] = x;
+      yBuf[bufferIndex] = reward;
+      pathVolumeBuf[bufferIndex] = pathVolume;
+    }
+
+    if(bufferIndex >= maxBufferSize - 1) {
       updateChartsAndLabels(xBuf, yBuf, pathVolumeBuf);
+      Arrays.fill(xBuf, NOT_SET);
+      Arrays.fill(yBuf, NOT_SET);
+      Arrays.fill(pathVolumeBuf, NOT_SET);
+      bufferIndex = 0;
     } else {
-      //This is important for the non pruning case:
-      // we *don't* update the chart if the path has been explored before, otherwise the results
-      // shown would not really correspond to the statistics output. We still however keep
-      // updating the throughput etc and display that on the chart
-      if(!hasBeenExplored) {
-        xBuf[bufferSize] = x;
-        yBuf[bufferSize] = reward;
-        pathVolumeBuf[bufferSize] = pathVolume;
-        bufferSize++;
-      }
+      bufferIndex++;
     }
   }
 
   private void updateChartsAndLabels(long[] x, long[] y, long[] pathVolume) {
-    updateCharts(xBuf, yBuf, pathVolumeBuf);
+    updateCharts(x, y, pathVolume);
 
     long elapsedTime = this.stopwatch.elapsed(TimeUnit.MILLISECONDS);
     this.stopwatch.reset().start();
 
     //Compute throughput
-    double throughput = bufferSize / ((double)elapsedTime / 1000);
+    double throughput = bufferIndex / ((double)elapsedTime / 1000);
     throughputSamplesNum++;
     rollingThroughputAvg -= rollingThroughputAvg / throughputSamplesNum;
     rollingThroughputAvg += throughput / (double)throughputSamplesNum;
@@ -206,7 +213,6 @@ public class LiveTrackerChart extends ApplicationFrame {
     throughputTxtLabel.setText(throughputTxt + " " + doubleFormat.format(throughput));
     avgThroughputTxtLabel.setText(avgThroughputTxt + " " + doubleFormat.format
         (rollingThroughputAvg));
-    bufferSize = 0;
   }
 
   //TODO: buffering is not working atm -- seems a bit complicated
@@ -215,6 +221,9 @@ public class LiveTrackerChart extends ApplicationFrame {
       long samplesNum = x[i];
       long reward = y[i];
       long volume = pathVolume[i];
+      if(samplesNum == NOT_SET || reward == NOT_SET || volume == NOT_SET) {
+        continue;
+      }
       
       //Crazy we have to do this...
       if(!binsUsed.contains(reward)) {
