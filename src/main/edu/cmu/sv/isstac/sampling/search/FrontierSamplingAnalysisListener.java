@@ -44,8 +44,8 @@ import gov.nasa.jpf.vm.VM;
 /**
  * @author Kasper Luckow
  *
- * Delegates everying to the sampling listener being wrapped. However, it ensures that the
- * analysis does not start before reaching the frontier node
+ * Decorates samplinganalysislistener with the capabilities of enforcing exploration down to a
+ * frontier node
  */
 public class FrontierSamplingAnalysisListener extends SamplingAnalysisListener {
   private final Path frontierNode;
@@ -66,9 +66,10 @@ public class FrontierSamplingAnalysisListener extends SamplingAnalysisListener {
 
   @Override
   public final void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> cg) {
-    //This is a weird condition, I know
+    //This could be a bit costly
     Path curr = new Path(cg);
     int currLength = curr.length();
+    //If the current path is
     if(currLength <= this.frontierLength) {
       int idx = currLength - 1;
       int choice = this.frontierNode.getChoice(idx);
