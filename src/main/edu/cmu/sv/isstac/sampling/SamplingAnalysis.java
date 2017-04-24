@@ -20,11 +20,13 @@ import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
 import edu.cmu.sv.isstac.sampling.quantification.SPFModelCounter;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
 import edu.cmu.sv.isstac.sampling.search.SamplingAnalysisListener;
+import edu.cmu.sv.isstac.sampling.search.cache.StateCache;
 import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFListener;
+import gov.nasa.jpf.State;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.util.JPFLogger;
 
@@ -41,6 +43,7 @@ public class SamplingAnalysis {
     private TerminationStrategy terminationStrategy = null;
     private PathQuantifier pathQuantifier = null;
     private RewardFunction rewardFunction = null;
+    private StateCache stateCache;
 
     public Builder setRewardFunction(RewardFunction rewardFunction) {
       this.rewardFunction = rewardFunction;
@@ -59,6 +62,11 @@ public class SamplingAnalysis {
 
     public Builder setTerminationStrategy(TerminationStrategy terminationStrategy) {
       this.terminationStrategy = terminationStrategy;
+      return this;
+    }
+
+    public Builder setStateCache(StateCache stateCache) {
+      this.stateCache = stateCache;
       return this;
     }
 
@@ -115,6 +123,13 @@ public class SamplingAnalysis {
         Options.choicesStrategy = choicesStrategy;
       }
 
+      if(stateCache == null) {
+        stateCache = jpfConfig.getInstance(Options.STATE_CACHE, StateCache.class, Options
+            .DEFAULT_STATE_CACHE.getName());
+      }
+      //TODO: We should log the entire config
+      logger.info("Using state caching implemented by class: " + stateCache.getClass().getName());
+
       if (pathQuantifier == null) {
         if (jpfConfig.hasValue(Options.PATH_QUANTIFIER)) {
           pathQuantifier = jpfConfig.getInstance(Options.PATH_QUANTIFIER, PathQuantifier.class);
@@ -160,7 +175,7 @@ public class SamplingAnalysis {
       }
 
       SamplingAnalysisListener samplingListener = new SamplingAnalysisListener(analysisStrategy, rewardFunction,
-          pathQuantifier, terminationStrategy, choicesStrategy, eventObservers);
+          pathQuantifier, terminationStrategy, choicesStrategy, stateCache, eventObservers);
       jpfListeners.add(samplingListener);
 
       SamplingAnalysis samplingAnalysis = new SamplingAnalysis(jpfConfig, jpfListeners, jpfFactory);
