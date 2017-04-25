@@ -35,6 +35,7 @@ public class Options {
   public static final String EVENT_OBSERVERS = SAMPLING_CONF_PREFIX + ".eventobservers";
 
   public static final String SHOW_LIVE_STATISTICS = SAMPLING_CONF_PREFIX + ".livestats";
+  public static final String SHOW_LIVE_STATISTICS_BUDGET = SHOW_LIVE_STATISTICS + ".budget";
   public static final String SHOW_STATISTICS = SAMPLING_CONF_PREFIX + ".stats";
 
   // Defaults. We rely on Config's instantiation that uses reflection and passes jpf config

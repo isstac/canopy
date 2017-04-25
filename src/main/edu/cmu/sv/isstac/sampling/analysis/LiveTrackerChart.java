@@ -76,10 +76,10 @@ public class LiveTrackerChart extends ApplicationFrame {
   private long throughputSamplesNum = 0;
 
   public LiveTrackerChart() {
-    this(10);
+    this(10, -1);
   }
 
-  public LiveTrackerChart(int maxBufferSize) {
+  public LiveTrackerChart(int maxBufferSize, long budget) {
     super("Sampling live results");
     this.maxBufferSize = maxBufferSize;
     this.xBuf = new long[maxBufferSize];
@@ -87,7 +87,7 @@ public class LiveTrackerChart extends ApplicationFrame {
     this.pathVolumeBuf = new long[maxBufferSize];
     this.bufferIndex = 0;
     
-    ChartPanel timeSeriesPanel = new ChartPanel(createTimeSeries());
+    ChartPanel timeSeriesPanel = new ChartPanel(createTimeSeries(budget));
     ChartPanel histogramPanel = new ChartPanel(createHistogram());
     
     JPanel container = new JPanel();
@@ -116,7 +116,7 @@ public class LiveTrackerChart extends ApplicationFrame {
     this.maxRewardStopWatch = Stopwatch.createStarted();
   }
   
-  public JFreeChart createTimeSeries() {
+  public JFreeChart createTimeSeries(long budget) {
     XYSeriesCollection rewardDataset = new XYSeriesCollection();
     samplingSeries = new XYSeries("Reward");
     rewardDataset.addSeries(samplingSeries);
@@ -158,6 +158,14 @@ public class LiveTrackerChart extends ApplicationFrame {
     
     timeSeriesChart.getXYPlot().addRangeMarker(avgMarker);
     timeSeriesChart.getXYPlot().addRangeMarker(maxMarker);
+    //This is ugly
+    if(budget >= 0) {
+      ValueMarker budgetMarker = new ValueMarker(budget);
+      budgetMarker.setPaint(Color.black);
+      budgetMarker.setStroke(new BasicStroke(5f));
+      timeSeriesChart.getXYPlot().addRangeMarker(budgetMarker);
+    }
+
     return timeSeriesChart;
   }
   

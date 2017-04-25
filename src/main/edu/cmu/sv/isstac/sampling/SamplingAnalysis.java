@@ -157,7 +157,12 @@ public class SamplingAnalysis {
       if (!liveAnalysis
           && jpfConfig.getBoolean(Options.SHOW_LIVE_STATISTICS,
           Options.DEFAULT_SHOW_LIVE_STATISTICS)) {
-        this.eventObservers.add(new LiveAnalysisStatistics());
+        if(jpfConfig.hasValue(Options.SHOW_LIVE_STATISTICS_BUDGET)) {
+          this.eventObservers.add(new LiveAnalysisStatistics(
+              jpfConfig.getLong(Options.SHOW_LIVE_STATISTICS_BUDGET)));
+        } else {
+          this.eventObservers.add(new LiveAnalysisStatistics());
+        }
       }
 
       boolean finalStats = eventObservers.stream()
