@@ -53,6 +53,10 @@ public class SamplingWorker {
   public WorkerResult runAnalysis(Path frontierNode, Config config) throws AnalysisCreationException {
     //disable livetracker chart
     config.setProperty(Options.SHOW_LIVE_STATISTICS, "false");
+
+    //Enforce collection of statistics (needed for getStatus to be useful)
+    config.setProperty(Options.SHOW_STATISTICS, "true");
+    
     AnalysisFactory af = getAnalysisFactory(config);
 
     SamplingAnalysis.Builder analysisBuilder =
