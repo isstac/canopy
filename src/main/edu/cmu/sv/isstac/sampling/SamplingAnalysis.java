@@ -171,7 +171,7 @@ public class SamplingAnalysis {
       if (!finalStats
           && jpfConfig.getBoolean(Options.SHOW_STATISTICS,
           Options.DEFAULT_SHOW_STATISTICS)) {
-        this.eventObservers.add(new SampleStatisticsOutputter(new SampleStatistics(), System.out));
+        this.eventObservers.add(new SampleStatisticsOutputter(System.out));
       }
 
       if (jpfConfig.hasValue(Options.EVENT_OBSERVERS)) {
