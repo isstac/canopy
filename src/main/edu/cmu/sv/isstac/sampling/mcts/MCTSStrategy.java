@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
@@ -27,7 +28,6 @@ import gov.nasa.jpf.vm.VM;
 
 /**
  * @author Kasper Luckow
- *
  */
 public class MCTSStrategy implements AnalysisStrategy {
 
@@ -47,16 +47,16 @@ public class MCTSStrategy implements AnalysisStrategy {
   }
 
   private static final Logger logger = JPFLogger.getLogger(MCTSStrategy.class.getName());
-  
+
   private MCTS_STATE mctsState;
   private MCTSNode last = null;
   private MCTSNode playOutNode = null;
   private MCTSNode root = null;
   private final NodeFactory<MCTSNode> nodeFactory;
-  
+
   private final SelectionPolicy selectionPolicy;
   private final SimulationPolicy simulationPolicy;
-  
+
   private boolean expandedFlag = false;
   private int expandedChoice = -1;
 
@@ -80,13 +80,13 @@ public class MCTSStrategy implements AnalysisStrategy {
 
   @Override
   public void makeStateChoice(VM vm, ChoiceGenerator<?> cg, ArrayList<Integer> eligibleChoices) {
-    if(this.nodeFactory.isSupportedChoiceGenerator(cg)) {
-      
+    if (this.nodeFactory.isSupportedChoiceGenerator(cg)) {
+
       // If we expanded a child in the previous CG advancement,
       // we now want to create the node for that child.
       // We can only do that now, because otherwise the CG
       // is not available
-      if(expandedFlag) {
+      if (expandedFlag) {
         assert mctsState == MCTS_STATE.SIMULATION;
         try {
           last = playOutNode = this.nodeFactory.create(last, cg, expandedChoice);
@@ -99,21 +99,21 @@ public class MCTSStrategy implements AnalysisStrategy {
         }
         expandedFlag = false;
       }
-      
+
       // If empty, we entered an invalid state
-      if(eligibleChoices.isEmpty()) {
+      if (eligibleChoices.isEmpty()) {
         String msg = "Entered invalid state: No eligible choices";
         logger.severe(msg);
         throw new MCTSAnalysisException(msg);
       }
-      
+
       int choice = -1;
-      
+
       // Check if we are currently in the Selection phase of MCTS
-      if(mctsState == MCTS_STATE.SELECTION) {
-        
+      if (mctsState == MCTS_STATE.SELECTION) {
+
         // create root
-        if(root == null) {
+        if (root == null) {
           try {
             root = last = this.nodeFactory.create(null, cg, -1);
             root.setIsSearchTreeNode(true);
@@ -123,26 +123,26 @@ public class MCTSStrategy implements AnalysisStrategy {
             throw new MCTSAnalysisException(msg);
           }
         }
-        
+
         // Check if node is a "frontier", i.e. it has eligible, unexpanded children
         // In this case, we perform the expansion step of MCTS
-        if(isFrontierNode(last, eligibleChoices)) {
+        if (isFrontierNode(last, eligibleChoices)) {
           ArrayList<Integer> unexpandedEligibleChoices = getUnexpandedEligibleChoices(last, eligibleChoices);
-          
+
           // Select the unexpanded children according to our selection policy, e.g. randomly
           choice = expandedChoice = selectionPolicy.expandChild(last, unexpandedEligibleChoices);
           expandedFlag = true;
-          
+
           // After expansion, we proceed to simulation step of MCTS
-          mctsState = MCTS_STATE.SIMULATION; 
+          mctsState = MCTS_STATE.SIMULATION;
         } else {
-          
+
           // If it was not a frontier node, we perform the selection step of MCTS
           // A node is selected based on the selection policy, e.g., classic UCB
           last = selectionPolicy.selectBestChild(last, eligibleChoices);
           choice = last.getChoice();
         }
-      } else if(mctsState == MCTS_STATE.SIMULATION) {
+      } else if (mctsState == MCTS_STATE.SIMULATION) {
         // Select choice according to simulation policy, e.g., randomly
         choice = simulationPolicy.selectChoice(vm, cg, eligibleChoices);
         try {
@@ -159,49 +159,50 @@ public class MCTSStrategy implements AnalysisStrategy {
         logger.severe(msg);
         throw new MCTSAnalysisException(msg);
       }
-      
+
       assert choice != -1;
-      
+
       cg.select(choice);
     } else {
-      String msg = "Unexpected CG: " + cg.getClass().getName();
-      logger.severe(msg);
-//      throw new MCTSAnalysisException(msg);
+      if (logger.isLoggable(Level.FINE)) {
+        String msg = "Unexpected CG: " + cg.getClass().getName();
+        logger.fine(msg);
+      }
     }
   }
 
   private ArrayList<Integer> getUnexpandedEligibleChoices(Node n, ArrayList<Integer> eligibleChoices) {
     ArrayList<Integer> unexpandedEligibleChoices = new ArrayList<>();
     Collection<Node> expandedChildren = new HashSet<>();
-    for(Node child : n.getChildren()) {
-      if(((MCTSNode)child).isSearchTreeNode()) {
+    for (Node child : n.getChildren()) {
+      if (((MCTSNode) child).isSearchTreeNode()) {
         expandedChildren.add(child);
       }
     }
 
     Set<Integer> childChoices = new HashSet<>();
-    
+
     //Could expose a method in a node to obtain the following
-    for(Node child : expandedChildren) {
+    for (Node child : expandedChildren) {
       childChoices.add(child.getChoice());
     }
-    
+
     // We only select the unexpanded children
     // that are eligible for selection, e.g.,
     // not pruned.
-    for(int eligibleChoice : eligibleChoices) {
-      if(!childChoices.contains(eligibleChoice))
+    for (int eligibleChoice : eligibleChoices) {
+      if (!childChoices.contains(eligibleChoice))
         unexpandedEligibleChoices.add(eligibleChoice);
     }
-    
+
     // We have hit an illegal state if there
     // are no choices that can be expanded
-    if(unexpandedEligibleChoices.isEmpty()) {
+    if (unexpandedEligibleChoices.isEmpty()) {
       String msg = "No eligible, unexpanded children possible";
       logger.severe(msg);
       throw new MCTSAnalysisException(new IllegalStateException(msg));
     }
-    
+
     return unexpandedEligibleChoices;
   }
 
@@ -227,7 +228,7 @@ public class MCTSStrategy implements AnalysisStrategy {
 
     // If this path has been seen before (e.g. if pruning was not used), then we don't perform
     // back progation of rewards!
-    if(hasBeenExploredBefore) {
+    if (hasBeenExploredBefore) {
       //amplifiedReward = 0;
       logger.warning("Path has been explored before (Pruning is turned off? If not, this is an " +
           "error). MCTS *STILL* propagates reward and visit count");//MCTS does not propagate
@@ -237,7 +238,7 @@ public class MCTSStrategy implements AnalysisStrategy {
     BackPropagator.cumulativeRewardPropagation(last, amplifiedReward, pathVolume, termType);
 
     // Notify MCTS observers with sample done event
-    for(MCTSEventObserver obs : this.observers) {
+    for (MCTSEventObserver obs : this.observers) {
       obs.sampleDone(playOutNode);
     }
 
@@ -246,11 +247,11 @@ public class MCTSStrategy implements AnalysisStrategy {
     this.last = this.root;
     this.playOutNode = null;
   }
-  
+
   private boolean isFrontierNode(Node node, Collection<Integer> eligibleChoices) {
-    for(int eligibleChoice : eligibleChoices) {
-      if(!node.hasChildForChoice(eligibleChoice) ||
-          ((MCTSNode)node.getChild(eligibleChoice)).isSearchTreeNode() == false)
+    for (int eligibleChoice : eligibleChoices) {
+      if (!node.hasChildForChoice(eligibleChoice) ||
+          ((MCTSNode) node.getChild(eligibleChoice)).isSearchTreeNode() == false)
         return true;
     }
     return false;
