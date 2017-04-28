@@ -5,12 +5,9 @@ import java.util.Random;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction;
-import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
-import edu.cmu.sv.isstac.sampling.search.cache.HashingCache;
-import edu.cmu.sv.isstac.sampling.search.cache.NoCache;
-import edu.cmu.sv.isstac.sampling.search.cache.StateCache;
+import edu.cmu.sv.isstac.sampling.exploration.cache.HashingCache;
+import edu.cmu.sv.isstac.sampling.exploration.cache.StateCache;
 import edu.cmu.sv.isstac.sampling.termination.NeverTerminateStrategy;
-import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener;
 

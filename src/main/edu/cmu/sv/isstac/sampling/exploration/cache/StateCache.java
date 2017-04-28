@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package edu.cmu.sv.isstac.sampling.search.cache;
+package edu.cmu.sv.isstac.sampling.exploration.cache;
 
-import edu.cmu.sv.isstac.sampling.exploration.Path;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 
 /**

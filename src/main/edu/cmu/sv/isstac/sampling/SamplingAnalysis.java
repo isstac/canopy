@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
 import edu.cmu.sv.isstac.sampling.analysis.LiveAnalysisStatistics;
-import edu.cmu.sv.isstac.sampling.analysis.SampleStatistics;
 import edu.cmu.sv.isstac.sampling.analysis.SampleStatisticsOutputter;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.quantification.ConcretePathQuantifier;
@@ -20,13 +19,12 @@ import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
 import edu.cmu.sv.isstac.sampling.quantification.SPFModelCounter;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
 import edu.cmu.sv.isstac.sampling.search.SamplingAnalysisListener;
-import edu.cmu.sv.isstac.sampling.search.cache.StateCache;
+import edu.cmu.sv.isstac.sampling.exploration.cache.StateCache;
 import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFListener;
-import gov.nasa.jpf.State;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.util.JPFLogger;
 

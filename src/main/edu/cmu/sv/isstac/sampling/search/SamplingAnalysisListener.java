@@ -4,8 +4,6 @@ import com.google.common.base.Preconditions;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
@@ -15,7 +13,7 @@ import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
 import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
-import edu.cmu.sv.isstac.sampling.search.cache.StateCache;
+import edu.cmu.sv.isstac.sampling.exploration.cache.StateCache;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.search.Search;
