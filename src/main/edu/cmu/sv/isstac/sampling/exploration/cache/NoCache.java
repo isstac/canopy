@@ -17,6 +17,8 @@
 package edu.cmu.sv.isstac.sampling.exploration.cache;
 
 import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.Path;
+import gov.nasa.jpf.vm.VM;
 
 /**
  * @author Kasper Luckow
@@ -24,12 +26,12 @@ import gov.nasa.jpf.vm.ChoiceGenerator;
 public class NoCache implements StateCache {
 
   @Override
-  public void add(ChoiceGenerator<?> cg) {
-    //Do nothing
+  public void add(VM vm) {
+
   }
 
   @Override
-  public boolean contains(ChoiceGenerator<?> cg) {
+  public boolean contains(VM vm) {
     return false;
   }
 }

@@ -17,11 +17,13 @@
 package edu.cmu.sv.isstac.sampling.exploration.cache;
 
 import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.Path;
+import gov.nasa.jpf.vm.VM;
 
 /**
  * @author Kasper Luckow
  */
 public interface StateCache {
-  void add(ChoiceGenerator<?> cg);
-  boolean contains(ChoiceGenerator<?> cg);
+  void add(VM vm);
+  boolean contains(VM vm);
 }

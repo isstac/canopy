@@ -23,6 +23,7 @@ import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.Transition;
 import gov.nasa.jpf.vm.VM;
 
 /**
@@ -96,7 +97,7 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
       // satisfiable and therefore we don't need to invoke the solver again
       // We will turn on the solver again as soon as we encounter a CG we have not seen before
       // according to the cache
-      if(this.stateCache.contains(cg)) {
+      if(this.stateCache.contains(vm)) {
         PathCondition.setReplay(true);
       } else {
         PathCondition.setReplay(false);
@@ -198,21 +199,7 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
     }
 
     //Update cache
-    PCChoiceGenerator[] pcs = vm.getChoiceGeneratorsOfType(PCChoiceGenerator.class);
-    for(int i = pcs.length  - 1; i >= 0; i--) {
-      PCChoiceGenerator cg = pcs[i];
-
-      //This could be expensive for long paths (i.e. many CGs)
-      if(!stateCache.contains(cg)) {
-        stateCache.add(cg);
-      } else {
-        // This is a small trick and an optimization. Note that we are adding the CGs to the
-        // cache starting from the *end* of the path. If the path
-        // of the current cg is in the cache, then, by definition, we must have added
-        // any prefix of the CG to the cache as well, so we can break here
-        break;
-      }
-    }
+    stateCache.add(vm);
   }
 
   @Override
