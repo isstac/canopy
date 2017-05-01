@@ -15,6 +15,8 @@ import org.jfree.data.statistics.SimpleHistogramDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
+import org.jfree.ui.RectangleAnchor;
+import org.jfree.ui.TextAnchor;
 
 import java.awt.*;
 import java.text.DecimalFormat;
@@ -76,10 +78,10 @@ public class LiveTrackerChart extends ApplicationFrame {
   private long throughputSamplesNum = 0;
 
   public LiveTrackerChart() {
-    this(10);
+    this(10, -1);
   }
 
-  public LiveTrackerChart(int maxBufferSize) {
+  public LiveTrackerChart(int maxBufferSize, long budget) {
     super("Sampling live results");
     this.maxBufferSize = maxBufferSize;
     this.xBuf = new long[maxBufferSize];
@@ -87,7 +89,7 @@ public class LiveTrackerChart extends ApplicationFrame {
     this.pathVolumeBuf = new long[maxBufferSize];
     this.bufferIndex = 0;
     
-    ChartPanel timeSeriesPanel = new ChartPanel(createTimeSeries());
+    ChartPanel timeSeriesPanel = new ChartPanel(createTimeSeries(budget));
     ChartPanel histogramPanel = new ChartPanel(createHistogram());
     
     JPanel container = new JPanel();
@@ -116,7 +118,7 @@ public class LiveTrackerChart extends ApplicationFrame {
     this.maxRewardStopWatch = Stopwatch.createStarted();
   }
   
-  public JFreeChart createTimeSeries() {
+  public JFreeChart createTimeSeries(long budget) {
     XYSeriesCollection rewardDataset = new XYSeriesCollection();
     samplingSeries = new XYSeries("Reward");
     rewardDataset.addSeries(samplingSeries);
@@ -154,10 +156,30 @@ public class LiveTrackerChart extends ApplicationFrame {
     JFreeChart timeSeriesChart = new JFreeChart("Live Sampling Results", getFont(), plot, true);
     timeSeriesChart.setBorderPaint(Color.white);
     avgMarker.setPaint(Color.green);
+    avgMarker.setLabel("Average reward");
+    avgMarker.setStroke(new BasicStroke(1f));
+    avgMarker.setLabelAnchor(RectangleAnchor.TOP_LEFT);
+    avgMarker.setLabelTextAnchor(TextAnchor.BOTTOM_LEFT);
+
     maxMarker.setPaint(Color.blue);
+    maxMarker.setLabel("Max reward");
+    maxMarker.setStroke(new BasicStroke(1f));
+    maxMarker.setLabelAnchor(RectangleAnchor.TOP_LEFT);
+    maxMarker.setLabelTextAnchor(TextAnchor.BOTTOM_LEFT);
     
     timeSeriesChart.getXYPlot().addRangeMarker(avgMarker);
     timeSeriesChart.getXYPlot().addRangeMarker(maxMarker);
+    //This is ugly
+    if(budget >= 0) {
+      ValueMarker budgetMarker = new ValueMarker(budget);
+      budgetMarker.setPaint(Color.black);
+      budgetMarker.setStroke(new BasicStroke(2f));
+      budgetMarker.setLabel("Budget");
+      budgetMarker.setLabelAnchor(RectangleAnchor.TOP_LEFT);
+      budgetMarker.setLabelTextAnchor(TextAnchor.BOTTOM_LEFT);
+      timeSeriesChart.getXYPlot().addRangeMarker(budgetMarker);
+    }
+
     return timeSeriesChart;
   }
   
