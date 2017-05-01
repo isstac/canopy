@@ -40,6 +40,7 @@ public class SamplingAnalysis {
 
   public static class Builder {
     private Collection<AnalysisEventObserver> eventObservers = new HashSet<>();
+    private Collection<JPFListener> listeners = new HashSet<>();
     private ChoicesStrategy choicesStrategy = null;
     private TerminationStrategy terminationStrategy = null;
     private PathQuantifier pathQuantifier = null;
@@ -48,6 +49,11 @@ public class SamplingAnalysis {
 
     public Builder setRewardFunction(RewardFunction rewardFunction) {
       this.rewardFunction = rewardFunction;
+      return this;
+    }
+
+    public Builder addListener(JPFListener listener) {
+      this.listeners.add(listener);
       return this;
     }
 
@@ -189,6 +195,11 @@ public class SamplingAnalysis {
       SamplingAnalysisListener samplingListener = new SamplingAnalysisListener(analysisStrategy, rewardFunction,
           pathQuantifier, terminationStrategy, choicesStrategy, stateCache, eventObservers);
       jpfListeners.add(samplingListener);
+
+      //Add additional listeners
+      for(JPFListener l : listeners) {
+        jpfListeners.add(l);
+      }
 
       SamplingAnalysis samplingAnalysis = new SamplingAnalysis(jpfConfig, jpfListeners, jpfFactory);
 
