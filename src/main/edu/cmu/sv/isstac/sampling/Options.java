@@ -3,7 +3,7 @@ package edu.cmu.sv.isstac.sampling;
 import java.util.Random;
 
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
-import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
+import edu.cmu.sv.isstac.sampling.exploration.HashBasedPruningStrategy;
 import edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction;
 import edu.cmu.sv.isstac.sampling.exploration.cache.HashingCache;
 import edu.cmu.sv.isstac.sampling.exploration.cache.StateCache;
@@ -42,7 +42,7 @@ public class Options {
 
 
   public static final String CHOICES_STRATEGY = SAMPLING_CONF_PREFIX + ".choicesstrategy";
-  public static final ChoicesStrategy DEFAULT_CHOICES_STRATEGY = PruningChoicesStrategy.getInstance();
+  public static final ChoicesStrategy DEFAULT_CHOICES_STRATEGY = HashBasedPruningStrategy.getInstance();
 
   public static final String STATE_CACHE = SAMPLING_CONF_PREFIX + ".statecache";
   public static final Class<? extends StateCache> DEFAULT_STATE_CACHE = HashingCache.class;

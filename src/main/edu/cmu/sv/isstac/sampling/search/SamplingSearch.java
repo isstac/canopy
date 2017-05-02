@@ -4,14 +4,12 @@ import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.exploration.NoPruningStrategy;
-import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
+import edu.cmu.sv.isstac.sampling.exploration.HashBasedPruningStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPFListenerException;
 import gov.nasa.jpf.search.Search;
-import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.bytecode.BytecodeUtils;
-import gov.nasa.jpf.symbc.numeric.PCParser;
 import gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener;
 import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.RestorableVMState;
@@ -48,7 +46,7 @@ public class SamplingSearch extends Search {
 
       logger.info("Search object configured with pruning");
 
-      pruner = PruningChoicesStrategy.getInstance();
+      pruner = HashBasedPruningStrategy.getInstance();
       pruner.reset();
     } else {
 

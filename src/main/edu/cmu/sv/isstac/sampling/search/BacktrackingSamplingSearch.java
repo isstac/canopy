@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.NoPruningStrategy;
-import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
+import edu.cmu.sv.isstac.sampling.exploration.HashBasedPruningStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPFListenerException;
@@ -46,7 +46,7 @@ public class BacktrackingSamplingSearch extends Search {
 
       logger.info("Search object configured with pruning");
 
-      pruner = PruningChoicesStrategy.getInstance();
+      pruner = HashBasedPruningStrategy.getInstance();
       pruner.reset();
     } else {
 

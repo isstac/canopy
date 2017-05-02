@@ -13,20 +13,20 @@ import gov.nasa.jpf.vm.ChoiceGenerator;
  * @author Kasper Luckow
  * 
  */
-public class PruningChoicesStrategy implements ChoicesStrategy, PruningStrategy {
+public class HashBasedPruningStrategy implements ChoicesStrategy, PruningStrategy {
   
   private Set<Path> pruned = Sets.newHashSet();
 
-  private static PruningChoicesStrategy instance;
+  private static HashBasedPruningStrategy instance;
 
-  public static PruningChoicesStrategy getInstance() {
+  public static HashBasedPruningStrategy getInstance() {
     if(instance == null) {
-      instance = new PruningChoicesStrategy();
+      instance = new HashBasedPruningStrategy();
     }
     return instance;
   }
 
-  private PruningChoicesStrategy() { }
+  private HashBasedPruningStrategy() { }
 
   public void reset() {
     this.pruned.clear();
