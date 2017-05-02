@@ -77,8 +77,6 @@
  */
 package edu.cmu.sv.isstac.sampling.exploration;
 
-import com.google.common.cache.CacheBuilder;
-
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.Path;
 
@@ -92,20 +90,42 @@ import gov.nasa.jpf.vm.Path;
  */
 public class Trie<V> {
 
-  // Bound number of choices so we can efficiently store children in an int[] instead of hashmap.
-  private static final int siblingsSize = 5;
+  private final int siblingSize;
 
   private TrieNode<V> root;
   private int size;
 
-  private static class TrieNode<S> {
-    private final S data;
-    private final int choice;
-    private TrieNode<S>[] next = new TrieNode[siblingsSize];
+  public static class TrieNode<S> {
+    // We currently only use the parent for efficiently propagating
+    // pruning information. It is an additional reference that could take up a lot of memory for
+    // very big programs
+    private final TrieNode<S> parent;
 
-    public TrieNode(int choice, S data) {
+    private S data;
+    private final int choice;
+    private TrieNode<S>[] next;
+
+    public TrieNode(int choice, TrieNode<S> parent, S data, int siblingSize) {
       this.choice = choice;
       this.data = data;
+      this.parent = parent;
+      this.next = new TrieNode[siblingSize];
+    }
+
+    public TrieNode<S>[] getNext() {
+      return next;
+    }
+
+    public void setData(S data) {
+      this.data = data;
+    }
+
+    public TrieNode<S> getParent() {
+      return this.parent;
+    }
+
+    public S getData() {
+      return data;
     }
 
     @Override
@@ -114,13 +134,28 @@ public class Trie<V> {
     }
   }
 
-  public V get(Path path, int lastChoice) {
-    return get(root, path, lastChoice, 0);
+  public Trie(int siblingsSize) {
+    this.siblingSize = siblingsSize;
   }
 
-  private V get(TrieNode<V> x, Path path, int lastChoice, int d) {
+  public Trie() {
+    // Bound number of choices so we can efficiently store children in an int[] instead of hashmap.
+    // 3 is used based on the intuition that---currently---no PC choice is generated with more than
+    // 3 choices (except for floating point comparisons, all PC decisions have 2 choices)
+    this(3);
+  }
+
+  public TrieNode<V> getRoot() {
+    return this.root;
+  }
+
+  public TrieNode<V> getNode(Path path, int lastChoice) {
+    return getNode(root, path, lastChoice, 0);
+  }
+
+  private TrieNode<V> getNode(TrieNode<V> x, Path path, int lastChoice, int d) {
     if (x == null) return null;
-    if (d == path.size() + 1) return x.data;
+    if (d == path.size() + 1) return x;
 
     int choice = -1;
     if (d < path.size()) {
@@ -129,7 +164,15 @@ public class Trie<V> {
       choice = lastChoice;
     }
 
-    return get(x.next[choice], path, lastChoice, d + 1);
+    return getNode(x.next[choice], path, lastChoice, d + 1);
+  }
+
+  public V get(Path path, int lastChoice) {
+    TrieNode<V> node = getNode(root, path, lastChoice, 0);
+    if(node != null)
+      return node.data;
+    else
+      return null;
   }
 
   public boolean contains(Path path, int lastChoice) {
@@ -150,12 +193,13 @@ public class Trie<V> {
     return choice;
   }
 
-  public void add(Path path, int lastChoice, V value) {
-    root = add(root, path, lastChoice, 0, value);
+  public void put(Path path, int lastChoice, V value) {
+    root = put(root, null, path, lastChoice, 0, value);
   }
 
-  private TrieNode<V> add(TrieNode<V> x, Path path, int lastChoice, int d, V value) {
-    if(x == null) {
+  private TrieNode<V> put(TrieNode<V> current, TrieNode<V> parent, Path path,
+                          int lastChoice, int d, V value) {
+    if(current == null) {
 
       //-1 represents choice for root
       int choice = -1;
@@ -167,11 +211,11 @@ public class Trie<V> {
           choice = lastChoice;
         }
       }
-      x = new TrieNode<>(choice, value);
+      current = new TrieNode<>(choice, parent, value, this.siblingSize);
     }
-    //We are done adding the path---just add the last choice now that is missing from this object
+    //We are done adding the path---just put the last choice now that is missing from this object
     if (d == path.size() + 1) {
-      return x;
+      return current;
     }
 
     int choice;
@@ -181,12 +225,18 @@ public class Trie<V> {
       choice = getChoice(path, d);
     }
 
-    x.next[choice] = add(x.next[choice], path, lastChoice, d + 1, value);
-    return x;
+    current.next[choice] = put(current.next[choice], current, path, lastChoice, d + 1, value);
+    return current;
   }
 
   public int size() {
     return size;
+  }
+
+  public void clear() {
+    //Should be enough. GC to the rescue
+    root = null;
+    size = 0;
   }
 
   public boolean isEmpty() {

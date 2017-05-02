@@ -4,8 +4,8 @@ import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.exploration.NoPruningStrategy;
-import edu.cmu.sv.isstac.sampling.exploration.HashBasedPruningStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningStrategy;
+import edu.cmu.sv.isstac.sampling.exploration.TrieBasedPruningStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPFListenerException;
 import gov.nasa.jpf.search.Search;
@@ -46,7 +46,7 @@ public class SamplingSearch extends Search {
 
       logger.info("Search object configured with pruning");
 
-      pruner = HashBasedPruningStrategy.getInstance();
+      pruner = TrieBasedPruningStrategy.getInstance();
       pruner.reset();
     } else {
 
@@ -110,7 +110,7 @@ public class SamplingSearch extends Search {
         }
 
         logger.fine("Sample terminated");
-        pruner.performPruning(getVM().getChoiceGenerator());
+        pruner.performPruning(getVM().getPath(), getVM().getChoiceGenerator());
 
         //All paths have been explored, so search finishes
         if(pruner.isFullyPruned()) {

@@ -33,7 +33,7 @@ public class TrieCache implements StateCache {
   @Override
   public void add(VM vm) {
     int lastChoice = getLastChoiceOfPath(vm);
-    trie.add(vm.getPath(), lastChoice, true);
+    trie.put(vm.getPath(), lastChoice, true);
   }
 
   @Override

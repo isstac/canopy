@@ -50,7 +50,7 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
   // In addition it holds various statistics about the exploration
   private SamplingResult result = new SamplingResult();
 
-  // Observers are notified upon termination. We can add more fine grained
+  // Observers are notified upon termination. We can put more fine grained
   // events if necessary, e.g. emit event after each sample.
   private Collection<AnalysisEventObserver> observers;
 
@@ -86,7 +86,7 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
 
     // Get the eligible choices for this CG
     // based on the exploration strategy (e.g., pruning-based)
-    ArrayList<Integer> eligibleChoices = choicesStrategy.getEligibleChoices(cg);
+    ArrayList<Integer> eligibleChoices = choicesStrategy.getEligibleChoices(vm.getPath(), cg);
 
     // We use the analysis strategy to make the next choice
     this.analysisStrategy.makeStateChoice(vm, cg, eligibleChoices);
@@ -125,7 +125,8 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
     // First, let's check if we have seen this path before. We will inform the analysis strategy
     // and the event observers with this information
     Path terminatedPath = new Path(vm.getChoiceGenerator());
-    boolean hasBeenExplored = choicesStrategy.hasTerminatedPathBeenExplored(terminatedPath);
+    boolean hasBeenExplored = choicesStrategy.hasTerminatedPathBeenExplored(vm.getPath(),
+        vm.getChoiceGenerator());
 
     //Increment the number of samples we have performed
     result.incNumberOfSamples();

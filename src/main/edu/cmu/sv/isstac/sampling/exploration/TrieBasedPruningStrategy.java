@@ -24,12 +24,9 @@
 
 package edu.cmu.sv.isstac.sampling.exploration;
 
-import com.google.common.collect.Sets;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
 
 import gov.nasa.jpf.vm.ChoiceGenerator;
 
@@ -39,7 +36,7 @@ import gov.nasa.jpf.vm.ChoiceGenerator;
  */
 public class TrieBasedPruningStrategy implements ChoicesStrategy, PruningStrategy {
 
-  private Set<Path> pruned = Sets.newHashSet();
+  private Trie<Boolean> prunedPaths = new Trie<>();
 
   private static TrieBasedPruningStrategy instance;
 
@@ -53,89 +50,72 @@ public class TrieBasedPruningStrategy implements ChoicesStrategy, PruningStrateg
   private TrieBasedPruningStrategy() { }
 
   public void reset() {
-    this.pruned.clear();
+    this.prunedPaths.clear();
   }
 
   @Override
-  public ArrayList<Integer> getEligibleChoices(ChoiceGenerator<?> cg) {
-    Path p = new Path(cg.getPreviousChoiceGenerator());
-    
+  public ArrayList<Integer> getEligibleChoices(gov.nasa.jpf.vm.Path path, ChoiceGenerator<?> cg) {
+    int lastChoice = cg.getProcessedNumberOfChoices() - 1;
+    Trie.TrieNode<Boolean> node = this.prunedPaths.getNode(path, lastChoice);
+
     ArrayList<Integer> eligibleChoices = new ArrayList<>();
-    for(int choice = 0; choice < cg.getTotalNumberOfChoices(); choice++) {
-      p.addChoice(choice);
-      if(!pruned.contains(p)) {
+    Trie.TrieNode<Boolean>[] nxtNodes = node.getNext();
+    for(int choice = 0; choice < nxtNodes.length; choice++) {
+      if(nxtNodes[choice].getData().equals(Boolean.FALSE)) { //i.e., this path has not been pruned
         eligibleChoices.add(choice);
       }
-      p.removeLast();
     }
-    
     return eligibleChoices;
   }
 
   @Override
-  public boolean hasTerminatedPathBeenExplored(Path path) {
+  public boolean hasTerminatedPathBeenExplored(gov.nasa.jpf.vm.Path path, ChoiceGenerator<?> cg) {
     // We just return false here, because, by construction, a path can never be explored multiple
     // times when using pruning. The "safe" way of doing this would be to actually consult the
-    // pruned set, but we would potentially have to check all path prefixes, because, in its
+    // prunedPaths set, but we would potentially have to check all path prefixes, because, in its
     // current implementation, we only keep the prefix path in the set when the subtree (i.e. all
-    // suffixes of that prefix) are pruned. In other words, it is slightly more efficient to
+    // suffixes of that prefix) are prunedPaths. In other words, it is slightly more efficient to
     // return false here
     return false;
   }
 
   @Override
-  public boolean isPruned(Path p) {
-    return pruned.contains(p);
-  }
-
-  public boolean isPruned(ChoiceGenerator<?> cg) {
-    Path p = new Path(cg);
-    return isPruned(p);
-  }
-
-  private static final Path root = new Path(); //empty path
-  @Override
   public boolean isFullyPruned() {
-    return isPruned(root);
+    return this.prunedPaths.getRoot().getData().equals(Boolean.TRUE);
   }
 
   @Override
-  public void performPruning(ChoiceGenerator<?> cg) {
-    Path p = new Path(cg);
-    pruned.add(p);
-    propagatePruning(p, cg);
-  }
-  
-  private void propagatePruning(Path currentPath, ChoiceGenerator<?> currentCg) {
+  public void performPruning(gov.nasa.jpf.vm.Path path, ChoiceGenerator<?> cg) {
+    int lastChoice = cg.getProcessedNumberOfChoices() - 1;
 
-    ChoiceGenerator<?> backwardsPruningCg = currentCg;
-    Path parent = new Path(currentPath);
-    while(backwardsPruningCg != null) {
-      Collection<Path> children = new HashSet<>();
-      //make one step up in the tree
-      parent.removeLast();
-      
-      for(int child = 0; child < backwardsPruningCg.getTotalNumberOfChoices(); child++) {
-        Path siblingPath = new Path(parent);
-        siblingPath.addChoice(child);
-        if(!pruned.contains(siblingPath)) {
+    //If backtracking is not used, we can optimize how pruning information is kept:
+    // We only need to keep parent, because all subtrees (children) are prunedPaths.
+    // *However*, when backtracking is used we can end up in a state where parents are prunedPaths
+    // but we are currently asking for whether some other cg in a subtree of a prunedPaths node has
+    // non-prunedPaths children. In that case, if we removed this information using the code below,
+    // the backtracker would incorrectly select a choice that actually was prunedPaths.
+//      for(Path child : children) {
+//        prunedPaths.remove(child);
+//      }
+
+    prunedPaths.put(path, lastChoice, Boolean.TRUE);
+    //For very long paths, this could be a bottleneck. Basically we are adding an element to the
+    // trie, and getting it again subsequently..
+    Trie.TrieNode<Boolean> lastNode = prunedPaths.getNode(path, lastChoice);
+
+    //propagate pruning backwards
+    Trie.TrieNode<Boolean> currentNode = lastNode.getParent();
+    while(currentNode != null) {
+      Trie.TrieNode[] nxt = currentNode.getNext();
+      for(int choice = 0; choice < nxt.length; choice++) {
+        if(nxt[choice].getData().equals(Boolean.FALSE)) {
+          //we found a node that had a child that was not pruned, i.e. we will not proceed
+          // propagating pruning information
           return;
         }
-        children.add(siblingPath);
       }
-
-      //If backtracking is not used, we can optimize how pruning information is kept:
-      // We only need to keep parent, because all subtrees (children) are pruned.
-      // *However*, when backtracking is used we can end up in a state where parents are pruned
-      // but we are currently asking for whether some other cg in a subtree of a pruned node has
-      // non-pruned children. In that case, if we removed this information using the code below,
-      // the backtracker would incorrectly select a choice that actually was pruned.
-//      for(Path child : children) {
-//        pruned.remove(child);
-//      }
-      pruned.add(parent.copy());
-      backwardsPruningCg = backwardsPruningCg.getPreviousChoiceGenerator();
+      //all siblings were pruned, so we also prune the parent by setting its data field to true
+      currentNode.setData(Boolean.TRUE);
     }
   }
-
 }

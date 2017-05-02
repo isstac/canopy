@@ -17,10 +17,10 @@ public class AllChoicesStrategy implements ChoicesStrategy {
 
   private static final Logger logger = JPFLogger.getLogger(AllChoicesStrategy.class.getName());
 
-  private Set<Path> exploredPaths = new HashSet<>();
+  private Trie<Boolean> exploredPaths = new Trie<>();
 
   @Override
-  public ArrayList<Integer> getEligibleChoices(ChoiceGenerator<?> cg) {
+  public ArrayList<Integer> getEligibleChoices(gov.nasa.jpf.vm.Path path, ChoiceGenerator<?> cg) {
     ArrayList<Integer> choices = new ArrayList<>();
     for(int i = 0; i < cg.getTotalNumberOfChoices(); i++)
       choices.add(i);
@@ -28,12 +28,14 @@ public class AllChoicesStrategy implements ChoicesStrategy {
   }
 
   @Override
-  public boolean hasTerminatedPathBeenExplored(Path path) {
-    if(exploredPaths.contains(path)) {
+  public boolean hasTerminatedPathBeenExplored(gov.nasa.jpf.vm.Path path, ChoiceGenerator<?> cg) {
+    int lastChoice = cg.getProcessedNumberOfChoices() - 1;
+
+    if(exploredPaths.contains(path, lastChoice)) {
       return true;
     } else {
       // We make some book keeping here to prevent the path from being explored again
-      exploredPaths.add(path);
+      exploredPaths.put(path, lastChoice, Boolean.TRUE);
       return false;
     }
   }
