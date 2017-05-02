@@ -78,12 +78,8 @@ public class PruningChoicesStrategy implements ChoicesStrategy, PruningStrategy 
   @Override
   public void performPruning(ChoiceGenerator<?> cg) {
     Path p = new Path(cg);
-
-    //assert !pruned.contains(p);
-//    assert !pruned.contains(p);
     pruned.add(p);
     propagatePruning(p, cg);
-//    propagatePruning(p, cg);
   }
   
   private void propagatePruning(Path currentPath, ChoiceGenerator<?> currentCg) {

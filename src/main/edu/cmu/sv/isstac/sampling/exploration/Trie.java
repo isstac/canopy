@@ -75,7 +75,7 @@
  *  For additional documentation, see <a href="http://algs4.cs.princeton.edu/52trie">Section 5.2</a> of
  *  <i>Algorithms, 4th Edition</i> by Robert Sedgewick and Kevin Wayne.
  */
-package edu.cmu.sv.isstac.sampling.exploration.cache;
+package edu.cmu.sv.isstac.sampling.exploration;
 
 import com.google.common.cache.CacheBuilder;
 
@@ -90,39 +90,50 @@ import gov.nasa.jpf.vm.Path;
  * http://algs4.cs.princeton.edu/52trie/TrieST.java
  * By: Robert Sedgewick and Kevin Wayne.
  */
-public class Trie {
+public class Trie<V> {
 
   // Bound number of choices so we can efficiently store children in an int[] instead of hashmap.
   private static final int siblingsSize = 5;
 
-  private TrieNode root;
+  private TrieNode<V> root;
   private int size;
 
-  private static class TrieNode {
+  private static class TrieNode<S> {
+    private final S data;
     private final int choice;
-    private TrieNode[] next = new TrieNode[siblingsSize];
+    private TrieNode<S>[] next = new TrieNode[siblingsSize];
 
-    public TrieNode(int choice) {
+    public TrieNode(int choice, S data) {
       this.choice = choice;
+      this.data = data;
+    }
+
+    @Override
+    public String toString() {
+      return "<choice " + choice + "; data: " + data.toString() + ">";
     }
   }
 
-  public boolean contains(Path path, int lastChoice) {
-    return contains(root, path, lastChoice, 0);
+  public V get(Path path, int lastChoice) {
+    return get(root, path, lastChoice, 0);
   }
 
-  private boolean contains(TrieNode x, Path path, int lastChoice, int d) {
-    if (x == null) return false;
-    if (d == path.size() + 1) return true;
+  private V get(TrieNode<V> x, Path path, int lastChoice, int d) {
+    if (x == null) return null;
+    if (d == path.size() + 1) return x.data;
 
     int choice = -1;
-    if(d < path.size()) {
+    if (d < path.size()) {
       choice = getChoice(path, d);
     } else {
       choice = lastChoice;
     }
 
-    return contains(x.next[choice], path, lastChoice, d + 1);
+    return get(x.next[choice], path, lastChoice, d + 1);
+  }
+
+  public boolean contains(Path path, int lastChoice) {
+    return get(path, lastChoice) != null;
   }
 
   private int getChoice(Path path, int idx) {
@@ -139,11 +150,11 @@ public class Trie {
     return choice;
   }
 
-  public void add(Path path, int lastChoice) {
-    root = add(root, path, lastChoice, 0);
+  public void add(Path path, int lastChoice, V value) {
+    root = add(root, path, lastChoice, 0, value);
   }
 
-  private TrieNode add(TrieNode x, Path path, int lastChoice, int d) {
+  private TrieNode<V> add(TrieNode<V> x, Path path, int lastChoice, int d, V value) {
     if(x == null) {
 
       //-1 represents choice for root
@@ -156,7 +167,7 @@ public class Trie {
           choice = lastChoice;
         }
       }
-      x = new TrieNode(choice);
+      x = new TrieNode<>(choice, value);
     }
     //We are done adding the path---just add the last choice now that is missing from this object
     if (d == path.size() + 1) {
@@ -170,7 +181,7 @@ public class Trie {
       choice = getChoice(path, d);
     }
 
-    x.next[choice] = add(x.next[choice], path, lastChoice, d + 1);
+    x.next[choice] = add(x.next[choice], path, lastChoice, d + 1, value);
     return x;
   }
 

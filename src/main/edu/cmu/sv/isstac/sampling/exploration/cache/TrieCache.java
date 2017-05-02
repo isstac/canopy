@@ -16,8 +16,7 @@
 
 package edu.cmu.sv.isstac.sampling.exploration.cache;
 
-import com.google.common.cache.CacheBuilder;
-
+import edu.cmu.sv.isstac.sampling.exploration.Trie;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.Path;
 import gov.nasa.jpf.vm.VM;
@@ -27,14 +26,14 @@ import gov.nasa.jpf.vm.VM;
  */
 public class TrieCache implements StateCache {
 
-  private Trie trie = new Trie();
+  private Trie<Boolean> trie = new Trie<>();
   private int hits;
   private int misses;
 
   @Override
   public void add(VM vm) {
     int lastChoice = getLastChoiceOfPath(vm);
-    trie.add(vm.getPath(), lastChoice);
+    trie.add(vm.getPath(), lastChoice, true);
   }
 
   @Override
@@ -42,7 +41,6 @@ public class TrieCache implements StateCache {
     Path p = vm.getPath();
     int lastChoice = getLastChoiceOfPath(vm);
     boolean hit = this.trie.contains(p, lastChoice);
-    //System.out.println("Hits: " + hits + " misses: " + misses);
     if(hit)
       hits++;
     else
