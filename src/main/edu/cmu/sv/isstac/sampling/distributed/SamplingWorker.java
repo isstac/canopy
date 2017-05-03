@@ -74,7 +74,6 @@ public class SamplingWorker {
         af.getJPFFactory());
 
     //This is not the most clean way of obtaining the statistics listener
-
     this.statistics = this.getStatisticsObj(this.samplingAnalysis);
 
     samplingAnalysis.run();
@@ -82,8 +81,12 @@ public class SamplingWorker {
     return new WorkerResult(this.getStatus());
   }
 
-  public void terminate() {
+  public void terminateGracefully() {
     this.terminationStrategy.requestTermination(true);
+  }
+
+  public void kill() {
+    this.samplingAnalysis.getJPF().getSearch().terminate();
   }
 
   public WorkerStatistics getStatus() {
