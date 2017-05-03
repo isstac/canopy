@@ -54,8 +54,6 @@ public class TrieBasedPruningStrategy implements ChoicesStrategy, PruningStrateg
   @Override
   public ArrayList<Integer> getEligibleChoices(gov.nasa.jpf.vm.Path path, ChoiceGenerator<?> cg) {
 
-
-    int lastChoice = cg.getProcessedNumberOfChoices() - 1;
     Trie.TrieNode node = this.prunedPaths.getNode(path);
     if(node == null) {
       // can happen for example for the first choice. In this case, by definition, none of the
@@ -66,6 +64,8 @@ public class TrieBasedPruningStrategy implements ChoicesStrategy, PruningStrateg
       }
       return eligibleChoices;
     } else {
+
+      //Otherwise, all those choices that are not pruned
       ArrayList<Integer> eligibleChoices = new ArrayList<>();
       Trie.TrieNode[] nxtNodes = node.getNext();
       for (int choice = 0; choice < nxtNodes.length; choice++) {
@@ -97,22 +97,9 @@ public class TrieBasedPruningStrategy implements ChoicesStrategy, PruningStrateg
 
   @Override
   public void performPruning(gov.nasa.jpf.vm.Path path, ChoiceGenerator<?> cg) {
-    int lastChoice = cg.getProcessedNumberOfChoices() - 1;
-
-    //If backtracking is not used, we can optimize how pruning information is kept:
-    // We only need to keep parent, because all subtrees (children) are prunedPaths.
-    // *However*, when backtracking is used we can end up in a state where parents are prunedPaths
-    // but we are currently asking for whether some other cg in a subtree of a prunedPaths node has
-    // non-prunedPaths children. In that case, if we removed this information using the code below,
-    // the backtracker would incorrectly select a choice that actually was prunedPaths.
-//      for(Path child : children) {
-//        prunedPaths.remove(child);
-//      }
-
-    //GUARANTEE: We should not use lastchoice here
     prunedPaths.setFlag(path, true);
     //For very long paths, this could be a bottleneck. Basically we are adding an element to the
-    // trie, and getting it again subsequently..
+    //trie, and getting it again subsequently... sad.
     Trie.TrieNode lastNode = prunedPaths.getNode(path);
 
     //propagate pruning backwards
