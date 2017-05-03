@@ -36,7 +36,7 @@ import gov.nasa.jpf.vm.ChoiceGenerator;
  */
 public class TrieBasedPruningStrategy implements ChoicesStrategy, PruningStrategy {
 
-  private Trie<Boolean> prunedPaths = new Trie<>();
+  private Trie prunedPaths = new Trie();
 
   private static TrieBasedPruningStrategy instance;
 
@@ -55,17 +55,29 @@ public class TrieBasedPruningStrategy implements ChoicesStrategy, PruningStrateg
 
   @Override
   public ArrayList<Integer> getEligibleChoices(gov.nasa.jpf.vm.Path path, ChoiceGenerator<?> cg) {
-    int lastChoice = cg.getProcessedNumberOfChoices() - 1;
-    Trie.TrieNode<Boolean> node = this.prunedPaths.getNode(path, lastChoice);
 
-    ArrayList<Integer> eligibleChoices = new ArrayList<>();
-    Trie.TrieNode<Boolean>[] nxtNodes = node.getNext();
-    for(int choice = 0; choice < nxtNodes.length; choice++) {
-      if(nxtNodes[choice].getData().equals(Boolean.FALSE)) { //i.e., this path has not been pruned
+
+    int lastChoice = cg.getProcessedNumberOfChoices() - 1;
+    Trie.TrieNode node = this.prunedPaths.getNode(path);
+    if(node == null) {
+      // can happen for example for the first choice. In this case, by definition, none of the
+      // choices are pruned
+      ArrayList<Integer> eligibleChoices = new ArrayList<>();
+      for(int choice = 0; choice < cg.getTotalNumberOfChoices(); choice++) {
         eligibleChoices.add(choice);
       }
+      return eligibleChoices;
+    } else {
+      ArrayList<Integer> eligibleChoices = new ArrayList<>();
+      Trie.TrieNode[] nxtNodes = node.getNext();
+      for (int choice = 0; choice < nxtNodes.length; choice++) {
+        if (nxtNodes[choice] == null || !nxtNodes[choice].isPruned()) {
+          //i.e., this path has not been pruned
+          eligibleChoices.add(choice);
+        }
+      }
+      return eligibleChoices;
     }
-    return eligibleChoices;
   }
 
   @Override
@@ -81,7 +93,8 @@ public class TrieBasedPruningStrategy implements ChoicesStrategy, PruningStrateg
 
   @Override
   public boolean isFullyPruned() {
-    return this.prunedPaths.getRoot().getData().equals(Boolean.TRUE);
+    return this.prunedPaths.getRoot() != null &&
+        this.prunedPaths.getRoot().isPruned();
   }
 
   @Override
@@ -98,24 +111,27 @@ public class TrieBasedPruningStrategy implements ChoicesStrategy, PruningStrateg
 //        prunedPaths.remove(child);
 //      }
 
-    prunedPaths.put(path, lastChoice, Boolean.TRUE);
+    //GUARANTEE: We should not use lastchoice here
+    prunedPaths.setPruned(path, true);
     //For very long paths, this could be a bottleneck. Basically we are adding an element to the
     // trie, and getting it again subsequently..
-    Trie.TrieNode<Boolean> lastNode = prunedPaths.getNode(path, lastChoice);
+    Trie.TrieNode lastNode = prunedPaths.getNode(path);
 
     //propagate pruning backwards
-    Trie.TrieNode<Boolean> currentNode = lastNode.getParent();
+    Trie.TrieNode currentNode = lastNode.getParent();
     while(currentNode != null) {
       Trie.TrieNode[] nxt = currentNode.getNext();
       for(int choice = 0; choice < nxt.length; choice++) {
-        if(nxt[choice].getData().equals(Boolean.FALSE)) {
+        if(nxt[choice] == null ||
+            !nxt[choice].isPruned()) {
           //we found a node that had a child that was not pruned, i.e. we will not proceed
           // propagating pruning information
           return;
         }
       }
       //all siblings were pruned, so we also prune the parent by setting its data field to true
-      currentNode.setData(Boolean.TRUE);
+      currentNode.setPruned(true);
+      currentNode = currentNode.getParent();
     }
   }
 }

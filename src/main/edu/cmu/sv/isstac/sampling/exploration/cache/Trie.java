@@ -75,7 +75,7 @@
  *  For additional documentation, see <a href="http://algs4.cs.princeton.edu/52trie">Section 5.2</a> of
  *  <i>Algorithms, 4th Edition</i> by Robert Sedgewick and Kevin Wayne.
  */
-package edu.cmu.sv.isstac.sampling.exploration;
+package edu.cmu.sv.isstac.sampling.exploration.cache;
 
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.Path;
@@ -88,58 +88,76 @@ import gov.nasa.jpf.vm.Path;
  * http://algs4.cs.princeton.edu/52trie/TrieST.java
  * By: Robert Sedgewick and Kevin Wayne.
  */
-public class Trie {
+public class Trie<V> {
 
-  private TrieNode root;
+  private final int siblingSize;
+
+  private TrieNode<V> root;
   private int size;
 
-  public static class TrieNode {
+  public static class TrieNode<S> {
     // We currently only use the parent for efficiently propagating
     // pruning information. It is an additional reference that could take up a lot of memory for
     // very big programs
-    private final TrieNode parent;
+    private final TrieNode<S> parent;
 
-    private boolean pruned;
+    private S data;
     private final int choice;
-    private TrieNode[] next;
+    private TrieNode<S>[] next;
 
-    public TrieNode(int choice, TrieNode parent, int siblingSize) {
+    public TrieNode(int choice, TrieNode<S> parent, int siblingSize) {
       this.choice = choice;
       this.parent = parent;
       this.next = new TrieNode[siblingSize];
     }
 
-    public TrieNode[] getNext() {
+    public TrieNode<S>[] getNext() {
       return next;
     }
 
-    public void setPruned(boolean pruned) {
-      this.pruned = pruned;
+    public boolean hasData() {
+      return this.data != null;
     }
 
-    public TrieNode getParent() {
+    public void setData(S data) {
+      this.data = data;
+    }
+
+    public TrieNode<S> getParent() {
       return this.parent;
     }
 
-    public boolean isPruned() {
-      return pruned;
+    public S getData() {
+      return data;
     }
 
     @Override
     public String toString() {
-      return "<choice " + choice + "; pruned: " + this.pruned + ">";
+      return "<choice " + choice + "; data: " + ((data == null) ? "NO DATA" : data.toString()) +
+          ">";
     }
   }
 
-  public TrieNode getRoot() {
+  public Trie(int siblingsSize) {
+    this.siblingSize = siblingsSize;
+  }
+
+  public Trie() {
+    // Bound number of choices so we can efficiently store children in an int[] instead of hashmap.
+    // 3 is used based on the intuition that---currently---no PC choice is generated with more than
+    // 3 choices (except for floating point comparisons, all PC decisions have 2 choices)
+    this(3);
+  }
+
+  public TrieNode<V> getRoot() {
     return this.root;
   }
 
-  public TrieNode getNode(Path path) {
+  public TrieNode<V> getNode(Path path) {
     return getNode(root, path, 0);
   }
 
-  private TrieNode getNode(TrieNode x, Path path, int d) {
+  private TrieNode<V> getNode(TrieNode<V> x, Path path, int d) {
     if (x == null) return null;
     if (d == path.size()) return x;
 
@@ -147,20 +165,16 @@ public class Trie {
     return getNode(x.next[choice], path, d + 1);
   }
 
-  public boolean isPruned(Path path) {
-    TrieNode node = getNode(root, path, 0);
+  public V get(Path path) {
+    TrieNode<V> node = getNode(root, path, 0);
     if(node != null)
-      return node.isPruned();
+      return node.data;
     else
-      return false;
+      return null;
   }
 
   public boolean contains(Path path) {
-    return getNode(path) != null;
-  }
-  private int getNumberOfChoices(Path path, int idx) {
-    ChoiceGenerator<?> cg = path.get(idx).getChoiceGenerator();
-    return cg.getTotalNumberOfChoices();
+    return get(path) != null;
   }
 
   private int getChoice(Path path, int idx) {
@@ -177,36 +191,28 @@ public class Trie {
     return choice;
   }
 
-  public void setPruned(Path path, boolean pruned) {
-    root = put(root, null, path, 0, pruned);
+  public void put(Path path, V value) {
+    root = put(root, null, path, 0, value);
   }
 
-  private TrieNode put(TrieNode current, TrieNode parent, Path path, int d, boolean pruned) {
+  private TrieNode<V> put(TrieNode<V> current, TrieNode<V> parent, Path path, int d, V value) {
     if(current == null) {
-
       //-1 represents choice for root
       int choice = -1;
       if(d != 0) {
         choice = getChoice(path, d - 1);
       }
-      int numberOfChoices = 0;
-      if(d < path.size()) {
-       numberOfChoices = getNumberOfChoices(path, d);
-      }
-      current = new TrieNode(choice, parent, numberOfChoices);
+      current = new TrieNode<>(choice, parent, this.siblingSize);
     }
     //We are done adding the path---just put the last choice now that is missing from this object
     if (d == path.size()) {
       size++;
-      current.setPruned(pruned);
+      current.setData(value);
       return current;
-    } else {
-      //by default we dont't prune intermediate nodes
-      current.setPruned(false);
     }
 
-    int choice = getChoice(path, d);
-    current.next[choice] = put(current.next[choice], current, path, d + 1, pruned);
+    int choice = getChoice(path, d);;
+    current.next[choice] = put(current.next[choice], current, path, d + 1, value);
     return current;
   }
 
