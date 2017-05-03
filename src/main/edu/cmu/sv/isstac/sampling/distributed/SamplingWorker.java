@@ -38,6 +38,7 @@ import edu.cmu.sv.isstac.sampling.analysis.AnalysisFactory;
 import edu.cmu.sv.isstac.sampling.analysis.SampleStatistics;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
 import edu.cmu.sv.isstac.sampling.search.SamplingAnalysisListener;
+import edu.cmu.sv.isstac.sampling.termination.RequestingTerminationStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.util.JPFLogger;
 
@@ -49,6 +50,7 @@ public class SamplingWorker {
   public static Logger logger = JPFLogger.getLogger(SamplingWorker.class.getName());
   private SamplingAnalysis samplingAnalysis;
   private SampleStatistics statistics;
+  private RequestingTerminationStrategy terminationStrategy;
 
   public WorkerResult runAnalysis(Path frontierNode, Config config) throws AnalysisCreationException {
     //disable livetracker chart
@@ -64,6 +66,9 @@ public class SamplingWorker {
 
     analysisBuilder.setFrontierNode(frontierNode);
 
+    terminationStrategy = new RequestingTerminationStrategy();
+    analysisBuilder.addTerminationStrategy(terminationStrategy);
+
     samplingAnalysis = analysisBuilder.build(config,
         af.createAnalysis(config),
         af.getJPFFactory());
@@ -75,6 +80,10 @@ public class SamplingWorker {
     samplingAnalysis.run();
 
     return new WorkerResult(this.getStatus());
+  }
+
+  public void terminate() {
+    this.terminationStrategy.requestTermination(true);
   }
 
   public WorkerStatistics getStatus() {

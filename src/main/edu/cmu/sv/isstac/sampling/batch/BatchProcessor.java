@@ -15,12 +15,10 @@ import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AnalysisCreationException;
 import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
-import edu.cmu.sv.isstac.sampling.JPFSamplerFactory;
 import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.SamplingAnalysis;
 import edu.cmu.sv.isstac.sampling.analysis.RewardDataSetGenerator;
 import edu.cmu.sv.isstac.sampling.analysis.SampleStatistics;
-import edu.cmu.sv.isstac.sampling.exhaustive.JPFExhaustiveFactory;
 import edu.cmu.sv.isstac.sampling.search.cache.HashingCache;
 import edu.cmu.sv.isstac.sampling.search.cache.NoCache;
 import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
@@ -176,7 +174,7 @@ public class BatchProcessor {
             analysisBuilder.addEventObserver(rwGen);
           }
 
-          analysisBuilder.setTerminationStrategy(
+          analysisBuilder.addTerminationStrategy(
               new SampleSizeTerminationStrategy(SAMPLE_SIZE_PER_EXPERIMENT));
           SamplingAnalysis analysis =
               analysisBuilder.build(conf, analysisStrategy, experiment.getJPFFactory());
