@@ -26,8 +26,6 @@ public class AllChoicesStrategy implements ChoicesStrategy {
 
   @Override
   public boolean hasTerminatedPathBeenExplored(gov.nasa.jpf.vm.Path path, ChoiceGenerator<?> cg) {
-    //int lastChoice = cg.getProcessedNumberOfChoices() - 1;
-
     if(exploredPaths.contains(path)) {
       return true;
     } else {

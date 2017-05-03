@@ -32,15 +32,12 @@ import gov.nasa.jpf.vm.Path;
  *
  * @author Kasper Luckow
  *
- * Inspired by:
- * http://algs4.cs.princeton.edu/52trie/TrieST.java
- * By: Robert Sedgewick and Kevin Wayne.
  */
 public class Trie {
 
   private TrieNode lastAdded = null;
   private TrieNode root;
-  private int size;
+  private int flags;
 
   public static class TrieNode {
     // We currently only use the parent for efficiently propagating
@@ -138,7 +135,8 @@ public class Trie {
     }
     //We are done adding the path
     if (d == path.size()) {
-      size++;
+      if(flag)
+        flags++;
       current.setFlag(flag);
       lastAdded = current;
       return current;
@@ -156,18 +154,18 @@ public class Trie {
     return this.lastAdded;
   }
 
-  public int size() {
-    return size;
+  public int numberOfFlags() {
+    return flags;
   }
 
   public void clear() {
     //Should be enough. GC to the rescue
     root = lastAdded = null;
-    size = 0;
+    flags = 0;
   }
 
   public boolean isEmpty() {
-    return size() == 0;
+    return numberOfFlags() == 0;
   }
 }
 
