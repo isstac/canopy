@@ -98,23 +98,24 @@ public class TrieBasedPruningStrategy implements ChoicesStrategy, PruningStrateg
   @Override
   public void performPruning(gov.nasa.jpf.vm.Path path, ChoiceGenerator<?> cg) {
     prunedPaths.setFlag(path, true);
-    //For very long paths, this could be a bottleneck. Basically we are adding an element to the
-    //trie, and getting it again subsequently... sad.
-    Trie.TrieNode lastNode = prunedPaths.getNode(path);
 
-    //propagate pruning backwards
+    // This is not super pretty, but it is a quick fix that allows us to obtain the last added
+    // leaf without performing getNode (that would be as costly as the previous put)
+    Trie.TrieNode lastNode = prunedPaths.getLastAddedLeafNode();
+
+    // Propagate pruning backwards
     Trie.TrieNode currentNode = lastNode.getParent();
     while(currentNode != null) {
       Trie.TrieNode[] nxt = currentNode.getNext();
       for(int choice = 0; choice < nxt.length; choice++) {
         if(nxt[choice] == null ||
             !nxt[choice].isFlagSet()) {
-          //we found a node that had a child that was not pruned, i.e. we will not proceed
+          // we found a node that had a child that was not pruned, i.e. we will not proceed
           // propagating pruning information
           return;
         }
       }
-      //all siblings were pruned, so we also prune the parent by setting its data field to true
+      // All siblings were pruned, so we also prune the parent by setting its data field to true
       currentNode.setFlag(true);
       currentNode = currentNode.getParent();
     }

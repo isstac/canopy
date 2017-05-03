@@ -38,6 +38,7 @@ import gov.nasa.jpf.vm.Path;
  */
 public class Trie {
 
+  private TrieNode lastAdded = null;
   private TrieNode root;
   private int size;
 
@@ -135,10 +136,11 @@ public class Trie {
       }
       current = new TrieNode(choice, parent, numberOfChoices);
     }
-    //We are done adding the path---just put the last choice now that is missing from this object
+    //We are done adding the path
     if (d == path.size()) {
       size++;
       current.setFlag(flag);
+      lastAdded = current;
       return current;
     } else {
       //by default we dont't set the flag for intermediate nodes
@@ -150,13 +152,17 @@ public class Trie {
     return current;
   }
 
+  public TrieNode getLastAddedLeafNode() {
+    return this.lastAdded;
+  }
+
   public int size() {
     return size;
   }
 
   public void clear() {
     //Should be enough. GC to the rescue
-    root = null;
+    root = lastAdded = null;
     size = 0;
   }
 
