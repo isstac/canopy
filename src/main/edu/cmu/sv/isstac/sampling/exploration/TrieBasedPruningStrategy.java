@@ -25,8 +25,6 @@
 package edu.cmu.sv.isstac.sampling.exploration;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 
 import gov.nasa.jpf.vm.ChoiceGenerator;
 
@@ -71,7 +69,7 @@ public class TrieBasedPruningStrategy implements ChoicesStrategy, PruningStrateg
       ArrayList<Integer> eligibleChoices = new ArrayList<>();
       Trie.TrieNode[] nxtNodes = node.getNext();
       for (int choice = 0; choice < nxtNodes.length; choice++) {
-        if (nxtNodes[choice] == null || !nxtNodes[choice].isPruned()) {
+        if (nxtNodes[choice] == null || !nxtNodes[choice].isFlagSet()) {
           //i.e., this path has not been pruned
           eligibleChoices.add(choice);
         }
@@ -94,7 +92,7 @@ public class TrieBasedPruningStrategy implements ChoicesStrategy, PruningStrateg
   @Override
   public boolean isFullyPruned() {
     return this.prunedPaths.getRoot() != null &&
-        this.prunedPaths.getRoot().isPruned();
+        this.prunedPaths.getRoot().isFlagSet();
   }
 
   @Override
@@ -112,7 +110,7 @@ public class TrieBasedPruningStrategy implements ChoicesStrategy, PruningStrateg
 //      }
 
     //GUARANTEE: We should not use lastchoice here
-    prunedPaths.setPruned(path, true);
+    prunedPaths.setFlag(path, true);
     //For very long paths, this could be a bottleneck. Basically we are adding an element to the
     // trie, and getting it again subsequently..
     Trie.TrieNode lastNode = prunedPaths.getNode(path);
@@ -123,14 +121,14 @@ public class TrieBasedPruningStrategy implements ChoicesStrategy, PruningStrateg
       Trie.TrieNode[] nxt = currentNode.getNext();
       for(int choice = 0; choice < nxt.length; choice++) {
         if(nxt[choice] == null ||
-            !nxt[choice].isPruned()) {
+            !nxt[choice].isFlagSet()) {
           //we found a node that had a child that was not pruned, i.e. we will not proceed
           // propagating pruning information
           return;
         }
       }
       //all siblings were pruned, so we also prune the parent by setting its data field to true
-      currentNode.setPruned(true);
+      currentNode.setFlag(true);
       currentNode = currentNode.getParent();
     }
   }

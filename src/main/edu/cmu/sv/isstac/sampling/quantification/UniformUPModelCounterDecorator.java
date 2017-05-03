@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import edu.cmu.sv.isstac.sampling.util.PathUtil;
+import edu.cmu.sv.isstac.sampling.util.JPFUtil;
 import edu.cmu.sv.isstac.sampling.util.SymbolicVariableCollector;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
@@ -134,7 +134,7 @@ public class UniformUPModelCounterDecorator implements SPFModelCounter {
       LOGGER.severe(e.getStackTrace().toString());
       throw new AnalysisException(e);
     }
-    String pString = PathUtil.clean(pc);
+    String pString = JPFUtil.clean(pc);
     return modelCounter.analyzeSpfPC(pString);
   }
 
@@ -149,7 +149,7 @@ public class UniformUPModelCounterDecorator implements SPFModelCounter {
       LOGGER.severe(e.getStackTrace().toString());
       throw new AnalysisException(e);
     }
-    String pString = PathUtil.clean(pc);
+    String pString = JPFUtil.clean(pc);
     return modelCounter.countPointsOfPC(pString);
   }
 

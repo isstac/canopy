@@ -1,9 +1,6 @@
 package edu.cmu.sv.isstac.sampling.exploration;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import gov.nasa.jpf.util.JPFLogger;
@@ -35,7 +32,7 @@ public class AllChoicesStrategy implements ChoicesStrategy {
       return true;
     } else {
       // We make some book keeping here to prevent the path from being explored again
-      exploredPaths.setPruned(path, true);
+      exploredPaths.setFlag(path, true);
       return false;
     }
   }

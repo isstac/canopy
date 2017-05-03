@@ -77,6 +77,7 @@
  */
 package edu.cmu.sv.isstac.sampling.exploration;
 
+import edu.cmu.sv.isstac.sampling.util.JPFUtil;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.Path;
 
@@ -95,11 +96,10 @@ public class Trie {
 
   public static class TrieNode {
     // We currently only use the parent for efficiently propagating
-    // pruning information. It is an additional reference that could take up a lot of memory for
-    // very big programs
+    // pruning information. It is an additional reference that could take up significant mem
     private final TrieNode parent;
 
-    private boolean pruned;
+    private boolean flag;
     private final int choice;
     private TrieNode[] next;
 
@@ -113,21 +113,21 @@ public class Trie {
       return next;
     }
 
-    public void setPruned(boolean pruned) {
-      this.pruned = pruned;
+    public void setFlag(boolean pruned) {
+      this.flag = pruned;
     }
 
     public TrieNode getParent() {
       return this.parent;
     }
 
-    public boolean isPruned() {
-      return pruned;
+    public boolean isFlagSet() {
+      return flag;
     }
 
     @Override
     public String toString() {
-      return "<choice " + choice + "; pruned: " + this.pruned + ">";
+      return "<choice " + choice + "; flag: " + this.flag + ">";
     }
   }
 
@@ -147,10 +147,10 @@ public class Trie {
     return getNode(x.next[choice], path, d + 1);
   }
 
-  public boolean isPruned(Path path) {
+  public boolean isFlagSet(Path path) {
     TrieNode node = getNode(root, path, 0);
     if(node != null)
-      return node.isPruned();
+      return node.isFlagSet();
     else
       return false;
   }
@@ -158,30 +158,23 @@ public class Trie {
   public boolean contains(Path path) {
     return getNode(path) != null;
   }
+
   private int getNumberOfChoices(Path path, int idx) {
     ChoiceGenerator<?> cg = path.get(idx).getChoiceGenerator();
     return cg.getTotalNumberOfChoices();
   }
 
   private int getChoice(Path path, int idx) {
-    //BIG FAT WARNING:
-    //This is in general UNSAFE to do,
-    //because there is NO guarantee that choices are selected
-    //incrementally! However, there does not seem to be another
-    //way of obtaining a lightweight representation of the path
-    //i.e. a sequence of decisions (represented by ints)
-    //I think it is safe for ThreadChoiceFromSet (currently our only nondeterministic choice)
-    //and PCChoiceGenerator
     ChoiceGenerator<?> cg = path.get(idx).getChoiceGenerator();
-    int choice = cg.getProcessedNumberOfChoices() - 1;
+    int choice = JPFUtil.getCurrentChoiceOfCG(cg);
     return choice;
   }
 
-  public void setPruned(Path path, boolean pruned) {
-    root = put(root, null, path, 0, pruned);
+  public void setFlag(Path path, boolean flag) {
+    root = put(root, null, path, 0, flag);
   }
 
-  private TrieNode put(TrieNode current, TrieNode parent, Path path, int d, boolean pruned) {
+  private TrieNode put(TrieNode current, TrieNode parent, Path path, int d, boolean flag) {
     if(current == null) {
 
       //-1 represents choice for root
@@ -198,15 +191,15 @@ public class Trie {
     //We are done adding the path---just put the last choice now that is missing from this object
     if (d == path.size()) {
       size++;
-      current.setPruned(pruned);
+      current.setFlag(flag);
       return current;
     } else {
-      //by default we dont't prune intermediate nodes
-      current.setPruned(false);
+      //by default we dont't set the flag for intermediate nodes
+      current.setFlag(false);
     }
 
     int choice = getChoice(path, d);
-    current.next[choice] = put(current.next[choice], current, path, d + 1, pruned);
+    current.next[choice] = put(current.next[choice], current, path, d + 1, flag);
     return current;
   }
 
