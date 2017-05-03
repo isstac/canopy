@@ -16,6 +16,7 @@
 
 package edu.cmu.sv.isstac.sampling.exploration.cache;
 
+import edu.cmu.sv.isstac.sampling.exploration.Trie;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.Path;
 import gov.nasa.jpf.vm.VM;
@@ -25,28 +26,29 @@ import gov.nasa.jpf.vm.VM;
  */
 public class TrieCache implements StateCache {
 
-  private Trie<Boolean> trie = new Trie<>();
+  private Trie trie = new Trie();
   private int hits;
   private int misses;
 
   @Override
   public void add(VM vm) {
     int lastChoice = getLastChoiceOfPath(vm);
-    throw new RuntimeException("Check lastchoice");
-//    trie.put(vm.getPath(), lastChoice, true);
+    //throw new RuntimeException("Check lastchoice");
+    trie.setPruned(vm.getPath(), true);
   }
 
   @Override
   public boolean contains(VM vm) {
     Path p = vm.getPath();
-    int lastChoice = getLastChoiceOfPath(vm);
-    throw new RuntimeException("Check lastchoice");
-//    boolean hit = this.trie.contains(p);
-//    if(hit)
-//      hits++;
-//    else
-//      misses++;
-//    return hit;
+    boolean hit = trie.isPruned(vm.getPath());
+//    int lastChoice = getLastChoiceOfPath(vm);
+//    throw new RuntimeException("Check lastchoice");
+
+    if(hit)
+      hits++;
+    else
+      misses++;
+    return hit;
   }
   //This is so disgusting, but it appears that the path object for some reason does not contain
   // the last choice of the final CG in the tree.
