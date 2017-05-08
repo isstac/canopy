@@ -23,7 +23,6 @@ import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
-import gov.nasa.jpf.vm.Transition;
 import gov.nasa.jpf.vm.VM;
 
 /**
@@ -97,7 +96,7 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
       // satisfiable and therefore we don't need to invoke the solver again
       // We will turn on the solver again as soon as we encounter a CG we have not seen before
       // according to the cache
-      if(this.stateCache.contains(vm)) {
+      if(this.stateCache.isStateCached(vm)) {
         PathCondition.setReplay(true);
       } else {
         PathCondition.setReplay(false);
@@ -200,7 +199,7 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
     }
 
     //Update cache
-    stateCache.add(vm);
+    stateCache.addState(vm);
   }
 
   @Override

@@ -43,7 +43,7 @@ public class HashingCache implements StateCache {
   }
 
   @Override
-  public void add(VM vm) {
+  public void addState(VM vm) {
     PCChoiceGenerator[] pcs = vm.getChoiceGeneratorsOfType(PCChoiceGenerator.class);
     for (int i = pcs.length - 1; i >= 0; i--) {
       PCChoiceGenerator cg = pcs[i];
@@ -62,7 +62,7 @@ public class HashingCache implements StateCache {
   }
 
   @Override
-  public boolean contains(VM vm) {
+  public boolean isStateCached(VM vm) {
     // We shouldn't have to generate the path all the time, but unfortunately,
     // PCChoicegenerators do not have a unique id we can use. For each sample,
     // pcchoicegenerators are also replaced so we cannot check references.

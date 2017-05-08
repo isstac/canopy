@@ -26,12 +26,12 @@ import gov.nasa.jpf.vm.VM;
 public class NoCache implements StateCache {
 
   @Override
-  public void add(VM vm) {
+  public void addState(VM vm) {
 
   }
 
   @Override
-  public boolean contains(VM vm) {
+  public boolean isStateCached(VM vm) {
     return false;
   }
 }

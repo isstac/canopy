@@ -24,6 +24,6 @@ import gov.nasa.jpf.vm.VM;
  * @author Kasper Luckow
  */
 public interface StateCache {
-  void add(VM vm);
-  boolean contains(VM vm);
+  void addState(VM vm);
+  boolean isStateCached(VM vm);
 }

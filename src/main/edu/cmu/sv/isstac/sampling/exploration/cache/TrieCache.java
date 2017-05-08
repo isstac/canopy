@@ -29,12 +29,12 @@ public class TrieCache implements StateCache {
   private int misses;
 
   @Override
-  public void add(VM vm) {
+  public void addState(VM vm) {
     trie.setFlag(vm.getPath(), true);
   }
 
   @Override
-  public boolean contains(VM vm) {
+  public boolean isStateCached(VM vm) {
     boolean hit = trie.isFlagSet(vm.getPath());
     if(hit)
       hits++;
