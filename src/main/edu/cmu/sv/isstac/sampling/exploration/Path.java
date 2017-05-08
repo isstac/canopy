@@ -8,6 +8,7 @@ import java.util.List;
 import com.google.common.base.Objects;
 
 import edu.cmu.sv.isstac.sampling.structure.Node;
+import edu.cmu.sv.isstac.sampling.util.JPFUtil;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 
 /**
@@ -16,14 +17,14 @@ import gov.nasa.jpf.vm.ChoiceGenerator;
  */
 public class Path implements Serializable {
   private LinkedList<Integer> store;
-  
+
   public Path(Path other) {
     this.store = new LinkedList<>();
     for(int o : other.store) {
       this.store.add(o);
     }
   }
-  
+
   public Path() {
     this.store = new LinkedList<>();
   }
@@ -40,7 +41,7 @@ public class Path implements Serializable {
       }
     }
   }
-  
+
   public Path(Node n) {
     this();
     Node node = n;
@@ -56,15 +57,7 @@ public class Path implements Serializable {
   }
   
   public void addChoice(ChoiceGenerator<?> cg) {
-    //BIG FAT WARNING: 
-    //This is in general UNSAFE to do,
-    //because there is NO guarantee that choices are selected
-    //incrementally! However, there does not seem to be another
-    //way of obtaining a lightweight representation of the path
-    //i.e. a sequence of decisions (represented by ints)
-    //I think it is safe for ThreadChoiceFromSet (currently our only nondeterministic choice)
-    //and PCChoiceGenerator
-    int choice = cg.getProcessedNumberOfChoices() - 1;
+    int choice = JPFUtil.getCurrentChoiceOfCG(cg);
     assert choice >= 0;
     addChoice(choice);
   }

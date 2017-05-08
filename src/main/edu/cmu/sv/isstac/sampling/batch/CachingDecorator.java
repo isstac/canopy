@@ -19,7 +19,7 @@ package edu.cmu.sv.isstac.sampling.batch;
 import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
 import edu.cmu.sv.isstac.sampling.JPFFactory;
 import edu.cmu.sv.isstac.sampling.Options;
-import edu.cmu.sv.isstac.sampling.search.cache.StateCache;
+import edu.cmu.sv.isstac.sampling.exploration.cache.StateCache;
 import gov.nasa.jpf.Config;
 
 /**

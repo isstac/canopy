@@ -4,8 +4,6 @@ import com.google.common.base.Preconditions;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
@@ -15,7 +13,7 @@ import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
 import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
-import edu.cmu.sv.isstac.sampling.search.cache.StateCache;
+import edu.cmu.sv.isstac.sampling.exploration.cache.StateCache;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.search.Search;
@@ -51,7 +49,7 @@ public class SamplingAnalysisListener extends PropertyListenerAdapter implements
   // In addition it holds various statistics about the exploration
   private SamplingResult result = new SamplingResult();
 
-  // Observers are notified upon termination. We can add more fine grained
+  // Observers are notified upon termination. We can put more fine grained
   // events if necessary, e.g. emit event after each sample.
   private Collection<AnalysisEventObserver> observers;
 
@@ -87,7 +85,7 @@ public class SamplingAnalysisListener extends PropertyListenerAdapter implements
 
     // Get the eligible choices for this CG
     // based on the exploration strategy (e.g., pruning-based)
-    ArrayList<Integer> eligibleChoices = choicesStrategy.getEligibleChoices(cg);
+    ArrayList<Integer> eligibleChoices = choicesStrategy.getEligibleChoices(vm.getPath(), cg);
 
     // We use the analysis strategy to make the next choice
     this.analysisStrategy.makeStateChoice(vm, cg, eligibleChoices);
@@ -98,7 +96,7 @@ public class SamplingAnalysisListener extends PropertyListenerAdapter implements
       // satisfiable and therefore we don't need to invoke the solver again
       // We will turn on the solver again as soon as we encounter a CG we have not seen before
       // according to the cache
-      if(this.stateCache.contains(cg)) {
+      if(this.stateCache.isStateCached(vm)) {
         PathCondition.setReplay(true);
       } else {
         PathCondition.setReplay(false);
@@ -126,7 +124,8 @@ public class SamplingAnalysisListener extends PropertyListenerAdapter implements
     // First, let's check if we have seen this path before. We will inform the analysis strategy
     // and the event observers with this information
     Path terminatedPath = new Path(vm.getChoiceGenerator());
-    boolean hasBeenExplored = choicesStrategy.hasTerminatedPathBeenExplored(terminatedPath);
+    boolean hasBeenExplored = choicesStrategy.hasTerminatedPathBeenExplored(vm.getPath(),
+        vm.getChoiceGenerator());
 
     //Increment the number of samples we have performed
     result.incNumberOfSamples();
@@ -200,21 +199,7 @@ public class SamplingAnalysisListener extends PropertyListenerAdapter implements
     }
 
     //Update cache
-    PCChoiceGenerator[] pcs = vm.getChoiceGeneratorsOfType(PCChoiceGenerator.class);
-    for(int i = pcs.length  - 1; i >= 0; i--) {
-      PCChoiceGenerator cg = pcs[i];
-
-      //This could be expensive for long paths (i.e. many CGs)
-      if(!stateCache.contains(cg)) {
-        stateCache.add(cg);
-      } else {
-        // This is a small trick and an optimization. Note that we are adding the CGs to the
-        // cache starting from the *end* of the path. If the path
-        // of the current cg is in the cache, then, by definition, we must have added
-        // any prefix of the CG to the cache as well, so we can break here
-        break;
-      }
-    }
+    stateCache.addState(vm);
   }
 
   @Override

@@ -6,8 +6,8 @@ import java.util.logging.Logger;
 import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.NoPruningStrategy;
-import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningStrategy;
+import edu.cmu.sv.isstac.sampling.exploration.TrieBasedPruningStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPFListenerException;
 import gov.nasa.jpf.search.Search;
@@ -46,7 +46,7 @@ public class BacktrackingSamplingSearch extends Search {
 
       logger.info("Search object configured with pruning");
 
-      pruner = PruningChoicesStrategy.getInstance();
+      pruner = TrieBasedPruningStrategy.getInstance();
       pruner.reset();
     } else {
 
@@ -104,7 +104,7 @@ public class BacktrackingSamplingSearch extends Search {
       boolean isEndState = isEndState();
 
       if (checkAndResetBacktrackRequest() || !isNewState || isIgnoredState) {
-        pruner.performPruning(getVM().getChoiceGenerator());
+        pruner.performPruning(vm.getPath(), getVM().getChoiceGenerator());
         //All paths have been explored, so search finishes
         //Strictly we don't need this check here (it is also done later for a terminating
         // path---see below), but this is just to shortcircuit the search
@@ -122,7 +122,7 @@ public class BacktrackingSamplingSearch extends Search {
         ChoiceGenerator<?> nextCg = getVM().getChoiceGenerator();
         if (pruner instanceof ChoicesStrategy) {
           ChoicesStrategy choicesStrategy = (ChoicesStrategy) pruner;
-          ArrayList<Integer> choices = choicesStrategy.getEligibleChoices(nextCg);
+          ArrayList<Integer> choices = choicesStrategy.getEligibleChoices(vm.getPath(), nextCg);
           if (choices.size() > 0) {
             //take the first eligible choice and advance the cg to it. We need to advance it
             // because, when we call cg.select in the listeners, the isDone flag will be set to
@@ -157,7 +157,7 @@ public class BacktrackingSamplingSearch extends Search {
       } else if (isEndState || depthLimitReached) {
         if (isNewState) {
           logger.fine("Pruning end state");
-          pruner.performPruning(getVM().getChoiceGenerator());
+          pruner.performPruning(vm.getPath(), getVM().getChoiceGenerator());
         }
         //All paths have been explored, so search finishes
         if (pruner.isFullyPruned()) {
