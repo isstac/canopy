@@ -1,17 +1,13 @@
 package edu.cmu.sv.isstac.sampling.exploration;
 
-import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.*;
+import gov.nasa.jpf.vm.Path;
 
 /**
  * @author Kasper Luckow
  * Will never prune anything
  */
 public class NoPruningStrategy implements PruningStrategy {
-
-  @Override
-  public boolean isPruned(Path p) {
-    return false;
-  }
 
   @Override
   public boolean isFullyPruned() {
@@ -24,7 +20,7 @@ public class NoPruningStrategy implements PruningStrategy {
   }
 
   @Override
-  public void performPruning(ChoiceGenerator<?> cg) {
-    //Do nothing
+  public void performPruning(Path path, ChoiceGenerator<?> cg) {
+
   }
 }

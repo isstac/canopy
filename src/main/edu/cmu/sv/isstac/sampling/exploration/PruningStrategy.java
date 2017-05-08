@@ -1,13 +1,12 @@
 package edu.cmu.sv.isstac.sampling.exploration;
 
-import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.*;
 
 /**
  * @author Kasper Luckow
  */
 public interface PruningStrategy {
-  boolean isPruned(Path p);
   boolean isFullyPruned();
   void reset();
-  void performPruning(ChoiceGenerator<?> cg);
+  void performPruning(gov.nasa.jpf.vm.Path path, ChoiceGenerator<?> cg);
 }

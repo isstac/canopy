@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package edu.cmu.sv.isstac.sampling.complexity;
+package edu.cmu.sv.isstac.sampling.exploration.cache;
 
-import edu.cmu.sv.isstac.sampling.AnalysisCreationException;
-import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
-import edu.cmu.sv.isstac.sampling.JPFFactory;
-import gov.nasa.jpf.Config;
+import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.Path;
+import gov.nasa.jpf.vm.VM;
 
 /**
  * @author Kasper Luckow
  */
-public interface AnalysisFactory {
-  AnalysisStrategy createAnalysis(Config config) throws AnalysisCreationException;
-  JPFFactory getJPFFactory();
+public interface StateCache {
+  void addState(VM vm);
+  boolean isStateCached(VM vm);
 }

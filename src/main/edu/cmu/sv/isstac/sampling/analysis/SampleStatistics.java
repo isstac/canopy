@@ -41,18 +41,21 @@ public class SampleStatistics implements AnalysisEventObserver {
   public void sampleDone(Search searchState, long samples, long propagatedReward,
                          long pathVolume, SamplingResult.ResultContainer currentBestResult,
                          boolean hasBeenExplored) {
+
     totalSampleNum++;
 
-    if(!hasBeenExplored) {
-      uniqueSampleNum++;
-      sumStats.addValue(propagatedReward);
-      if (propagatedReward > bestReward) {
-        bestReward = propagatedReward;
-        bestRewardSampleNum = samples;
-        bestRewardTime = stopwatch.elapsed(TIMEUNIT);
-        numberOfBestRewards = 1;
-      } else if (propagatedReward == bestReward) {
-        numberOfBestRewards++;
+    if (!hasBeenExplored) {
+      synchronized (this) {
+        uniqueSampleNum++;
+        sumStats.addValue(propagatedReward);
+        if (propagatedReward > bestReward) {
+          bestReward = propagatedReward;
+          bestRewardSampleNum = samples;
+          bestRewardTime = stopwatch.elapsed(TIMEUNIT);
+          numberOfBestRewards = 1;
+        } else if (propagatedReward == bestReward) {
+          numberOfBestRewards++;
+        }
       }
     } else {
       logger.warning("Sampling statistics will *not* record explored path except for total " +
@@ -62,91 +65,96 @@ public class SampleStatistics implements AnalysisEventObserver {
 
   @Override
   public void analysisDone(SamplingResult result) {
-    long totalAnalysisTimeMS = stopwatch.elapsed(TimeUnit.MILLISECONDS);
-    totalAnalysisTime = TIMEUNIT.convert(totalAnalysisTimeMS, TimeUnit.MILLISECONDS);
-    stopwatch.stop();
-//    totalSampleNum = result.getNumberOfSamples();
-    if(totalAnalysisTimeMS > 0) {
-      long msToS = TIMEUNIT.toMillis(1);
-      avgThroughput = (totalSampleNum / (double)totalAnalysisTimeMS) * msToS;
-    }
+    synchronized (this) {
+      long totalAnalysisTimeMS = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+      totalAnalysisTime = TIMEUNIT.convert(totalAnalysisTimeMS, TimeUnit.MILLISECONDS);
+      stopwatch.stop();
+      if (totalAnalysisTimeMS > 0) {
+        long msToS = TIMEUNIT.toMillis(1);
+        avgThroughput = (totalSampleNum / (double) totalAnalysisTimeMS) * msToS;
+      }
 
-    this.finalResult = result;
+      this.finalResult = result;
+    }
   }
 
   @Override
   public void analysisStarted(Search search) {
-    this.stopwatch = Stopwatch.createStarted();
+    synchronized (this) {
+      this.stopwatch = Stopwatch.createStarted();
+    }
   }
 
-  public double getRewardVariance() {
+  public synchronized double getRewardVariance() {
     return this.sumStats.getVariance();
   }
 
-  public double getRewardStandardDeviation() {
+  public synchronized double getRewardStandardDeviation() {
     return this.sumStats.getStandardDeviation();
   }
 
-  public double getRewardMean() {
+  public synchronized double getRewardMean() {
     return this.sumStats.getMean();
   }
 
-  public double getMinReward() {
+  public synchronized double getMinReward() {
     return this.sumStats.getMin();
   }
 
-  public int getNumberOfBestRewards() {
+  public synchronized int getNumberOfBestRewards() {
     return numberOfBestRewards;
   }
 
-  public long getBestRewardSampleNum() {
+  public synchronized long getBestRewardSampleNum() {
     return bestRewardSampleNum;
   }
 
-  public long getBestRewardTime() {
+  public synchronized long getBestRewardTime() {
     return bestRewardTime;
   }
 
-  public long getBestReward() {
+  public synchronized long getBestReward() {
     return bestReward;
   }
 
-  public long getTotalSampleNum() {
+  public synchronized long getTotalSampleNum() {
     return totalSampleNum;
   }
 
-  public long getUniqueSampleNum() {
+  public synchronized long getUniqueSampleNum() {
     return uniqueSampleNum;
   }
 
-  public double getAvgThroughput() {
+  public synchronized double getAvgThroughput() {
     return avgThroughput;
   }
 
-  public long getTotalAnalysisTime() {
+  public synchronized long getTotalAnalysisTime() {
     return totalAnalysisTime;
   }
 
-  public TimeUnit getTimeUnit() {
+  public synchronized TimeUnit getTimeUnit() {
     return TIMEUNIT;
   }
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this)
-        .add("min. reward", getMinReward())
-        .add("max. reward", getBestReward())
-        .add("max. reward sample #", getBestRewardSampleNum())
-        .add("max. reward time", getBestRewardTime())
-        .add("# same max. rewards", getNumberOfBestRewards())
-        .add("total samples", getTotalSampleNum())
-        .add("total unique samples", getUniqueSampleNum())
-        .add("total analysis time", getTotalAnalysisTime())
-        .add("avg. throughput", getAvgThroughput())
-        .add("reward mean", getRewardMean())
-        .add("reward variance", getRewardVariance())
-        .add("reward stddev", getRewardStandardDeviation())
-        .add("final result", this.finalResult)
-        .toString();
+    synchronized (this) {
+      return MoreObjects.toStringHelper(this)
+          .add("min. reward", getMinReward())
+          .add("max. reward", getBestReward())
+          .add("max. reward sample #", getBestRewardSampleNum())
+          .add("max. reward time", getBestRewardTime())
+          .add("# same max. rewards", getNumberOfBestRewards())
+          .add("total samples", getTotalSampleNum())
+          .add("total unique samples", getUniqueSampleNum())
+          .add("total analysis time", getTotalAnalysisTime())
+          .add("avg. throughput", getAvgThroughput())
+          .add("reward mean", getRewardMean())
+          .add("reward variance", getRewardVariance())
+          .add("reward stddev", getRewardStandardDeviation())
+          .add("final result", this.finalResult)
+          .toString();
+    }
   }
 }

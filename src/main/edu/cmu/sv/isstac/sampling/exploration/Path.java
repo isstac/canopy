@@ -1,31 +1,38 @@
 package edu.cmu.sv.isstac.sampling.exploration;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 import com.google.common.base.Objects;
 
 import edu.cmu.sv.isstac.sampling.structure.Node;
+import edu.cmu.sv.isstac.sampling.util.JPFUtil;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 
 /**
  * @author Kasper Luckow
  *
  */
-public class Path {
+public class Path implements Serializable {
   private LinkedList<Integer> store;
-  
+
   public Path(Path other) {
     this.store = new LinkedList<>();
     for(int o : other.store) {
       this.store.add(o);
     }
   }
-  
+
   public Path() {
     this.store = new LinkedList<>();
   }
-  
+
+  public Path(List<Integer> choices) {
+    this.store = new LinkedList<>(choices);
+  }
+
   public Path(ChoiceGenerator<?> cg) {
     this();
     if(cg != null) {
@@ -34,7 +41,7 @@ public class Path {
       }
     }
   }
-  
+
   public Path(Node n) {
     this();
     Node node = n;
@@ -50,19 +57,32 @@ public class Path {
   }
   
   public void addChoice(ChoiceGenerator<?> cg) {
-    //BIG FAT WARNING: 
-    //This is in general UNSAFE to do,
-    //because there is NO guarantee that choices are selected
-    //incrementally! However, there does not seem to be another
-    //way of obtaining a lightweight representation of the path
-    //i.e. a sequence of decisions (represented by ints)
-    //I think it is safe for ThreadChoiceFromSet (currently our only nondeterministic choice)
-    //and PCChoiceGenerator
-    int choice = cg.getProcessedNumberOfChoices() - 1;
+    int choice = JPFUtil.getCurrentChoiceOfCG(cg);
     assert choice >= 0;
     addChoice(choice);
   }
-  
+
+  //A bit expensive since store is a linked list at the moment
+  public int getChoice(int index) {
+    return this.store.get(index);
+  }
+
+  public boolean isPrefix(Path other) {
+    if(other.length() > this.length()) {
+      return false;
+    }
+    for(int i = 0; i < other.length(); i++) {
+      if(!store.get(i).equals(other.store.get(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public int length() {
+    return store.size();
+  }
+
   public void addChoice(int choice) {
     store.add(choice);
   }

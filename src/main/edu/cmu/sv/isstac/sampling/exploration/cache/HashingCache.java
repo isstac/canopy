@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package edu.cmu.sv.isstac.sampling.search.cache;
+package edu.cmu.sv.isstac.sampling.exploration.cache;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import edu.cmu.sv.isstac.sampling.exploration.Path;
+import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.VM;
 
 /**
  * @author Kasper Luckow
@@ -40,20 +42,38 @@ public class HashingCache implements StateCache {
     this.stateCache = new HashSet<>();
   }
 
-  @Override
-  public void add(ChoiceGenerator<?> cg) {
-    this.stateCache.add(new Path(cg));
+  public HashingCache(Set<Path> initCache) {
+    this.stateCache = new HashSet<>(initCache);
   }
 
   @Override
-  public boolean contains(ChoiceGenerator<?> cg) {
+  public void addState(VM vm) {
+    PCChoiceGenerator[] pcs = vm.getChoiceGeneratorsOfType(PCChoiceGenerator.class);
+    for (int i = pcs.length - 1; i >= 0; i--) {
+      PCChoiceGenerator cg = pcs[i];
+
+      //This could be expensive for long paths (i.e. many CGs)
+      if (!stateCache.contains(cg)) {
+        stateCache.add(new Path(cg));
+      } else {
+        // This is a small trick and an optimization. Note that we are adding the CGs to the
+        // cache starting from the *end* of the path. If the path
+        // of the current cg is in the cache, then, by definition, we must have added
+        // any prefix of the CG to the cache as well, so we can break here
+        break;
+      }
+    }
+  }
+
+  @Override
+  public boolean isStateCached(VM vm) {
     // We shouldn't have to generate the path all the time, but unfortunately,
     // PCChoicegenerators do not have a unique id we can use. For each sample,
     // pcchoicegenerators are also replaced so we cannot check references.
     // The current way of caching could be very inefficient for deep paths, potentially defying
     // its purpose
-    boolean hit = this.stateCache.contains(new Path(cg));
-    if(hit)
+    boolean hit = this.stateCache.contains(new Path(vm.getChoiceGenerator()));
+    if (hit)
       hits++;
     else
       misses++;

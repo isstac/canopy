@@ -5,11 +5,9 @@ import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.quantification.ModelCountingException;
 import edu.cmu.sv.isstac.sampling.quantification.SPFModelCounter;
-import edu.cmu.sv.isstac.sampling.util.PathUtil;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.vm.VM;
-import modelcounting.analysis.Analyzer;
 import modelcounting.analysis.exceptions.AnalysisException;
 import modelcounting.utils.BigRational;
 

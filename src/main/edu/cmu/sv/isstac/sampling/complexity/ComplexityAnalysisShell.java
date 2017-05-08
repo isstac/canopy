@@ -25,6 +25,7 @@ import edu.cmu.sv.isstac.sampling.JPFFactory;
 import edu.cmu.sv.isstac.sampling.JPFSamplerFactory;
 import edu.cmu.sv.isstac.sampling.Options;
 import edu.cmu.sv.isstac.sampling.SamplingAnalysis;
+import edu.cmu.sv.isstac.sampling.analysis.AnalysisFactory;
 import edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveStrategy;
 import edu.cmu.sv.isstac.sampling.exhaustive.JPFExhaustiveFactory;
 import edu.cmu.sv.isstac.sampling.mcts.MCTSStrategy;
@@ -40,7 +41,6 @@ import edu.cmu.sv.isstac.sampling.reinforcement.RLNodeFactory;
 import edu.cmu.sv.isstac.sampling.reinforcement.RLNodeFactoryMCDecorator;
 import edu.cmu.sv.isstac.sampling.reinforcement.ReinforcementLearningStrategy;
 import edu.cmu.sv.isstac.sampling.structure.NodeFactory;
-import edu.cmu.sv.isstac.sampling.visualization.SymTreeVisualizer;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPFShell;
 import gov.nasa.jpf.util.JPFLogger;
@@ -51,99 +51,6 @@ import gov.nasa.jpf.util.JPFLogger;
 public class ComplexityAnalysisShell implements JPFShell {
 
   public static Logger logger = JPFLogger.getLogger(ComplexityAnalysisShell.class.getName());
-
-  private static AnalysisFactory mctsFactory = new AnalysisFactory() {
-    @Override
-    public AnalysisStrategy createAnalysis(Config config) throws AnalysisCreationException {
-      SelectionPolicy selectionPolicy = Utils.createSelectionPolicy(config);
-      SimulationPolicy simulationPolicy = null;
-      try {
-        simulationPolicy = Utils.createSimulationPolicy(config);
-      } catch (ModelCounterCreationException e) {
-        logger.severe(e.getMessage());
-        throw new AnalysisCreationException(e);
-      }
-
-      return new MCTSStrategy(selectionPolicy, simulationPolicy);
-    }
-
-    @Override
-    public JPFFactory getJPFFactory() {
-      return new JPFSamplerFactory();
-    }
-  };
-
-  private static AnalysisFactory mcFactory = new AnalysisFactory() {
-    @Override
-    public AnalysisStrategy createAnalysis(Config config) throws AnalysisCreationException {
-      SimulationPolicy simulationPolicy = null;
-      try {
-        simulationPolicy = Utils.createSimulationPolicy(config);
-      } catch (ModelCounterCreationException e) {
-        logger.severe(e.getMessage());
-        throw new AnalysisCreationException(e);
-      }
-
-      return new MonteCarloStrategy(simulationPolicy);
-    }
-
-    @Override
-    public JPFFactory getJPFFactory() {
-      return new JPFSamplerFactory();
-    }
-  };
-
-  private static AnalysisFactory rlFactory = new AnalysisFactory() {
-    @Override
-    public AnalysisStrategy createAnalysis(Config config) throws AnalysisCreationException {
-      int samplesPerOptimization = config.getInt(
-          edu.cmu.sv.isstac.sampling.reinforcement.Utils.SAMPLES_PER_OPTIMIZATION,
-          edu.cmu.sv.isstac.sampling.reinforcement.Utils.DEFAULT_SAMPLES_PER_OPTIMIZATION);
-
-      double epsilon = config.getDouble(edu.cmu.sv.isstac.sampling.reinforcement.Utils.EPSILON,
-          edu.cmu.sv.isstac.sampling.reinforcement.Utils.DEFAULT_EPSILON);
-      double historyWeight = config.getDouble(
-          edu.cmu.sv.isstac.sampling.reinforcement.Utils.HISTORY,
-          edu.cmu.sv.isstac.sampling.reinforcement.Utils.DEFAULT_HISTORY);
-
-      NodeFactory<RLNode> factory;
-
-      if (config.getBoolean(edu.cmu.sv.isstac.sampling.reinforcement.Utils.USE_MODELCOUNTING,
-          edu.cmu.sv.isstac.sampling.reinforcement.Utils.DEFAULT_USE_MODELCOUNTING)) {
-        SPFModelCounter modelCounter = null;
-        try {
-          modelCounter = ModelCounterFactory.getInstance(config);
-        } catch (ModelCounterCreationException e) {
-          logger.severe(e.getMessage());
-          throw new AnalysisCreationException(e);
-        }
-        factory = new RLNodeFactoryMCDecorator(modelCounter);
-      } else {
-        factory = new RLNodeFactory();
-      }
-
-      return new ReinforcementLearningStrategy(samplesPerOptimization, epsilon,
-          historyWeight, factory, Options.getSeed(config));
-    }
-
-    @Override
-    public JPFFactory getJPFFactory() {
-      return new JPFSamplerFactory();
-    }
-  };
-
-  private static AnalysisFactory exhaustiveFactory = new AnalysisFactory() {
-    @Override
-    public AnalysisStrategy createAnalysis(Config config) throws AnalysisCreationException {
-      return  new ExhaustiveStrategy();
-    }
-
-    @Override
-    public JPFFactory getJPFFactory() {
-      return new JPFExhaustiveFactory();
-    }
-  };
-
 
   private final SamplingAnalysis samplingAnalysis;
   private final ComplexityAnalyzer ca;
@@ -182,20 +89,20 @@ public class ComplexityAnalysisShell implements JPFShell {
       this.ca.run();
     } catch (AnalysisCreationException e) {
       logger.severe(e.getMessage());
-      throw new RuntimeException(e);
+      throw new AnalysisException(e);
     }
   }
 
   private AnalysisFactory getAnalysisFactory(Config config) {
     switch(config.getString(edu.cmu.sv.isstac.sampling.complexity.Utils.ANALYSIS_TYPE)) {
       case "mcts":
-        return mctsFactory;
+        return AnalysisFactory.mctsFactory;
       case "mc":
-        return mcFactory;
+        return AnalysisFactory.mcFactory;
       case "rl":
-        return rlFactory;
+        return AnalysisFactory.rlFactory;
       case "exhaustive":
-        return exhaustiveFactory;
+        return AnalysisFactory.exhaustiveFactory;
       default:
         throw new AnalysisException("Config " + edu.cmu.sv.isstac.sampling.complexity.Utils
             .ANALYSIS_TYPE + " must be one of: mcts, mc, rl, exhaustive");

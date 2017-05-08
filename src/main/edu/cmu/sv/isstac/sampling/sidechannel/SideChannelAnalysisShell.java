@@ -68,7 +68,7 @@ public class SideChannelAnalysisShell implements JPFShell {
     if(config.hasValue(Utils.CHANNEL_CAPACITY_K_CONF_PRFX)) {
       double k = config.getDouble(Utils.CHANNEL_CAPACITY_K_CONF_PRFX);
       TerminationStrategy kboundedTermination = new CapacityBoundedTerminationStrategy(k, ccListener);
-      samplingAnalysisBuilder.setTerminationStrategy(kboundedTermination);
+      samplingAnalysisBuilder.addTerminationStrategy(kboundedTermination);
     }
 
     this.samplingAnalysis = samplingAnalysisBuilder.build(config, new MonteCarloStrategy
