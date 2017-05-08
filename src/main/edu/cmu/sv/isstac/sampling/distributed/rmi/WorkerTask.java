@@ -22,10 +22,11 @@
  * SOFTWARE.
  */
 
-package edu.cmu.sv.isstac.sampling.distributed;
+package edu.cmu.sv.isstac.sampling.distributed.rmi;
 
 import java.util.concurrent.Callable;
 
+import edu.cmu.sv.isstac.sampling.distributed.WorkerResult;
 import edu.cmu.sv.isstac.sampling.distributed.rmi.RMIWorker;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
 import gov.nasa.jpf.Config;

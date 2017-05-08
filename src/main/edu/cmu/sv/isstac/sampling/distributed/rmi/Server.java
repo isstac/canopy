@@ -45,7 +45,6 @@ import java.util.logging.Logger;
 import edu.cmu.sv.isstac.sampling.AnalysisCreationException;
 import edu.cmu.sv.isstac.sampling.AnalysisException;
 import edu.cmu.sv.isstac.sampling.distributed.WorkerResult;
-import edu.cmu.sv.isstac.sampling.distributed.WorkerTask;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterCreationException;
 import gov.nasa.jpf.Config;
