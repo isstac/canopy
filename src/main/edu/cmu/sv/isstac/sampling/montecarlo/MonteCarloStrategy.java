@@ -49,11 +49,14 @@ public class MonteCarloStrategy implements AnalysisStrategy {
       int choice = simulationPolicy.selectChoice(vm, cg, eligibleChoices);
       cg.select(choice);
     } else {
+      // Sang: disable this for side channel
+      /*
       String msg = "Unexpected CG: " + cg.getClass().getName();
       if(logger.isLoggable(Level.SEVERE)) {
         logger.severe(msg);
       }
-//      throw new MonteCarloAnalysisException(msg);
+      throw new MonteCarloAnalysisException(msg);
+      //*/
     }
   }
 

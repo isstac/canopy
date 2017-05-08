@@ -224,6 +224,11 @@ public class SamplingAnalysis {
 
     this.jpf = jpfFactory.buildInstance(config);
     this.config = config;
+    // Sang: clear all JPF outputs
+    boolean verbose = config.getProperty("sidechannel.verbose","false").trim().equals("true");
+	if(!verbose){
+		jpf.getReporter().getPublishers().clear();
+	}
     jpfListeners.forEach(e -> this.jpf.addListener(e));
   }
 
