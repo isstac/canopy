@@ -121,22 +121,8 @@ public class Trie {
     return choice;
   }
 
-  private void printPath(gov.nasa.jpf.vm.Path path) {
-    Iterator<Transition> iter = path.iterator();
-    StringBuilder sb = new StringBuilder();
-    while(iter.hasNext()) {
-      ChoiceGenerator<?> cg = iter.next().getChoiceGenerator();
-      int choice = JPFUtil.getCurrentChoiceOfCG(cg);
-      sb.append(choice);
-      if(iter.hasNext()) {
-        sb.append(", ");
-      }
-    }
-    System.out.println(sb.toString());
-  }
-
   public void setFlag(Path path, boolean flag) {
-    printPath(path);
+
     root = put(root, null, path, 0, flag);
   }
 
@@ -153,6 +139,7 @@ public class Trie {
        //int numberOfChoices = getNumberOfChoices(path, d);
 //      }
       current = new TrieNode(choice, parent);
+      current.setFlag(false);
     }
     //We are done adding the path
     if (d == path.size()) {
@@ -161,15 +148,16 @@ public class Trie {
       current.setFlag(flag);
       lastAdded = current;
       return current;
-    } else {
-      //by default we dont't set the flag for intermediate nodes
-      current.setFlag(false);
     }
-
-    int numberOfChoices = getNumberOfChoices(path, d);
+//    else {
+//      //by default we dont't set the flag for intermediate nodes
+//      current.setFlag(false);
+//    }
+    if(current.next == null) {
+      int numberOfChoices = getNumberOfChoices(path, d);
 //      }
-    current.initNext(numberOfChoices);
-
+      current.initNext(numberOfChoices);
+    }
     int choice = getChoice(path, d);
     current.next[choice] = put(current.next[choice], current, path, d + 1, flag);
     return current;

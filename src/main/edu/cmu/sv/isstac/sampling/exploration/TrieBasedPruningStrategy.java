@@ -98,8 +98,23 @@ public class TrieBasedPruningStrategy implements ChoicesStrategy, PruningStrateg
         this.prunedPaths.getRoot().isFlagSet();
   }
 
+  private void printPath(gov.nasa.jpf.vm.Path path) {
+    Iterator<Transition> iter = path.iterator();
+    StringBuilder sb = new StringBuilder();
+    while(iter.hasNext()) {
+      ChoiceGenerator<?> cg = iter.next().getChoiceGenerator();
+      int choice = JPFUtil.getCurrentChoiceOfCG(cg);
+      sb.append(choice);
+      if(iter.hasNext()) {
+        sb.append(", ");
+      }
+    }
+    System.out.println(sb.toString());
+  }
+
   @Override
   public void performPruning(gov.nasa.jpf.vm.Path path, ChoiceGenerator<?> cg) {
+    printPath(path);
     prunedPaths.setFlag(path, true);
 
 
