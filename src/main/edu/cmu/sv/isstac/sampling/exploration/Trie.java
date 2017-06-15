@@ -24,9 +24,12 @@
 
 package edu.cmu.sv.isstac.sampling.exploration;
 
+import java.util.Iterator;
+
 import edu.cmu.sv.isstac.sampling.util.JPFUtil;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.Path;
+import gov.nasa.jpf.vm.Transition;
 
 /**
  *
@@ -48,9 +51,12 @@ public class Trie {
     private final int choice;
     private TrieNode[] next;
 
-    public TrieNode(int choice, TrieNode parent, int siblingSize) {
+    public TrieNode(int choice, TrieNode parent) {
       this.choice = choice;
       this.parent = parent;
+    }
+
+    public void initNext(int siblingSize) {
       this.next = new TrieNode[siblingSize];
     }
 
@@ -85,7 +91,7 @@ public class Trie {
   }
 
   private TrieNode getNode(TrieNode x, Path path, int d) {
-    if (x == null) return null;
+    if (x == null || x.next == null) return null;
     if (d == path.size()) return x;
 
     int choice = getChoice(path, d);
@@ -116,6 +122,7 @@ public class Trie {
   }
 
   public void setFlag(Path path, boolean flag) {
+
     root = put(root, null, path, 0, flag);
   }
 
@@ -127,11 +134,12 @@ public class Trie {
       if(d != 0) {
         choice = getChoice(path, d - 1);
       }
-      int numberOfChoices = 0;
-      if(d < path.size()) {
-       numberOfChoices = getNumberOfChoices(path, d);
-      }
-      current = new TrieNode(choice, parent, numberOfChoices);
+//      int numberOfChoices = 0;
+//      if(d < path.size()) {
+       //int numberOfChoices = getNumberOfChoices(path, d);
+//      }
+      current = new TrieNode(choice, parent);
+      current.setFlag(false);
     }
     //We are done adding the path
     if (d == path.size()) {
@@ -140,11 +148,16 @@ public class Trie {
       current.setFlag(flag);
       lastAdded = current;
       return current;
-    } else {
-      //by default we dont't set the flag for intermediate nodes
-      current.setFlag(false);
     }
-
+//    else {
+//      //by default we dont't set the flag for intermediate nodes
+//      current.setFlag(false);
+//    }
+    if(current.next == null) {
+      int numberOfChoices = getNumberOfChoices(path, d);
+//      }
+      current.initNext(numberOfChoices);
+    }
     int choice = getChoice(path, d);
     current.next[choice] = put(current.next[choice], current, path, d + 1, flag);
     return current;
