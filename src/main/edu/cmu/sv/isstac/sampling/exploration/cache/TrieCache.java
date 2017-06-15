@@ -17,6 +17,7 @@
 package edu.cmu.sv.isstac.sampling.exploration.cache;
 
 import edu.cmu.sv.isstac.sampling.exploration.Trie;
+import gov.nasa.jpf.vm.Path;
 import gov.nasa.jpf.vm.VM;
 
 /**
