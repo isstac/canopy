@@ -25,8 +25,11 @@
 package edu.cmu.sv.isstac.sampling.exploration;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
+import edu.cmu.sv.isstac.sampling.util.JPFUtil;
 import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.Transition;
 
 /**
  * @author Kasper Luckow
@@ -98,6 +101,8 @@ public class TrieBasedPruningStrategy implements ChoicesStrategy, PruningStrateg
   @Override
   public void performPruning(gov.nasa.jpf.vm.Path path, ChoiceGenerator<?> cg) {
     prunedPaths.setFlag(path, true);
+
+
 
     // This is not super pretty, but it is a quick fix that allows us to obtain the last added
     // leaf without performing getNode (that would be as costly as the previous put)
