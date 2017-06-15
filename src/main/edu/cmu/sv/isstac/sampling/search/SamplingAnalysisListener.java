@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
@@ -15,6 +16,7 @@ import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
 import edu.cmu.sv.isstac.sampling.exploration.cache.StateCache;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
+import edu.cmu.sv.isstac.sampling.util.JPFUtil;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
@@ -23,6 +25,7 @@ import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.Transition;
 import gov.nasa.jpf.vm.VM;
 
 /**
@@ -199,7 +202,22 @@ public class SamplingAnalysisListener extends PropertyListenerAdapter implements
     }
 
     //Update cache
+//    printPath(vm.getPath());
     stateCache.addState(vm);
+  }
+
+  private void printPath(gov.nasa.jpf.vm.Path path) {
+    Iterator<Transition> iter = path.iterator();
+    StringBuilder sb = new StringBuilder();
+    while(iter.hasNext()) {
+      ChoiceGenerator<?> cg = iter.next().getChoiceGenerator();
+      int choice = JPFUtil.getCurrentChoiceOfCG(cg);
+      sb.append(choice);
+      if(iter.hasNext()) {
+        sb.append(", ");
+      }
+    }
+    System.out.println("State cache: " + sb.toString());
   }
 
   @Override
