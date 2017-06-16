@@ -121,7 +121,7 @@ public class SamplingAnalysisListener extends PropertyListenerAdapter implements
     }
   }
 
-  private void pathTerminated(TerminationType termType, Search search) {
+  public void pathTerminated(TerminationType termType, Search search) {
     VM vm = search.getVM();
 
     // First, let's check if we have seen this path before. We will inform the analysis strategy
@@ -201,22 +201,7 @@ public class SamplingAnalysisListener extends PropertyListenerAdapter implements
     }
 
     //Update cache
-    printPath(vm.getPath());
     stateCache.addState(vm);
-  }
-
-  private void printPath(gov.nasa.jpf.vm.Path path) {
-    Iterator<Transition> iter = path.iterator();
-    StringBuilder sb = new StringBuilder();
-    while(iter.hasNext()) {
-      ChoiceGenerator<?> cg = iter.next().getChoiceGenerator();
-      int choice = JPFUtil.getCurrentChoiceOfCG(cg);
-      sb.append(choice);
-      if(iter.hasNext()) {
-        sb.append(", ");
-      }
-    }
-    System.out.println("State cache: " + sb.toString());
   }
 
   @Override
@@ -224,19 +209,19 @@ public class SamplingAnalysisListener extends PropertyListenerAdapter implements
     this.analysisStrategy.newSampleStarted(samplingSearch);
   }
 
-  @Override
-  public void stateAdvanced(Search search) {
-    if(search.isEndState()) {
-      logger.fine("Successful termination.");
-      pathTerminated(TerminationType.SUCCESS, search);
-    }
-  }
-
-  @Override
-  public void searchConstraintHit(Search search) {
-    logger.severe("Search constraint hit.");
-    pathTerminated(TerminationType.CONSTRAINT_HIT, search);
-  }
+//  @Override
+//  public void stateAdvanced(Search search) {
+//    if(search.isEndState()) {
+//      logger.fine("Successful termination.");
+//      pathTerminated(TerminationType.SUCCESS, search);
+//    }
+//  }
+//
+//  @Override
+//  public void searchConstraintHit(Search search) {
+//    logger.severe("Search constraint hit.");
+//    pathTerminated(TerminationType.CONSTRAINT_HIT, search);
+//  }
 
   public Collection<AnalysisEventObserver> getEventObservers() {
     return this.observers;
