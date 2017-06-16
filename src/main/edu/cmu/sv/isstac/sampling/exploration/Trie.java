@@ -48,9 +48,12 @@ public class Trie {
     private final int choice;
     private TrieNode[] next;
 
-    public TrieNode(int choice, TrieNode parent, int siblingSize) {
+    public TrieNode(int choice, TrieNode parent) {
       this.choice = choice;
       this.parent = parent;
+    }
+
+    public void initChildren(int siblingSize) {
       this.next = new TrieNode[siblingSize];
     }
 
@@ -85,7 +88,7 @@ public class Trie {
   }
 
   private TrieNode getNode(TrieNode x, Path path, int d) {
-    if (x == null) return null;
+    if (x == null || x.next == null) return null;
     if (d == path.size()) return x;
 
     int choice = getChoice(path, d);
@@ -98,6 +101,11 @@ public class Trie {
       return node.isFlagSet();
     else
       return false;
+  }
+
+  public boolean hasFlag(Path path) {
+    TrieNode node = getNode(root, path, 0);
+    return node != null;
   }
 
   public boolean contains(Path path) {
@@ -122,16 +130,15 @@ public class Trie {
   private TrieNode put(TrieNode current, TrieNode parent, Path path, int d, boolean flag) {
     if(current == null) {
 
-      //-1 represents choice for root
-      int choice = -1;
-      if(d != 0) {
+      int choice;
+      if(d == 0) {
+        //-1 represents choice for root (first choice i.e. d == 0)
+        choice = -1;
+      } else {
         choice = getChoice(path, d - 1);
       }
-      int numberOfChoices = 0;
-      if(d < path.size()) {
-       numberOfChoices = getNumberOfChoices(path, d);
-      }
-      current = new TrieNode(choice, parent, numberOfChoices);
+      current = new TrieNode(choice, parent);
+      current.setFlag(false);
     }
     //We are done adding the path
     if (d == path.size()) {
@@ -140,9 +147,15 @@ public class Trie {
       current.setFlag(flag);
       lastAdded = current;
       return current;
-    } else {
-      //by default we dont't set the flag for intermediate nodes
-      current.setFlag(false);
+    }
+
+    // We defer creation of the next array. We do this to cater for terminating paths that *can*
+    // be prefixes of other paths. This can happen when exceptions are thrown which would lead
+    // the path to terminate. That path can be a prefix of another path where the exception is
+    // not thrown
+    if(current.next == null) {
+      int numberOfChoices = getNumberOfChoices(path, d);
+      current.initChildren(numberOfChoices);
     }
 
     int choice = getChoice(path, d);

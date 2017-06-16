@@ -17,6 +17,7 @@
 package edu.cmu.sv.isstac.sampling.exploration.cache;
 
 import edu.cmu.sv.isstac.sampling.exploration.Trie;
+import edu.cmu.sv.isstac.sampling.util.JPFUtil;
 import gov.nasa.jpf.vm.VM;
 
 /**
@@ -35,7 +36,16 @@ public class TrieCache implements StateCache {
 
   @Override
   public boolean isStateCached(VM vm) {
-    boolean hit = trie.isFlagSet(vm.getPath());
+    boolean hit = false;
+    Trie.TrieNode node = trie.getNode(vm.getPath());
+    if(node != null) {
+      int currentChoice = JPFUtil.getCurrentChoiceOfCG(vm.getChoiceGenerator());
+      if(node.getNext()[currentChoice] != null) {
+        hit = true;
+      }
+    }
+
+    // Keep stats
     if(hit)
       hits++;
     else

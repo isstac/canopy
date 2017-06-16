@@ -25,8 +25,11 @@
 package edu.cmu.sv.isstac.sampling.exploration;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
+import edu.cmu.sv.isstac.sampling.util.JPFUtil;
 import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.Transition;
 
 /**
  * @author Kasper Luckow

@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
@@ -15,6 +16,7 @@ import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
 import edu.cmu.sv.isstac.sampling.exploration.cache.StateCache;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
+import edu.cmu.sv.isstac.sampling.util.JPFUtil;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
@@ -23,6 +25,7 @@ import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.Transition;
 import gov.nasa.jpf.vm.VM;
 
 /**
@@ -118,12 +121,11 @@ public class SamplingAnalysisListener extends PropertyListenerAdapter implements
     }
   }
 
-  private void pathTerminated(TerminationType termType, Search search) {
+  public void pathTerminated(TerminationType termType, Search search) {
     VM vm = search.getVM();
 
     // First, let's check if we have seen this path before. We will inform the analysis strategy
     // and the event observers with this information
-    Path terminatedPath = new Path(vm.getChoiceGenerator());
     boolean hasBeenExplored = choicesStrategy.hasTerminatedPathBeenExplored(vm.getPath(),
         vm.getChoiceGenerator());
 
@@ -207,25 +209,19 @@ public class SamplingAnalysisListener extends PropertyListenerAdapter implements
     this.analysisStrategy.newSampleStarted(samplingSearch);
   }
 
-  @Override
-  public void stateAdvanced(Search search) {
-    if(search.isEndState()) {
-      logger.fine("Successful termination.");
-      pathTerminated(TerminationType.SUCCESS, search);
-    }
-  }
-
-  @Override
-  public void exceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
-    logger.fine("Property violation/exception thrown.");
-    pathTerminated(TerminationType.ERROR, vm.getSearch());
-  }
-
-  @Override
-  public void searchConstraintHit(Search search) {
-    logger.fine("Search constraint hit.");
-    pathTerminated(TerminationType.CONSTRAINT_HIT, search);
-  }
+//  @Override
+//  public void stateAdvanced(Search search) {
+//    if(search.isEndState()) {
+//      logger.fine("Successful termination.");
+//      pathTerminated(TerminationType.SUCCESS, search);
+//    }
+//  }
+//
+//  @Override
+//  public void searchConstraintHit(Search search) {
+//    logger.severe("Search constraint hit.");
+//    pathTerminated(TerminationType.CONSTRAINT_HIT, search);
+//  }
 
   public Collection<AnalysisEventObserver> getEventObservers() {
     return this.observers;
