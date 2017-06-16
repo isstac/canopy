@@ -15,16 +15,19 @@ public class LiveAnalysisStatistics extends AbstractAnalysisProcessor {
   public static final Logger logger = JPFLogger.getLogger(LiveAnalysisStatistics.class.getName());
 
   private final int BUFFER_SIZE = 20;
-
   private LiveTrackerChart chart;
 
-  public LiveAnalysisStatistics() {
-    chart = new LiveTrackerChart(BUFFER_SIZE);
+  public LiveAnalysisStatistics(long budget) {
+    chart = new LiveTrackerChart(BUFFER_SIZE, budget);
 
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     chart.setPreferredSize(new Dimension(screenSize.width, 768));
-    chart.pack();    
+    chart.pack();
     chart.setVisible(true);
+  }
+
+  public LiveAnalysisStatistics() {
+    this(-1);
   }
 
   @Override

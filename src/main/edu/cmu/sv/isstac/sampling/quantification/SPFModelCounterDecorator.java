@@ -2,7 +2,7 @@ package edu.cmu.sv.isstac.sampling.quantification;
 
 import java.util.Set;
 
-import edu.cmu.sv.isstac.sampling.util.PathUtil;
+import edu.cmu.sv.isstac.sampling.util.JPFUtil;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import modelcounting.analysis.Analyzer;
 import modelcounting.analysis.exceptions.AnalysisException;
@@ -63,13 +63,13 @@ public class SPFModelCounterDecorator implements SPFModelCounter {
 
   @Override
   public BigRational analyzeSpfPC(PathCondition pc) throws AnalysisException {
-    String pString = PathUtil.clean(pc);
+    String pString = JPFUtil.clean(pc);
     return this.analyzeSpfPC(pString);
   }
 
   @Override
   public BigRational countPointsOfPC(PathCondition pc) throws AnalysisException {
-    String pString = PathUtil.clean(pc);
+    String pString = JPFUtil.clean(pc);
     return this.countPointsOfPC(pString);
   }
 }

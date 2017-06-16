@@ -9,9 +9,10 @@ import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver;
 import edu.cmu.sv.isstac.sampling.analysis.LiveAnalysisStatistics;
-import edu.cmu.sv.isstac.sampling.analysis.SampleStatistics;
 import edu.cmu.sv.isstac.sampling.analysis.SampleStatisticsOutputter;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
+import edu.cmu.sv.isstac.sampling.exploration.Path;
+import edu.cmu.sv.isstac.sampling.exploration.cache.StateCache;
 import edu.cmu.sv.isstac.sampling.quantification.ConcretePathQuantifier;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterCreationException;
 import edu.cmu.sv.isstac.sampling.quantification.ModelCounterFactory;
@@ -19,7 +20,9 @@ import edu.cmu.sv.isstac.sampling.quantification.ModelCountingPathQuantifier;
 import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
 import edu.cmu.sv.isstac.sampling.quantification.SPFModelCounter;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
+import edu.cmu.sv.isstac.sampling.search.FrontierSamplingAnalysisListener;
 import edu.cmu.sv.isstac.sampling.search.SamplingAnalysisListener;
+import edu.cmu.sv.isstac.sampling.termination.CompositeTerminationStrategy;
 import edu.cmu.sv.isstac.sampling.termination.SampleSizeTerminationStrategy;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
 import gov.nasa.jpf.Config;
@@ -38,9 +41,11 @@ public class SamplingAnalysis {
   public static class Builder {
     private Collection<AnalysisEventObserver> eventObservers = new HashSet<>();
     private ChoicesStrategy choicesStrategy = null;
-    private TerminationStrategy terminationStrategy = null;
+    private Collection<TerminationStrategy> terminationStrategies = new HashSet<>();
     private PathQuantifier pathQuantifier = null;
     private RewardFunction rewardFunction = null;
+    private StateCache stateCache = null;
+    private Path frontierNode = null;
 
     public Builder setRewardFunction(RewardFunction rewardFunction) {
       this.rewardFunction = rewardFunction;
@@ -57,8 +62,18 @@ public class SamplingAnalysis {
       return this;
     }
 
-    public Builder setTerminationStrategy(TerminationStrategy terminationStrategy) {
-      this.terminationStrategy = terminationStrategy;
+    public Builder addTerminationStrategy(TerminationStrategy terminationStrategy) {
+      this.terminationStrategies.add(terminationStrategy);
+      return this;
+    }
+
+    public Builder setStateCache(StateCache stateCache) {
+      this.stateCache = stateCache;
+      return this;
+    }
+
+    public Builder setFrontierNode(Path frontierNode) {
+      this.frontierNode = frontierNode;
       return this;
     }
 
@@ -86,17 +101,16 @@ public class SamplingAnalysis {
         jpfListeners.add((JPFListener) this.rewardFunction);
       }
 
-      if (terminationStrategy == null) {
-        this.terminationStrategy = jpfConfig.getInstance(Options.TERMINATION_STRATEGY,
-            TerminationStrategy.class, Options.DEFAULT_TERMINATION_STRATEGY);
+      if(terminationStrategies.isEmpty()) {
+        this.terminationStrategies.add(jpfConfig.getInstance(Options.TERMINATION_STRATEGY,
+            TerminationStrategy.class, Options.DEFAULT_TERMINATION_STRATEGY));
+      }
 
-
-        //TODO: This is very specific to control the sampling size termination strategy. This is
-        // only used for convenience and should be better integrated!
-        if(jpfConfig.hasValue(Options.SAMPLING_SIZE_TERMINATION_STRATEGY)) {
-          int samplingSize = jpfConfig.getInt(Options.SAMPLING_SIZE_TERMINATION_STRATEGY);
-          this.terminationStrategy = new SampleSizeTerminationStrategy(samplingSize);
-        }
+      //TODO: This is very specific to control the sampling size termination strategy. This is
+      // only used for convenience and should be better integrated!
+      if(jpfConfig.hasValue(Options.SAMPLING_SIZE_TERMINATION_STRATEGY)) {
+        int samplingSize = jpfConfig.getInt(Options.SAMPLING_SIZE_TERMINATION_STRATEGY);
+        this.terminationStrategies.add(new SampleSizeTerminationStrategy(samplingSize));
       }
 
       if (choicesStrategy == null) {
@@ -114,6 +128,13 @@ public class SamplingAnalysis {
         //because SamplingSearch cannot be instantiated :/
         Options.choicesStrategy = choicesStrategy;
       }
+
+      if(stateCache == null) {
+        stateCache = jpfConfig.getInstance(Options.STATE_CACHE, StateCache.class, Options
+            .DEFAULT_STATE_CACHE.getName());
+      }
+      //TODO: We should log the entire config
+      logger.info("Using state caching implemented by class: " + stateCache.getClass().getName());
 
       if (pathQuantifier == null) {
         if (jpfConfig.hasValue(Options.PATH_QUANTIFIER)) {
@@ -142,7 +163,12 @@ public class SamplingAnalysis {
       if (!liveAnalysis
           && jpfConfig.getBoolean(Options.SHOW_LIVE_STATISTICS,
           Options.DEFAULT_SHOW_LIVE_STATISTICS)) {
-        this.eventObservers.add(new LiveAnalysisStatistics());
+        if(jpfConfig.hasValue(Options.SHOW_LIVE_STATISTICS_BUDGET)) {
+          this.eventObservers.add(new LiveAnalysisStatistics(
+              jpfConfig.getLong(Options.SHOW_LIVE_STATISTICS_BUDGET)));
+        } else {
+          this.eventObservers.add(new LiveAnalysisStatistics());
+        }
       }
 
       boolean finalStats = eventObservers.stream()
@@ -151,7 +177,7 @@ public class SamplingAnalysis {
       if (!finalStats
           && jpfConfig.getBoolean(Options.SHOW_STATISTICS,
           Options.DEFAULT_SHOW_STATISTICS)) {
-        this.eventObservers.add(new SampleStatisticsOutputter(new SampleStatistics(), System.out));
+        this.eventObservers.add(new SampleStatisticsOutputter(System.out));
       }
 
       if (jpfConfig.hasValue(Options.EVENT_OBSERVERS)) {
@@ -159,9 +185,19 @@ public class SamplingAnalysis {
             AnalysisEventObserver.class));
       }
 
-      SamplingAnalysisListener samplingListener = new SamplingAnalysisListener(analysisStrategy, rewardFunction,
-          pathQuantifier, terminationStrategy, choicesStrategy, eventObservers);
-      jpfListeners.add(samplingListener);
+      CompositeTerminationStrategy terminationStrategy =
+          new CompositeTerminationStrategy(terminationStrategies);
+
+      SamplingAnalysisListener samplingListener;
+      if(frontierNode != null) {
+        //Decorate sampling listener with frontier node capabilities
+        jpfListeners.add(new FrontierSamplingAnalysisListener(analysisStrategy, rewardFunction,
+            pathQuantifier, terminationStrategy, choicesStrategy, stateCache, eventObservers,
+            frontierNode));
+      } else {
+        jpfListeners.add(new SamplingAnalysisListener(analysisStrategy, rewardFunction,
+            pathQuantifier, terminationStrategy, choicesStrategy, stateCache, eventObservers));
+      }
 
       SamplingAnalysis samplingAnalysis = new SamplingAnalysis(jpfConfig, jpfListeners, jpfFactory);
 
@@ -205,5 +241,9 @@ public class SamplingAnalysis {
         throw new AnalysisException(e);
       }
     }
+  }
+
+  public JPF getJPF() {
+    return jpf;
   }
 }

@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.AnalysisStrategy;
@@ -12,22 +13,25 @@ import edu.cmu.sv.isstac.sampling.analysis.SamplingResult;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.Path;
 import edu.cmu.sv.isstac.sampling.quantification.PathQuantifier;
-import edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction;
 import edu.cmu.sv.isstac.sampling.reward.RewardFunction;
+import edu.cmu.sv.isstac.sampling.exploration.cache.StateCache;
 import edu.cmu.sv.isstac.sampling.termination.TerminationStrategy;
+import edu.cmu.sv.isstac.sampling.util.JPFUtil;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.search.Search;
+import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.Transition;
 import gov.nasa.jpf.vm.VM;
 
 /**
  * @author Kasper Luckow
  */
-public final class SamplingAnalysisListener extends PropertyListenerAdapter implements SamplingListener {
+public class SamplingAnalysisListener extends PropertyListenerAdapter implements SamplingListener {
 
   private static final Logger logger = JPFLogger.getLogger(SamplingAnalysisListener.class.getName());
 
@@ -38,12 +42,17 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
 
   private final ChoicesStrategy choicesStrategy;
 
+  // The state cache is used for caching states such that we have minimal solver calls. This
+  // comes at the expense of memory: the cache takes up size proportional to the size of the
+  // symbolic execution tree
+  private final StateCache stateCache;
+
   // Holds the largest rewards found (note: we assume a deterministic system!)
   // for succ, fail and grey. Maybe we only want to keep one of them?
   // In addition it holds various statistics about the exploration
   private SamplingResult result = new SamplingResult();
 
-  // Observers are notified upon termination. We can add more fine grained
+  // Observers are notified upon termination. We can put more fine grained
   // events if necessary, e.g. emit event after each sample.
   private Collection<AnalysisEventObserver> observers;
 
@@ -54,16 +63,20 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
                                   PathQuantifier pathQuantifier,
                                   TerminationStrategy terminationStrategy,
                                   ChoicesStrategy choicesStrategy,
+                                  StateCache stateCache,
                                   Collection<AnalysisEventObserver> observers) {
-
-    this.analysisStrategy = analysisStrategy;
-    this.choicesStrategy = choicesStrategy;
     // Check input
+    Preconditions.checkNotNull(analysisStrategy);
+    Preconditions.checkNotNull(choicesStrategy);
+    Preconditions.checkNotNull(stateCache);
     Preconditions.checkNotNull(rewardFunction);
     Preconditions.checkNotNull(pathQuantifier);
     Preconditions.checkNotNull(terminationStrategy);
     Preconditions.checkNotNull(observers);
 
+    this.analysisStrategy = analysisStrategy;
+    this.choicesStrategy = choicesStrategy;
+    this.stateCache = stateCache;
     this.rewardFunction = rewardFunction;
     this.pathQuantifier = pathQuantifier;
     this.terminationStrategy = terminationStrategy;
@@ -71,14 +84,27 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
   }
 
   @Override
-  public final void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> cg) {
+  public void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> cg) {
 
     // Get the eligible choices for this CG
     // based on the exploration strategy (e.g., pruning-based)
-    ArrayList<Integer> eligibleChoices = choicesStrategy.getEligibleChoices(cg);
+    ArrayList<Integer> eligibleChoices = choicesStrategy.getEligibleChoices(vm.getPath(), cg);
 
     // We use the analysis strategy to make the next choice
     this.analysisStrategy.makeStateChoice(vm, cg, eligibleChoices);
+    if(cg instanceof PCChoiceGenerator) {
+      // If the state cache contains the current state of the CG (i.e. the next choice to be
+      // made) we can safely turn off the solver because it means that previously, there was a
+      // path terminated with the state of this CG as a prefix, hence, by definition, the PC was
+      // satisfiable and therefore we don't need to invoke the solver again
+      // We will turn on the solver again as soon as we encounter a CG we have not seen before
+      // according to the cache
+      if(this.stateCache.isStateCached(vm)) {
+        PathCondition.setReplay(true);
+      } else {
+        PathCondition.setReplay(false);
+      }
+    }
   }
 
   @Override
@@ -95,13 +121,13 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
     }
   }
 
-  private void pathTerminated(TerminationType termType, Search search) {
+  public void pathTerminated(TerminationType termType, Search search) {
     VM vm = search.getVM();
 
     // First, let's check if we have seen this path before. We will inform the analysis strategy
     // and the event observers with this information
-    Path terminatedPath = new Path(vm.getChoiceGenerator());
-    boolean hasBeenExplored = choicesStrategy.hasTerminatedPathBeenExplored(terminatedPath);
+    boolean hasBeenExplored = choicesStrategy.hasTerminatedPathBeenExplored(vm.getPath(),
+        vm.getChoiceGenerator());
 
     //Increment the number of samples we have performed
     result.incNumberOfSamples();
@@ -173,6 +199,9 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
     if(terminationStrategy.terminate(vm, this.result)) {
       vm.getSearch().terminate();
     }
+
+    //Update cache
+    stateCache.addState(vm);
   }
 
   @Override
@@ -180,24 +209,21 @@ public final class SamplingAnalysisListener extends PropertyListenerAdapter impl
     this.analysisStrategy.newSampleStarted(samplingSearch);
   }
 
-  @Override
-  public void stateAdvanced(Search search) {
-    if(search.isEndState()) {
-      logger.fine("Successful termination.");
-      pathTerminated(TerminationType.SUCCESS, search);
-    }
-  }
+//  @Override
+//  public void stateAdvanced(Search search) {
+//    if(search.isEndState()) {
+//      logger.fine("Successful termination.");
+//      pathTerminated(TerminationType.SUCCESS, search);
+//    }
+//  }
+//
+//  @Override
+//  public void searchConstraintHit(Search search) {
+//    logger.severe("Search constraint hit.");
+//    pathTerminated(TerminationType.CONSTRAINT_HIT, search);
+//  }
 
-  @Override
-  public void exceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
-    logger.fine("Property violation/exception thrown.");
-    pathTerminated(TerminationType.ERROR, vm.getSearch());
+  public Collection<AnalysisEventObserver> getEventObservers() {
+    return this.observers;
   }
-
-  @Override
-  public void searchConstraintHit(Search search) {
-    logger.fine("Search constraint hit.");
-    pathTerminated(TerminationType.CONSTRAINT_HIT, search);
-  }
-
 }

@@ -4,10 +4,11 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.sampling.Options;
+import edu.cmu.sv.isstac.sampling.SamplingAnalysis;
 import edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.NoPruningStrategy;
-import edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy;
 import edu.cmu.sv.isstac.sampling.exploration.PruningStrategy;
+import edu.cmu.sv.isstac.sampling.exploration.TrieBasedPruningStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPFListenerException;
 import gov.nasa.jpf.search.Search;
@@ -29,6 +30,8 @@ public class BacktrackingSamplingSearch extends Search {
   private RestorableVMState initState;
   private PruningStrategy pruner;
 
+  private SamplingAnalysisListener samplingAnalysisListener;
+
   public BacktrackingSamplingSearch(Config config, VM vm) {
     super(config, vm);
 
@@ -46,7 +49,7 @@ public class BacktrackingSamplingSearch extends Search {
 
       logger.info("Search object configured with pruning");
 
-      pruner = PruningChoicesStrategy.getInstance();
+      pruner = TrieBasedPruningStrategy.getInstance();
       pruner.reset();
     } else {
 
@@ -81,6 +84,15 @@ public class BacktrackingSamplingSearch extends Search {
       return;
     }
 
+    //Get the sampling analysis listener object
+    for (int i = 0; i < listeners.length; i++) {
+      if (listeners[i] instanceof SamplingAnalysisListener)
+        this.samplingAnalysisListener = (SamplingAnalysisListener)listeners[i];
+    }
+    if(this.samplingAnalysisListener == null) {
+      throw new SamplingException("Sampling analysis listener not properly set up");
+    }
+
     //reset incremental solver before we start
     //We do this to ensure that state is reset even
     //if batch processing is used
@@ -102,9 +114,27 @@ public class BacktrackingSamplingSearch extends Search {
       boolean isIgnoredState = isIgnoredState();
       boolean isNewState = isNewState();
       boolean isEndState = isEndState();
+      boolean hadBacktrackingRequest = checkAndResetBacktrackRequest();
 
-      if (checkAndResetBacktrackRequest() || !isNewState || isIgnoredState) {
-        pruner.performPruning(getVM().getChoiceGenerator());
+      if (hadBacktrackingRequest || !isNewState || isIgnoredState) {
+        if(hadBacktrackingRequest && this.vm.hasPendingException()) {
+          logger.fine("Path terminated with error.");
+          logger.info("Error termination due to exception. Note that the number of end states " +
+              "reported by JPF will *NOT* correspond to the number of paths that canopy reports " +
+              "because JPF does not regard uncaught exceptions as yielding end states!");
+          this.samplingAnalysisListener.pathTerminated(TerminationType.ERROR, this);
+        }
+        if(hadBacktrackingRequest) {
+          logger.fine("Pruning state from which jpf is backtracking");
+        }
+        if(isIgnoredState) {
+          logger.fine("Pruning ignored state");
+        }
+        if(!isNewState) {
+          logger.fine("Pruning non-new state");
+        }
+
+        pruner.performPruning(vm.getPath(), getVM().getChoiceGenerator());
         //All paths have been explored, so search finishes
         //Strictly we don't need this check here (it is also done later for a terminating
         // path---see below), but this is just to shortcircuit the search
@@ -122,7 +152,7 @@ public class BacktrackingSamplingSearch extends Search {
         ChoiceGenerator<?> nextCg = getVM().getChoiceGenerator();
         if (pruner instanceof ChoicesStrategy) {
           ChoicesStrategy choicesStrategy = (ChoicesStrategy) pruner;
-          ArrayList<Integer> choices = choicesStrategy.getEligibleChoices(nextCg);
+          ArrayList<Integer> choices = choicesStrategy.getEligibleChoices(vm.getPath(), nextCg);
           if (choices.size() > 0) {
             //take the first eligible choice and advance the cg to it. We need to advance it
             // because, when we call cg.select in the listeners, the isDone flag will be set to
@@ -155,9 +185,21 @@ public class BacktrackingSamplingSearch extends Search {
         depth--;
         notifyStateBacktracked();
       } else if (isEndState || depthLimitReached) {
-        if (isNewState) {
+        if(depthLimitReached) {
+          logger.info("Constraint hit termination. Note that the number of end " +
+              "states reported by JPF will *NOT* correspond to the number of paths that canopy " +
+              "reports because JPF does not regard uncaught exceptions as yielding end states!");
+          logger.fine("Path terminated with constraint hit (depth limit reached)");
+          this.samplingAnalysisListener.pathTerminated(TerminationType.CONSTRAINT_HIT, this);
+          logger.fine("Pruning depth limit reached state");
+          pruner.performPruning(vm.getPath(), getVM().getChoiceGenerator());
+        }
+
+        if (isNewState && !depthLimitReached) {
+          logger.fine("Path terminated successfully");
+          this.samplingAnalysisListener.pathTerminated(TerminationType.SUCCESS, this);
           logger.fine("Pruning end state");
-          pruner.performPruning(getVM().getChoiceGenerator());
+          pruner.performPruning(vm.getPath(), getVM().getChoiceGenerator());
         }
         //All paths have been explored, so search finishes
         if (pruner.isFullyPruned()) {
