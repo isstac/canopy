@@ -234,14 +234,8 @@ public class SamplingAnalysisListener extends PropertyListenerAdapter implements
   }
 
   @Override
-  public void exceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
-    logger.fine("Property violation/exception thrown.");
-    pathTerminated(TerminationType.ERROR, vm.getSearch());
-  }
-
-  @Override
   public void searchConstraintHit(Search search) {
-    logger.fine("Search constraint hit.");
+    logger.severe("Search constraint hit.");
     pathTerminated(TerminationType.CONSTRAINT_HIT, search);
   }
 
