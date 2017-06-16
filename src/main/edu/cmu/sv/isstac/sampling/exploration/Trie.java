@@ -24,12 +24,9 @@
 
 package edu.cmu.sv.isstac.sampling.exploration;
 
-import java.util.Iterator;
-
 import edu.cmu.sv.isstac.sampling.util.JPFUtil;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.Path;
-import gov.nasa.jpf.vm.Transition;
 
 /**
  *
@@ -56,7 +53,7 @@ public class Trie {
       this.parent = parent;
     }
 
-    public void initNext(int siblingSize) {
+    public void initChildren(int siblingSize) {
       this.next = new TrieNode[siblingSize];
     }
 
@@ -122,22 +119,19 @@ public class Trie {
   }
 
   public void setFlag(Path path, boolean flag) {
-
     root = put(root, null, path, 0, flag);
   }
 
   private TrieNode put(TrieNode current, TrieNode parent, Path path, int d, boolean flag) {
     if(current == null) {
 
-      //-1 represents choice for root
-      int choice = -1;
-      if(d != 0) {
+      int choice;
+      if(d == 0) {
+        //-1 represents choice for root (first choice i.e. d == 0)
+        choice = -1;
+      } else {
         choice = getChoice(path, d - 1);
       }
-//      int numberOfChoices = 0;
-//      if(d < path.size()) {
-       //int numberOfChoices = getNumberOfChoices(path, d);
-//      }
       current = new TrieNode(choice, parent);
       current.setFlag(false);
     }
@@ -149,15 +143,16 @@ public class Trie {
       lastAdded = current;
       return current;
     }
-//    else {
-//      //by default we dont't set the flag for intermediate nodes
-//      current.setFlag(false);
-//    }
+
+    // We defer creation of the next array. We do this to cater for terminating paths that *can*
+    // be prefixes of other paths. This can happen when exceptions are thrown which would lead
+    // the path to terminate. That path can be a prefix of another path where the exception is
+    // not thrown
     if(current.next == null) {
       int numberOfChoices = getNumberOfChoices(path, d);
-//      }
-      current.initNext(numberOfChoices);
+      current.initChildren(numberOfChoices);
     }
+
     int choice = getChoice(path, d);
     current.next[choice] = put(current.next[choice], current, path, d + 1, flag);
     return current;

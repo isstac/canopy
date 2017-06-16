@@ -109,15 +109,13 @@ public class TrieBasedPruningStrategy implements ChoicesStrategy, PruningStrateg
         sb.append(", ");
       }
     }
-    System.out.println(sb.toString());
+    System.out.println("pruning: " + sb.toString());
   }
 
   @Override
   public void performPruning(gov.nasa.jpf.vm.Path path, ChoiceGenerator<?> cg) {
     printPath(path);
     prunedPaths.setFlag(path, true);
-
-
 
     // This is not super pretty, but it is a quick fix that allows us to obtain the last added
     // leaf without performing getNode (that would be as costly as the previous put)

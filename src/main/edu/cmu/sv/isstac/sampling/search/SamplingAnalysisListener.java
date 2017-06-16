@@ -126,7 +126,6 @@ public class SamplingAnalysisListener extends PropertyListenerAdapter implements
 
     // First, let's check if we have seen this path before. We will inform the analysis strategy
     // and the event observers with this information
-    Path terminatedPath = new Path(vm.getChoiceGenerator());
     boolean hasBeenExplored = choicesStrategy.hasTerminatedPathBeenExplored(vm.getPath(),
         vm.getChoiceGenerator());
 
@@ -202,7 +201,7 @@ public class SamplingAnalysisListener extends PropertyListenerAdapter implements
     }
 
     //Update cache
-//    printPath(vm.getPath());
+    printPath(vm.getPath());
     stateCache.addState(vm);
   }
 

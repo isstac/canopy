@@ -102,8 +102,9 @@ public class BacktrackingSamplingSearch extends Search {
       boolean isIgnoredState = isIgnoredState();
       boolean isNewState = isNewState();
       boolean isEndState = isEndState();
+      boolean hadBacktrackingRequest = checkAndResetBacktrackRequest();
 
-      if (checkAndResetBacktrackRequest() || !isNewState || isIgnoredState) {
+      if (hadBacktrackingRequest || !isNewState || isIgnoredState) {
         pruner.performPruning(vm.getPath(), getVM().getChoiceGenerator());
         //All paths have been explored, so search finishes
         //Strictly we don't need this check here (it is also done later for a terminating
