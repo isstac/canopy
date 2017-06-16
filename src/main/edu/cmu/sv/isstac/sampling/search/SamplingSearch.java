@@ -26,6 +26,8 @@ public class SamplingSearch extends Search {
   private PruningStrategy pruner;
   private final boolean incrementalSolving;
 
+  private SamplingAnalysisListener samplingAnalysisListener;
+
   public SamplingSearch(Config config, VM vm) {
     super(config, vm);
 
@@ -81,6 +83,15 @@ public class SamplingSearch extends Search {
       return;
     }
 
+    //Get the sampling analysis listener object
+    for (int i = 0; i < listeners.length; i++) {
+      if (listeners[i] instanceof SamplingAnalysisListener)
+        this.samplingAnalysisListener = (SamplingAnalysisListener)listeners[i];
+    }
+    if(this.samplingAnalysisListener == null) {
+      throw new SamplingException("Sampling analysis listener not properly set up");
+    }
+
     //reset incremental solver before we start
     //We do this to ensure that state is reset even
     //if batch processing is used
@@ -99,14 +110,49 @@ public class SamplingSearch extends Search {
     notifyNewSample();
 
     while (!done) {
-      boolean checkAndResetBacktrackRequest = checkAndResetBacktrackRequest();
       boolean isIgnoredState = isIgnoredState();
+      boolean isNewState = isNewState();
+      boolean isEndState = isEndState();
+      boolean hadBacktrackingRequest = checkAndResetBacktrackRequest();
 
-      if (checkAndResetBacktrackRequest() || !isNewState() || isEndState() || isIgnoredState
+      if (hadBacktrackingRequest || !isNewState || isEndState || isIgnoredState
           || depthLimitReached) {
         if(isIgnoredState) {
           String msg = "Sampled an ignored state! Pruning this path. This issue can be solved by";
           logger.severe(msg);
+        }
+        if(hadBacktrackingRequest && this.vm.hasPendingException()) {
+          logger.fine("Path terminated with error.");
+          logger.info("Error termination due to exception. Note that the number of end states " +
+              "reported by JPF will *NOT* correspond to the number of paths that canopy reports " +
+              "because JPF does not regard uncaught exceptions as yielding end states!");
+          this.samplingAnalysisListener.pathTerminated(TerminationType.ERROR, this);
+        }
+        if (isNewState) {
+          logger.fine("Path terminated successfully");
+          this.samplingAnalysisListener.pathTerminated(TerminationType.SUCCESS, this);
+        }
+        if (depthLimitReached) {
+          logger.fine("Path terminated with constraint hit (depth limit reached)");
+          logger.info("Constraint hit termination. Note that the number of end " +
+              "states reported by JPF will *NOT* correspond to the number of paths that canopy " +
+              "reports because JPF does not regard uncaught exceptions as yielding end states!");
+          logger.fine("Path terminated with constraint hit (depth limit reached)");
+          this.samplingAnalysisListener.pathTerminated(TerminationType.CONSTRAINT_HIT, this);
+        }
+
+
+        if(hadBacktrackingRequest) {
+          logger.fine("Pruning state from which jpf is backtracking");
+        }
+        if(isIgnoredState) {
+          logger.fine("Pruning ignored state");
+        }
+        if(!isNewState) {
+          logger.fine("Pruning non-new state");
+        }
+        if(isEndState) {
+          logger.fine("Pruning end state");
         }
 
         logger.fine("Sample terminated");
