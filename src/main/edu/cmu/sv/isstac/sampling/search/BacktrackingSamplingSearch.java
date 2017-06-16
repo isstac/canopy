@@ -186,10 +186,16 @@ public class BacktrackingSamplingSearch extends Search {
         notifyStateBacktracked();
       } else if (isEndState || depthLimitReached) {
         if(depthLimitReached) {
-          logger.severe("DEPTH LIMIT REACHED");
+          logger.info("Constraint hit termination. Note that the number of end " +
+              "states reported by JPF will *NOT* correspond to the number of paths that canopy " +
+              "reports because JPF does not regard uncaught exceptions as yielding end states!");
+          logger.fine("Path terminated with constraint hit (depth limit reached)");
+          this.samplingAnalysisListener.pathTerminated(TerminationType.CONSTRAINT_HIT, this);
+          logger.fine("Pruning depth limit reached state");
+          pruner.performPruning(vm.getPath(), getVM().getChoiceGenerator());
         }
 
-        if (isNewState) {
+        if (isNewState && !depthLimitReached) {
           logger.fine("Path terminated successfully");
           this.samplingAnalysisListener.pathTerminated(TerminationType.SUCCESS, this);
           logger.fine("Pruning end state");
