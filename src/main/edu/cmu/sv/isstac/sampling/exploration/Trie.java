@@ -103,6 +103,11 @@ public class Trie {
       return false;
   }
 
+  public boolean hasFlag(Path path) {
+    TrieNode node = getNode(root, path, 0);
+    return node != null;
+  }
+
   public boolean contains(Path path) {
     return getNode(path) != null;
   }
