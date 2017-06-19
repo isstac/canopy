@@ -79,4 +79,10 @@ public class HashingCache implements StateCache {
       misses++;
     return hit;
   }
+
+  @Override
+  public boolean supportsPCOptimization() {
+    //will fail on at least lawdb if pc optimization is set to true
+    return false;
+  }
 }
