@@ -32,4 +32,9 @@ public class NoCache implements StateCache {
   public boolean isStateCached(VM vm) {
     return false;
   }
+
+  @Override
+  public boolean supportsPCOptimization() {
+    return true;
+  }
 }

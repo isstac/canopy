@@ -26,4 +26,5 @@ import gov.nasa.jpf.vm.VM;
 public interface StateCache {
   void addState(VM vm);
   boolean isStateCached(VM vm);
+  boolean supportsPCOptimization();
 }
