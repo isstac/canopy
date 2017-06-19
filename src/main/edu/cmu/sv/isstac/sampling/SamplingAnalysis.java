@@ -136,6 +136,11 @@ public class SamplingAnalysis {
       //TODO: We should log the entire config
       logger.info("Using state caching implemented by class: " + stateCache.getClass().getName());
 
+      if(!stateCache.supportsPCOptimization()) {
+        logger.info("State cache does not support CG optimization. Disabling CG optimization");
+        jpfConfig.setProperty("symbolic.optimizechoices", "false");
+      }
+
       if (pathQuantifier == null) {
         if (jpfConfig.hasValue(Options.PATH_QUANTIFIER)) {
           pathQuantifier = jpfConfig.getInstance(Options.PATH_QUANTIFIER, PathQuantifier.class);
