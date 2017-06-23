@@ -19,6 +19,7 @@ public class SampleStatisticsOutputter extends SampleStatistics {
   @Override
   public void analysisDone(SamplingResult result) {
     // We output the statistics here
+    super.analysisDone(result);
     this.output.println(super.toString());
   }
 }
