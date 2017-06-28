@@ -1,0 +1,32 @@
+@using jpf-symbc
+@using canopy
+
+#shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+#shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
+shell=edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveShell
+
+
+symbolic.security.sampling.mcts.uct.bias=5
+
+symbolic.security.sampling.termination.samplingsize=100
+symbolic.security.sampling.seed=-1359243304
+
+target.args=5
+
+symbolic.dp=z3inc
+listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
+symbolic.security.sampling.complexity.inputrange=1,15
+symbolic.security.sampling.complexity.type=mcts
+
+
+target=sampling.evaluation.blogger.drivers.MainVerify
+
+symbolic.method=sampling.evaluation.blogger.fi.iki.elonen.URIVerifier.verify(con)
+
+symbolic.min_char=102
+symbolic.max_char=104
+
+# optimizechoices makes a huge difference!
+#symbolic.optimizechoices=false
+
+#symbolic.debug=true

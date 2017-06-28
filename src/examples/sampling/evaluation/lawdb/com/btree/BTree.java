@@ -1,35 +1,7 @@
-/*
- * MIT License
- *
- * Copyright (c) 2017 The ISSTAC Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+package sampling.evaluation.lawdb.com.btree;
 
-package sampling.evaluation.lawdb;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
+import java.util.*;
 
 public class BTree
 {
@@ -76,6 +48,23 @@ public class BTree
         this.calledmerge = false;
         this.mRootNode = new Node();
         this.mRootNode.mIsLeafNode = true;
+    }
+    
+    public boolean addMask(final int key, final Object object, final boolean log) {
+      final Node rootNode = this.mRootNode;
+      if (!this.update(this.mRootNode, key, object)) {
+          if (rootNode.mNumKeys == 2 * BTree.T - 1) {
+              final Node newRootNode = new Node();
+              this.mRootNode = newRootNode;
+              newRootNode.mIsLeafNode = false;
+              this.splitChildNode(newRootNode, 0, this.mRootNode.mChildNodes[0] = rootNode);
+              this.insertIntoNonFullNode(newRootNode, key, object, null);
+          }
+          else {
+              this.insertIntoNonFullNode(rootNode, key, object, null);
+          }
+      }
+      return true;
     }
     
     public boolean add(final int key, final Object object, final boolean log) {
@@ -183,8 +172,8 @@ public class BTree
         ++parentNode.mNumKeys;
         if (this.optimizedinserts) {
             if (this.optimizedinserts) {
-                parentNode.fastSearch = new Vector<Integer>(1, 1);
-                parentNode.instantSearch = new ConcurrentHashMap<Integer, Object>(1);
+                parentNode.fastSearch = (Vector<Integer>)new Vector(1, 1);
+                parentNode.instantSearch = (ConcurrentHashMap<Integer, Object>)new ConcurrentHashMap(1);
             }
             for (int k = 0; k < parentNode.mKeys.length; ++k) {
                 if (parentNode.mKeys[k] > 0 && this.optimizedinserts) {
@@ -204,11 +193,11 @@ public class BTree
                     else {
                         valstr = "null";
                     }
-                    parentNode.instantSearch.put(parentNode.mKeys[k], (Integer.toString(k) + ":" + valstr));
+                    parentNode.instantSearch.put(parentNode.mKeys[k], (Object)(Integer.toString(k) + ":" + valstr));
                 }
             }
             if (parentNode.fastSearch != null) {
-                Collections.sort(parentNode.fastSearch);
+                Collections.sort((List)parentNode.fastSearch);
                 final Integer[] toArray = (Integer[])parentNode.fastSearch.toArray((Object[])new Integer[parentNode.fastSearch.size()]);
                 parentNode.fastSearchArray = (Integer[])parentNode.fastSearch.toArray((Object[])toArray);
             }
@@ -254,7 +243,7 @@ public class BTree
                 }
                 else {
                     int retVal = 0;
-                    retVal = Arrays.binarySearch((Object[])node.fastSearchArray, key);
+                    retVal = Arrays.binarySearch((Object[])node.fastSearchArray, (Object)key);
                     retVal = (i = retVal * -1 - 1);
                 }
             }
@@ -593,7 +582,7 @@ public class BTree
     }
     
     public ArrayList<Integer> getRange(final int min, final int max) {
-        final ArrayList<Integer> results = new ArrayList<Integer>();
+        final ArrayList<Integer> results = (ArrayList<Integer>)new ArrayList();
         this.getRange(this.mRootNode, 1, min, max, results);
         return results;
     }
@@ -703,9 +692,9 @@ public class BTree
     }
     
     public List<Integer> toList(final int min, final int max) {
-        final List<Integer> res = new ArrayList<Integer>();
+        final List<Integer> res = (List<Integer>)new ArrayList();
         this.recurseBTree(res, min, max, this.mRootNode, 0);
-        Collections.sort(res);
+        Collections.sort((List)res);
         return res;
     }
     
@@ -719,7 +708,7 @@ public class BTree
     }
     
     List<Integer> getKeys(final Node node) {
-        final List<Integer> array = new ArrayList<Integer>();
+        final List<Integer> array = (List<Integer>)new ArrayList();
         if (node != null) {
             if (node.mIsLeafNode) {
                 for (int i = 0; i < node.mNumKeys; ++i) {
@@ -729,10 +718,10 @@ public class BTree
             else {
                 int i;
                 for (i = 0; i < node.mNumKeys; ++i) {
-                    array.addAll(getKeys(node.mChildNodes[i]));
+                    array.addAll((Collection)this.getKeys(node.mChildNodes[i]));
                     array.add(node.mKeys[i]);
                 }
-                array.addAll(getKeys(node.mChildNodes[i]));
+                array.addAll((Collection)this.getKeys(node.mChildNodes[i]));
             }
         }
         return array;
@@ -749,7 +738,7 @@ public class BTree
         
         public IntHolderV(final int size) {
             this.objects = null;
-            this.objs = new Vector<Integer>(1);
+            this.objs = (Vector<Integer>)new Vector(1);
         }
         
         public int get(final int index) {
@@ -796,10 +785,9 @@ public class BTree
         private Integer[] fastSearchArray;
         private boolean isremotenode;
         
-        public Node(){
-        	this(0);
+        public Node() {
+          this(0);
         }
-
         
         public Node(final int size) {
             this.xtrasize = 0;

@@ -1,15 +1,16 @@
-package sampling.evaluation.lawdb;
+package sampling.evaluation.lawdb.com.btree.utils;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.util.ArrayList;
+import java.util.*;
+
+import sampling.evaluation.lawdb.com.btree.BTree;
+
+import java.io.*;
 
 public class Utils
 {
+  public static int IDMIN = 100000;
+  public static int IDMAX = 40000000;
+  
     public static String nameFile(final int key) {
         final String fname = new StringBuilder().append(key).append(":").append(System.currentTimeMillis()).toString();
         return fname;
@@ -37,16 +38,16 @@ public class Utils
             final int key = Integer.parseInt(keystr);
             final String vstr = line.substring(indexOfVal + 1, indexOfpermission);
             final String perm = line.substring(indexOfpermission + 1, line.length());
-            if (key >= UDPServerHandler.IDMIN && key <= UDPServerHandler.IDMAX) {
+            if (key >= IDMIN && key <= IDMAX) {
                 final int permv = Integer.parseInt(perm);
                 if (permv > 0) {
                     restricted.add(key);
                 }
                 btree.add(key, vstr, false);
-                System.out.println("log-" + line);
+           //     System.out.println("log-" + line);
             }
             else {
-                System.out.println(new StringBuilder().append("ERROR on ").append(key).append(", IDS Must fall in range:").append((Object)UDPServerHandler.IDMIN).append(" to ").append((Object)UDPServerHandler.IDMAX).toString());
+             //   System.out.println(new StringBuilder().append("ERROR on ").append(key).append(", IDS Must fall in range:").append(IDMIN).append(" to ").append(IDMAX).toString());
             }
         }
         reader.close();
