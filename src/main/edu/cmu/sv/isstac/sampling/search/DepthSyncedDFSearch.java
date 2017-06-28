@@ -18,8 +18,14 @@
 package edu.cmu.sv.isstac.sampling.search;
 
 
+import java.util.logging.Logger;
+
+import edu.cmu.sv.isstac.sampling.Options;
 import gov.nasa.jpf.Config;
+import gov.nasa.jpf.JPFListenerException;
 import gov.nasa.jpf.search.Search;
+import gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener;
+import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.VM;
 
 
@@ -35,9 +41,18 @@ import gov.nasa.jpf.vm.VM;
  * and/or explicit Verify.ignoreIf)
  */
 public class DepthSyncedDFSearch extends Search {
+  private static final Logger logger = JPFLogger.getLogger(DepthSyncedDFSearch.class.getName());
+
+  private final boolean incrementalSolving;
+  private SamplingAnalysisListener samplingAnalysisListener;
 
   public DepthSyncedDFSearch(Config config, VM vm) {
   	super(config,vm);
+
+
+    this.incrementalSolving = isIncrementalSolvingEnabled(config);
+    String incSolving = ((!this.incrementalSolving) ? "*NOT* " : "") + "using incremental solving";
+    logger.info(incSolving);
   }
 
   @Override
@@ -71,11 +86,51 @@ public class DepthSyncedDFSearch extends Search {
 
     depth = 0;
 
+    //Get the sampling analysis listener object
+    for (int i = 0; i < listeners.length; i++) {
+      if (listeners[i] instanceof SamplingAnalysisListener)
+        this.samplingAnalysisListener = (SamplingAnalysisListener)listeners[i];
+    }
+    if(this.samplingAnalysisListener == null) {
+      throw new SamplingException("Sampling analysis listener not properly set up");
+    }
+
+    //reset incremental solver before we start
+    //We do this to ensure that state is reset even
+    //if batch processing is used
+    if(this.incrementalSolving) {
+      Options.resetIncrementalSolver();
+    }
+
     notifySearchStarted();
 
     while (!done) {
-      if (checkAndResetBacktrackRequest() || !isNewState() || isEndState() || isIgnoredState() || depthLimitReached ) {
-        if (!backtrack()) { // backtrack not possible, done
+      boolean isIgnoredState = isIgnoredState();
+      boolean isNewState = isNewState();
+      boolean isEndState = isEndState();
+      boolean hadBacktrackingRequest = checkAndResetBacktrackRequest();
+
+      if (hadBacktrackingRequest || !isNewState || isEndState || isIgnoredState || depthLimitReached) {
+        if(hadBacktrackingRequest && this.vm.hasPendingException()) {
+          logger.fine("Path terminated with error.");
+          logger.info("Error termination due to exception. Note that the number of end states " +
+              "reported by JPF will *NOT* correspond to the number of paths that canopy reports " +
+              "because JPF does not regard uncaught exceptions as yielding end states!");
+          this.samplingAnalysisListener.pathTerminated(TerminationType.ERROR, this);
+        } else if(depthLimitReached) {
+          logger.info("Constraint hit termination. Note that the number of end " +
+              "states reported by JPF will *NOT* correspond to the number of paths that canopy " +
+              "reports because JPF does not regard uncaught exceptions as yielding end states!");
+          logger.fine("Path terminated with constraint hit (depth limit reached)");
+          this.samplingAnalysisListener.pathTerminated(TerminationType.CONSTRAINT_HIT, this);
+        } else if(isEndState && !depthLimitReached && isNewState) {
+          logger.fine("Path terminated successfully");
+          this.samplingAnalysisListener.pathTerminated(TerminationType.SUCCESS, this);
+        }
+
+        // Perform backtracking
+        if (!backtrack()) {
+          // backtrack not possible, done
           break;
         }
 
@@ -105,6 +160,7 @@ public class DepthSyncedDFSearch extends Search {
         }
 
         if (!checkStateSpaceLimit()) {
+          logger.info("Depth limit reached");
           notifySearchConstraintHit("memory limit reached: " + minFreeMemory);
           // can't go on, we exhausted our memory
           break;
@@ -122,5 +178,28 @@ public class DepthSyncedDFSearch extends Search {
   @Override
   public boolean supportsBacktrack () {
     return true;
+  }
+
+  private boolean isIncrementalSolvingEnabled(Config conf) {
+    String[] listeners = conf.getStringArray("listener");
+    if(listeners != null) {
+      for (String listener : listeners) {
+        if (listener.equals(IncrementalListener.class.getName())) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private void notifyNewSample() {
+    try {
+      for (int i = 0; i < listeners.length; i++) {
+        if (listeners[i] instanceof SamplingListener)
+          ((SamplingListener) listeners[i]).newSampleStarted(this);
+      }
+    } catch (Throwable t) {
+      throw new JPFListenerException("exception during stateBacktracked() notification", t);
+    }
   }
 }
