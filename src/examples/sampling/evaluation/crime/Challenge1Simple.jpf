@@ -1,0 +1,41 @@
+target = challenge1.CRIMESimple
+
+classpath=${jpf-security}/build/main;${jpf-security}/build/examples
+sourcepath=${jpf-security}/src/examples
+
+#listener = sidechannel.singlerun.SideChannelQuantifier
+
+#shell=sidechannel.singlerun.noise.symbolic.SymbolicNoiseShell
+#shell=sidechannel.singlerun.noise.symbolic.SymbolicMinShell
+
+shell=sidechannel.canopy.probabilistic.SymbolicShannonShell
+#shell=sidechannel.canopy.probabilistic.SymbolicRenyiShell
+
+#canopy options:
+symbolic.security.sampling.termination.samplingsize=1595
+symbolic.security.sampling.livestats=false
+symbolic.security.sampling.stats=false
+
+symbolic.debug = false
+
+#symbolic.dp=z3bitvector
+
+sidechannel.high_input_size = 4
+
+symbolic.reliability.tmpDir=${jpf-security}/build/tmp
+symbolic.reliability.omegaPath=${jpf-security}/tools/omega/oc
+symbolic.reliability.lattePath=${jpf-security}/tools/latte-integrale-1.7.3/bin/count
+symbolic.reliability.barvinokPath=${jpf-security}/tools/barvinok-0.39/bin/iscc
+
+symbolic.counter=barvinok
+
+symbolic.min_int=0
+symbolic.max_int=9
+
+symbolic.min_byte=0
+symbolic.max_byte=9
+
+sidechannel.min_high=0
+sidechannel.max_high=9
+
+sidechannel.verbose = false

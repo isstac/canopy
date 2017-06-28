@@ -1,0 +1,43 @@
+target=sampling.evaluation.lawdb.GreedyAdaptive
+
+classpath=${jpf-security}/build/main;${jpf-security}/build/examples
+sourcepath=${jpf-security}/src/examples
+
+sidechannel = timing
+
+mutirun.secure_method = sampling.evaluation.lawdb.GreedyAdaptive.foo
+
+adaptive=tree
+
+attack.tree=entropy
+
+multirun.num_run = 2
+sidechannel.high_input_size = 1
+sidechannel.low_input_size = 2
+
+sidechannel.min_high=1
+sidechannel.max_high=100
+
+symbolic.min_int=1
+symbolic.max_int=100
+
+modelcounting.timer = 30
+tree.timer = 500
+
+SMT.theory = linear
+
+#cost.interval = 2
+
+visualize = false
+
+sidechannel.tmpDir = ${jpf-security}/build/tmp
+symbolic.reliability.tmpDir = ${jpf-security}/build/tmp/mc
+symbolic.reliability.omegaPath=${jpf-security}/tools/omega/oc
+symbolic.reliability.lattePath=${jpf-security}/tools/latte-integrale-1.7.3/bin/count
+symbolic.reliability.barvinokPath=${jpf-security}/tools/barvinok-0.39/bin/iscc
+
+symbolic.dp = z3bitvector
+
+sidechannel.verbose = false
+
+sidechannel.debug = false
