@@ -22,19 +22,7 @@
 # SOFTWARE.
 #
 @using canopy
-@using spf-wca
 
-#shell=wcanalysis.WorstCaseAnalyzer
-#symbolic.worstcase.policy.inputsize=3
-#symbolic.wc.policy.history.size=0
-#symbolic.worstcase.input.max=30
-#symbolic.worstcase.outputpath=${spf-wca}/binary_tree_search_results
-#@using canopy
-#
-#shell=edu.cmu.sv.isstac.sampling.complexity.ComplexityAnalysisShell
-shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
-#shell=edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveShell
-#symbolic.dp = z3
 symbolic.dp=z3inc
 listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
 symbolic.security.sampling.complexity.inputrange=1,15
@@ -43,24 +31,6 @@ symbolic.security.sampling.complexity.type=mcts
 target=sampling.evaluation.airplan1.Airplan1Shifter
 target.args=8
 
-symbolic.security.sampling.mcts.uct.bias=5
-
-symbolic.security.sampling.termination.samplingsize=2000
-symbolic.security.sampling.seed=-1359243304
-
 symbolic.method=sampling.evaluation.airplan1.Airplan1Shifter.arrange(con)
-#symbolic.security.sampling.measuredmethods=mcts.java15.util.Arrays.sort(con)
-
-#symbolic.security.sampling.choicesstrategy=edu.cmu.sv.isstac.sampling.exploration
-#.AllChoicesStrategy
-
-symbolic.security.sampling.stats=true
-symbolic.security.sampling.livestats=true
-
-symbolic.security.sampling.modelcounting.amplifyrewards=false
-
-symbolic.security.sampling.mcts.weightedsampling=false
-
-symbolic.security.sampling.mcts.treevisualizer=false
 
 

@@ -1,0 +1,17 @@
+@using canopy
+@using jpf-symbc
+
+#shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
+#shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+#shell=edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveShell
+
+symbolic.security.sampling.mcts.uct.bias=5
+target.args=5
+#symbolic.security.sampling.termination.samplingsize=4000
+symbolic.security.sampling.seed=-135922421
+
+target=sampling.evaluation.snapbuddy3.drivers.MainOilFilter
+symbolic.dp=z3bitvector
+
+
+symbolic.method=sampling.evaluation.snapbuddy3.image.OilFilter.filterPixels(con#con#con)

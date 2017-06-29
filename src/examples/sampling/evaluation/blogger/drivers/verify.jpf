@@ -8,13 +8,14 @@ shell=edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveShell
 
 symbolic.security.sampling.mcts.uct.bias=5
 
-symbolic.security.sampling.termination.samplingsize=100
+symbolic.security.sampling.termination.samplingsize=1000
 symbolic.security.sampling.seed=-1359243304
 
 target.args=5
 
-symbolic.dp=z3inc
-listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
+symbolic.dp=z3
+#symbolic.dp=z3inc
+#listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
 symbolic.security.sampling.complexity.inputrange=1,15
 symbolic.security.sampling.complexity.type=mcts
 
@@ -27,6 +28,6 @@ symbolic.min_char=102
 symbolic.max_char=104
 
 # optimizechoices makes a huge difference!
-#symbolic.optimizechoices=false
+symbolic.optimizechoices=false
 
 #symbolic.debug=true

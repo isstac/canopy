@@ -1,17 +1,17 @@
 @using canopy
-shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
+#shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
 #shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
-#shell=edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveShell
+shell=edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveShell
 
 
-target=sampling.engagement2.ap1.drivers.AirplanDriver
-target.args=5
+target=sampling.evaluation.tc3.drivers.MainSort
+target.args=6
 
 #symbolic.dp=z3bitvector
 symbolic.dp=z3inc
 listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
 
-symbolic.method=sampling.engagement2.ap1.order.Orderer.sort(con)
+symbolic.method=sampling.evaluation.tc3.sort.Sorter.sort(con)
 
 symbolic.security.sampling.mcts.uct.bias=5
 

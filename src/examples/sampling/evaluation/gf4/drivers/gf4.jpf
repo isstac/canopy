@@ -1,15 +1,14 @@
 @using canopy
 
 target=sampling.evaluation.gf4.drivers.HashMapDriverInt
-target.args=10
+target.args=4
 
 shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
 
 symbolic.dp=z3bitvectorinc
 listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
 
-symbolic.method=sampling.engagement1.gf4.hashmap.HashMap.get(con),sampling.engagement1.gf4.hashmap\
-  .HashMap.put(con#con)
+symbolic.method=sampling.evaluation.gf4.hashmap.HashMap.get(con),sampling.evaluation.gf4.hashmap.HashMap.put(con#con)
 
 symbolic.security.sampling.measuredmethods=sampling.evaluation.gf4.hashmap.HashMap.get(con)
 

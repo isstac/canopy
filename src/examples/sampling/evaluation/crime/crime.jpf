@@ -1,0 +1,43 @@
+@using canopy
+@using jpf-symbc
+shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
+#shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+#shell=edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveShell
+
+
+target=sampling.evaluation.crime.CRIMESimple
+target.args=4
+
+#symbolic.dp=z3bitvector
+symbolic.dp=z3
+#symbolic.dp=z3inc
+#listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
+
+symbolic.method=sampling.evaluation.crime.CRIMESimple.test(con)
+
+symbolic.security.sampling.mcts.uct.bias=5
+
+#symbolic.security.sampling.termination.samplingsize=4000
+symbolic.security.sampling.seed=-135922421
+
+#symbolic.optimizechoices=false
+symbolic.security.sampling.stats=true
+symbolic.security.sampling.livestats=true
+
+symbolic.security.sampling.modelcounting.amplifyrewards=false
+
+symbolic.security.sampling.mcts.weightedsampling=false
+
+symbolic.security.sampling.mcts.treevisualizer=false
+
+
+symbolic.min_int=0
+symbolic.max_int=9
+
+symbolic.min_byte=0
+symbolic.max_byte=9
+
+sidechannel.min_high=0
+sidechannel.max_high=9
+
+sidechannel.verbose = false

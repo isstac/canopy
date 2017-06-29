@@ -1,9 +1,12 @@
 @using spf-wca
 @using canopy
 
-shell=edu.cmu.sv.isstac.sampling.complexity.ComplexityAnalysisShell
+#shell=edu.cmu.sv.isstac.sampling.complexity.ComplexityAnalysisShell
 #shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
-#target.args=6
+shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
+#shell=edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveShell
+
+target.args=4
 
 symbolic.dp=z3inc
 listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
@@ -13,13 +16,13 @@ symbolic.security.sampling.complexity.type=mcts
 
 # analysis setup
 target=sampling.evaluation.lawdb.com.btree.drivers.DriverSearch
-symbolic.method=sampling.evaluation.lawdb.com.btree.BTree.searchRange(con#con);com.btree.BTree.addMask(con#con#con)
-symbolic.security.sampling.measuredmethods=sampling.evaluation.lawdb.com.btree.BTree.searchRange(con#con)
+symbolic.method=sampling.evaluation.lawdb.com.btree.BTree.searchRange(con#con)
+#symbolic.security.sampling.measuredmethods=sampling.evaluation.lawdb.com.btree.BTree.searchRange(con#con)
 
 
 symbolic.security.sampling.mcts.uct.bias=5
 
-symbolic.security.sampling.termination.samplingsize=400
+#symbolic.security.sampling.termination.samplingsize=400
 symbolic.security.sampling.seed=-1359243304
 
 
