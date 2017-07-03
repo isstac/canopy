@@ -14,8 +14,8 @@ symbolic.min_char=65
 symbolic.max_char=90
 
 target.args=8
-target=sampling.engagement1.tc3.drivers.MainSort
-symbolic.method=sampling.engagement1.tc3.sort.Sorter.sort(con)
+target=sampling.evaluation.airplan1.old.drivers.AirplanDriver
+symbolic.method=sampling.evaluation.airplan1.old.order.Orderer.sort(con)
 
 #symbolic.security.sampling.mcts.uct.bias=5
 #

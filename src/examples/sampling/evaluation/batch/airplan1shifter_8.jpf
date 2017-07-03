@@ -25,8 +25,6 @@
 
 symbolic.dp=z3inc
 listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
-symbolic.security.sampling.complexity.inputrange=1,15
-symbolic.security.sampling.complexity.type=mcts
 
 target=sampling.evaluation.airplan1.Airplan1Shifter
 target.args=8
