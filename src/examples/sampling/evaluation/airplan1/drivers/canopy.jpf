@@ -1,0 +1,36 @@
+
+@using canopy
+
+#shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+
+
+#symbolic.dp=z3bitvector
+symbolic.dp=z3inc
+listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
+#symbolic.dp=z3
+
+# range: A-Z (65-90)
+symbolic.min_char=65 
+symbolic.max_char=90
+
+target.args=8
+target=sampling.engagement1.tc3.drivers.MainSort
+symbolic.method=sampling.engagement1.tc3.sort.Sorter.sort(con)
+
+#symbolic.security.sampling.mcts.uct.bias=5
+#
+#symbolic.security.sampling.termination.samplingsize=2000
+#symbolic.security.sampling.seed=-1359243304
+#
+##symbolic.optimizechoices=false
+#symbolic.security.sampling.stats=true
+#symbolic.security.sampling.livestats=true
+#
+#symbolic.security.sampling.modelcounting.amplifyrewards=false
+#
+#symbolic.security.sampling.mcts.weightedsampling=false
+#
+#symbolic.security.sampling.mcts.treevisualizer=false
+
+#max reward 63
+

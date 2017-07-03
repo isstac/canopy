@@ -50,7 +50,7 @@ public class MonteCarloStrategy implements AnalysisStrategy {
     } else {
       String msg = "Unexpected CG: " + cg.getClass().getName();
       logger.severe(msg);
-      throw new MonteCarloAnalysisException(msg);
+//      throw new MonteCarloAnalysisException(msg);
     }
   }
 
