@@ -88,8 +88,10 @@ public class Trie {
   }
 
   private TrieNode getNode(TrieNode x, Path path, int d) {
-    if (x == null || x.next == null) return null;
+    if (x == null) return null;
     if (d == path.size()) return x;
+
+    if (x.next == null) return null;
 
     int choice = getChoice(path, d);
     return getNode(x.next[choice], path, d + 1);

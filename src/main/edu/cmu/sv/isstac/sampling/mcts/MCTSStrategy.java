@@ -216,23 +216,25 @@ public class MCTSStrategy implements AnalysisStrategy {
     // only be created in the event that MCT reaches
     // and actual leaf in the symbolic execution tree
     if (expandedFlag) {
+      assert mctsState == MCTS_STATE.SIMULATION;
       try {
-        playOutNode = last = this.nodeFactory.create(last, null, expandedChoice);
+        last = playOutNode = this.nodeFactory.create(last, null, expandedChoice);
+        assert playOutNode.isSearchTreeNode() == false;
+        playOutNode.setIsSearchTreeNode(true);
       } catch (NodeCreationException e) {
-        String msg = "Could not create node at path termination";
+        String msg = "Could not create node  at path termination";
         logger.severe(msg);
         throw new MCTSAnalysisException(msg);
       }
       expandedFlag = false;
     }
 
+
     // If this path has been seen before (e.g. if pruning was not used), then we don't perform
     // back progation of rewards!
     if (hasBeenExploredBefore) {
-      //amplifiedReward = 0;
       logger.warning("Path has been explored before (Pruning is turned off? If not, this is an " +
-          "error). MCTS *STILL* propagates reward and visit count");//MCTS does not propagate
-      // reward *only* the visitcount/pathvolume!");
+          "error). MCTS *STILL* propagates reward and visit count");
     }
     // Perform backup phase, back propagating rewards and updated visited num according to vol.
     BackPropagator.cumulativeRewardPropagation(last, amplifiedReward, pathVolume, termType);
