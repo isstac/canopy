@@ -1,18 +1,10 @@
 @using canopy
 
-
-#shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
-shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
-#shell=edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveShell
-
-symbolic.security.sampling.termination.samplingsize=2000
-symbolic.security.sampling.seed=-135922422
-
 target=sampling.evaluation.pwdchecker.PasswordChecker
 
-target.args=3
+target.args=2
 
-symbolic.dp=z3bitvectorinc
+symbolic.dp=z3inc
 listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
 
 
