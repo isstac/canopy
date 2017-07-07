@@ -1,0 +1,30 @@
+classpath=${jpf-security}/build/examples
+sourcepath=${jpf-security}/src/examples
+
+target=pwdchecker.PasswordChecker
+
+@using jpf-security
+@using jpf-symbc
+
+shell=wcanalysis.WorstCaseAnalyzer
+symbolic.dp=z3bitvector
+#symbolic.worstcase.heuristic.nosolver=true
+
+# Set history size for the stateful decision policy
+symbolic.wc.policy.history.size=31
+
+symbolic.worstcase.policy.inputsize=2
+symbolic.worstcase.input.max=1000
+
+symbolic.optimizechoices=false
+
+symbolic.worstcase.verbose=true
+symbolic.worstcase.outputpath=${jpf-security}/pwdchecker_results
+
+symbolic.method=pwdchecker.PasswordChecker.previouslyUsed(con)
+symbolic.heuristic.measuredmethods=pwdchecker.PasswordChecker.previouslyUsed(con)
+
+#symbolic.debug=true
+
+symbolic.worstcase.heuristic.nosolver=true
+symbolic.worstcase.aseexp=true
