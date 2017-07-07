@@ -1,6 +1,6 @@
 @using canopy
 
-target=sampling.evaluation.tsp.Tsp$TspSolver
+target=sampling.evaluation.tsp.Tsp
 
 symbolic.dp=z3inc
 listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
