@@ -1,0 +1,21 @@
+@using canopy
+
+target=sampling.evaluation.tsp.Tsp$TspSolver
+
+symbolic.dp=z3inc
+listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
+
+target.args=5
+
+symbolic.method=sampling.evaluation.tsp.Tsp$TspSolver.solve()
+
+symbolic.security.sampling.stats=true
+symbolic.security.sampling.livestats=true
+
+symbolic.security.sampling.modelcounting.amplifyrewards=false
+
+symbolic.security.sampling.mcts.weightedsampling=false
+
+symbolic.security.sampling.mcts.treevisualizer=false
+
+#symbolic.debug=true
