@@ -103,7 +103,7 @@ public class Tsp {
     }
   }
 
-  public static void main(String args[]) {
+  public static void main(String[] args) {
     final int N = Integer.parseInt(args[0]);
 
     int D[][] = new int[N][N];
