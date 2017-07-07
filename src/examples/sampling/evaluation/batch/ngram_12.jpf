@@ -1,0 +1,15 @@
+@using canopy
+
+symbolic.dp=z3inc
+listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
+
+# range: A-Z (65-90)
+symbolic.min_char=65 
+symbolic.max_char=90
+
+target=sampling.evaluation.ngrams.drivers.MainNgram
+
+symbolic.method=sampling.evaluation.ngrams.drivers.MainNgram.scoreNgram(sym)
+
+symbolic.optimizechoices=false
+target.args=12
