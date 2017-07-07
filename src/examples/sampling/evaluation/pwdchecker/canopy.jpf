@@ -1,30 +1,21 @@
-classpath=${jpf-security}/build/examples
-sourcepath=${jpf-security}/src/examples
+@using canopy
 
-target=pwdchecker.PasswordChecker
 
-@using jpf-security
-@using jpf-symbc
+#shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
+#shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+shell=edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveShell
 
-shell=wcanalysis.WorstCaseAnalyzer
-symbolic.dp=z3bitvector
-#symbolic.worstcase.heuristic.nosolver=true
+#symbolic.security.sampling.termination.samplingsize=2000
+symbolic.security.sampling.seed=-135922422
 
-# Set history size for the stateful decision policy
-symbolic.wc.policy.history.size=31
+target=sampling.evaluation.pwdchecker.PasswordChecker
 
-symbolic.worstcase.policy.inputsize=2
-symbolic.worstcase.input.max=1000
+target.args=3
+
+symbolic.dp=z3inc
+listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
+
 
 symbolic.optimizechoices=false
 
-symbolic.worstcase.verbose=true
-symbolic.worstcase.outputpath=${jpf-security}/pwdchecker_results
-
-symbolic.method=pwdchecker.PasswordChecker.previouslyUsed(con)
-symbolic.heuristic.measuredmethods=pwdchecker.PasswordChecker.previouslyUsed(con)
-
-#symbolic.debug=true
-
-symbolic.worstcase.heuristic.nosolver=true
-symbolic.worstcase.aseexp=true
+symbolic.method=sampling.evaluation.pwdchecker.PasswordChecker.previouslyUsed(con)

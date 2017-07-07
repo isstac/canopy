@@ -1,4 +1,4 @@
-package pwdchecker;
+package sampling.evaluation.pwdchecker;
 
 import gov.nasa.jpf.symbc.Debug;
 
