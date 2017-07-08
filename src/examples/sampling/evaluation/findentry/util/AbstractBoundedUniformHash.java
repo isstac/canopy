@@ -40,7 +40,7 @@ public abstract class AbstractBoundedUniformHash implements BoundedUniformHash
     }
     
     public void update(final String s) {
-      System.out.println("update in bounded uniform hash update. String length " + s.length());
+//      System.out.println("update in bounded uniform hash update. String length " + s.length());
         for (int i = 0; i < s.length(); ++i) {
             this.update(s.charAt(i));
         }

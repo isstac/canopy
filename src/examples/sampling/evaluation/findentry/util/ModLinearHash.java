@@ -42,7 +42,7 @@ public class ModLinearHash extends AbstractBoundedUniformHash
     }
     
     public void update(final long n) {
-      System.out.println("update in modlinearhash. input is symbolic: " + Debug.isSymbolicInteger((int)n));
+//      System.out.println("update in modlinearhash. input is symbolic: " + Debug.isSymbolicInteger((int)n));
       
         this.mHashState += (n + ModLinearHash.HASH_PARAM_A0) * ModLinearHash.HASH_PARAM_M0;
         this.mHashState = (this.mHashState + ModLinearHash.HASH_PARAM_A1) * ModLinearHash.HASH_PARAM_M1;
@@ -50,7 +50,7 @@ public class ModLinearHash extends AbstractBoundedUniformHash
     
     private static int symb_counter = 0;
     public long getHash() {
-      System.out.println("in gethash of modlinearhash");
+//      System.out.println("in gethash of modlinearhash");
       
         long mLowerBound;
         long mUpperBound;
@@ -92,26 +92,26 @@ public class ModLinearHash extends AbstractBoundedUniformHash
             }
         }
         long n3;
-        System.out.println("before do while loop in modlinearhash");
-        System.out.println("upper bound: " + mUpperBound + " is symbolic: " + Debug.isSymbolicInteger((int)mUpperBound));
-        System.out.println("lower bound: " + mLowerBound + " is symbolic: " + Debug.isSymbolicInteger((int)mLowerBound));
+//        System.out.println("before do while loop in modlinearhash");
+//        System.out.println("upper bound: " + mUpperBound + " is symbolic: " + Debug.isSymbolicInteger((int)mUpperBound));
+//        System.out.println("lower bound: " + mLowerBound + " is symbolic: " + Debug.isSymbolicInteger((int)mLowerBound));
         
         //this.mHashState = (this.mHashState + ModLinearHash.HASH_PARAM_AF) * ModLinearHash.HASH_PARAM_MF;
         //n3 = n2;
         do {
             this.mHashState = (this.mHashState + ModLinearHash.HASH_PARAM_AF) * ModLinearHash.HASH_PARAM_MF;
-            System.out.println("after getting hashstate: " + this.mHashState);
-            System.out.println("is hashstate symbolic: " + Debug.isSymbolicInteger((int)this.mHashState));
+//            System.out.println("after getting hashstate: " + this.mHashState);
+//            System.out.println("is hashstate symbolic: " + Debug.isSymbolicInteger((int)this.mHashState));
             if (this.mHashState >= 0L) {
-              System.out.println("In first condition in do while");
+//              System.out.println("In first condition in do while");
                 n3 = (this.mHashState & n2);
             }
             else {
-              System.out.println("In second condition in do while");
+//              System.out.println("In second condition in do while");
                 n3 = (this.mHashState | ~n2);
             }
-            System.out.println("loop in gethash");
-            System.out.println("n3 is " + n3);
+//            System.out.println("loop in gethash");
+//            System.out.println("n3 is " + n3);
         } while (n3 < mLowerBound || n3 > mUpperBound);
         
         

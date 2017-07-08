@@ -47,10 +47,10 @@ public class HashTable implements Map<String, String>
     }
     
     private int getBucket(final Object o) {
-      System.out.println("getbucket");
+//      System.out.println("getbucket");
         this.mHash.reset();
         this.mHash.update((String)o);
-        System.out.println("after getbucket");
+//        System.out.println("after getbucket");
         return (int)this.mHash.getHash();
     }
     
@@ -76,7 +76,7 @@ public class HashTable implements Map<String, String>
           int j = 0;
           while (n-- != 0) {
               if (v1[i++] != v2[j++]) {
-                System.out.println("strings are NOT equal");  
+//                System.out.println("strings are NOT equal");
                 return false;
               }
           }
@@ -97,17 +97,17 @@ public class HashTable implements Map<String, String>
     private Entry findEntry(final Object o, final int n, final boolean b) {
       int i = 0;
         for (Entry next = this.mTable[n]; next != null; next = next.next) {
-          System.out.println("before equals");
+//          System.out.println("before equals");
             if (next.key.equals(o)) {
-              System.out.println("equals true");
+//              System.out.println("equals true");
                 return next;
             }
-            System.out.println("loop in findentry");
+//            System.out.println("loop in findentry");
             i++;
         }
-        System.out.println("after loop in findentry. iterated " + i);
+//        System.out.println("after loop in findentry. iterated " + i);
         if (b) {
-          System.out.println("Collision!");
+//          System.out.println("Collision!");
             return this.mTable[n] = new Entry((String)o, null, null, this.mTable[n]);
         }
         return null;
