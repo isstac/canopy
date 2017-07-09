@@ -24,39 +24,12 @@
 
 @using canopy
 
-#shell=edu.cmu.sv.isstac.sampling.complexity.ComplexityAnalysisShell
-#shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
-#shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
-shell=edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveShell
-
 target=sampling.evaluation.findentry.TestApp
-target.args=5
+target.args=4
 
 symbolic.dp=z3inc
 listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
 symbolic.max_char=127
 symbolic.optimizechoices=false
 
-symbolic.security.sampling.complexity.inputrange=1,23
-symbolic.security.sampling.complexity.type=mcts
-
 symbolic.method=sampling.evaluation.findentry.util.HashTable.get(con)
-#symbolic.method=sampling.evaluation.findentry.util.HashTable.get(con),sampling.evaluation.findentry.util.HashTable.put(con#con)
-#symbolic.security.sampling.measuredmethods=sampling.evaluation.findentry.util.HashTable.get(con)
-
-#symbolic.debug=true
-
-symbolic.security.sampling.mcts.uct.bias=5
-
-#symbolic.security.sampling.termination.samplingsize=2000
-symbolic.security.sampling.seed=-1359243304
-
-
-symbolic.security.sampling.stats=true
-symbolic.security.sampling.livestats=false
-
-symbolic.security.sampling.modelcounting.amplifyrewards=false
-
-symbolic.security.sampling.mcts.weightedsampling=false
-
-symbolic.security.sampling.mcts.treevisualizer=false
