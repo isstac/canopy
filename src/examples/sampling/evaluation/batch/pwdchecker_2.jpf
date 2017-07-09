@@ -2,7 +2,7 @@
 
 target=sampling.evaluation.pwdchecker.PasswordChecker
 
-target.args=3
+target.args=2
 
 symbolic.dp=z3inc
 listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
