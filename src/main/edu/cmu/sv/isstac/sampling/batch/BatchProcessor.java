@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -40,11 +42,48 @@ public class BatchProcessor {
   private static final int DEFAULT_SEED;
   private static final int SAMPLE_SIZE_PER_EXPERIMENT = 2000;//Integer.MAX_VALUE;
   private static final int DEFAULT_ITERATIONS_PER_EXPERIMENT = 50;
-  private static final boolean OUTPUT_DATASET = true;
-
+  private static final boolean OUTPUT_DATASET = false;
+  private static Map<String, Experiment> str2exp = new HashMap<>();
 
   static {
     DEFAULT_SEED  = new Random().nextInt();
+
+    str2exp.put("mcts2pnc", new MCTSExperiment(true, false, false, Math.sqrt(2)));
+    str2exp.put("mcts5pnc", new MCTSExperiment(true, false, false, 5));
+    str2exp.put("mcts10pnc", new MCTSExperiment(true, false, false, 10));
+    str2exp.put("mcts20pnc", new MCTSExperiment(true, false, false, 20));
+    str2exp.put("mcts50pnc", new MCTSExperiment(true, false, false, 50));
+    str2exp.put("mcts100pnc", new MCTSExperiment(true, false, false, 100));
+
+
+    str2exp.put("mcts2p", new MCTSExperiment(true, false, false, Math.sqrt(2)));
+    str2exp.put("mcts5p", new MCTSExperiment(true, false, false, 5));
+    str2exp.put("mcts10p", new MCTSExperiment(true, false, false, 10));
+    str2exp.put("mcts20p", new MCTSExperiment(true, false, false, 20));
+    str2exp.put("mcts50p", new MCTSExperiment(true, false, false, 50));
+    str2exp.put("mcts100p", new MCTSExperiment(true, false, false, 100));
+
+    str2exp.put("mcts2", new MCTSExperiment(false, false, false, Math.sqrt(2)));
+    str2exp.put("mcts5", new MCTSExperiment(false, false, false, 5));
+    str2exp.put("mcts10", new MCTSExperiment(false, false, false, 10));
+    str2exp.put("mcts20", new MCTSExperiment(false, false, false, 20));
+    str2exp.put("mcts50", new MCTSExperiment(false, false, false, 50));
+    str2exp.put("mcts100", new MCTSExperiment(false, false, false, 100));
+
+    str2exp.put("mcp", new MonteCarloExperiment(true));
+    str2exp.put("mc", new MonteCarloExperiment(false));
+
+    str2exp.put("exhaustive", new ExhaustiveExperiment());
+
+    str2exp.put("rl250;05;05", new RLExperiment(true, false, false, 250, 0.5, 0.5));
+    str2exp.put("rl100;05;05", new RLExperiment(true, false, false, 100, 0.5, 0.5));
+    str2exp.put("rl10;05;05", new RLExperiment(true, false, false, 10, 0.5, 0.5));
+    str2exp.put("rl100;01;01", new RLExperiment(true, false, false, 100, 0.1, 0.1));
+    str2exp.put("rl100;09;09", new RLExperiment(true, false, false, 100, 0.9, 0.9));
+    str2exp.put("rl100;09;01", new RLExperiment(true, false, false, 100, 0.9, 0.1));
+    str2exp.put("rl100;01;09", new RLExperiment(true, false, false, 100, 0.1, 0.9));
+    str2exp.put("rl1;01;01", new RLExperiment(true, false, false, 1, 0.1, 0.1));
+    str2exp.put("rl1;05;05", new RLExperiment(true, false, false, 1, 0.5, 0.5));
   }
 
 
@@ -57,15 +96,18 @@ public class BatchProcessor {
     File input = new File(args[0]);
     File outputFolder = null;
 
+    List<Experiment> experiments = null;
     if(args.length == 3) {
-      iterations = Integer.parseInt(args[1]);
-      outputFolder = new File(args[2]);
+      outputFolder = new File(args[1]);
+      experiments = createExperimentsFromCLI(args[2]);
+
     } else if(args.length == 2) {
+      experiments = createDefaultExperiments();
       outputFolder = new File(args[1]);
     }
 
     assert outputFolder != null;
-    List<Experiment> experiments = createDefaultExperiments();
+
 
     Collection<File> jpfConfigs = new ArrayList<>();
     if(input.isFile()) {
@@ -85,6 +127,17 @@ public class BatchProcessor {
     }
 
     performBatchProcessing(jpfConfigs, outputFolder, iterations, experiments, DEFAULT_SEED);
+  }
+
+  private static List<Experiment> createExperimentsFromCLI(String arg) {
+    List<Experiment> exps = new ArrayList<>();
+    for(String strExp : arg.split(",")) {
+      if(!str2exp.containsKey(strExp)) {
+        throw new RuntimeException("Key not valid experiment: " + strExp);
+      }
+      exps.add(str2exp.get(strExp));
+    }
+    return exps;
   }
 
   private static List<Experiment> createDefaultExperiments() {
