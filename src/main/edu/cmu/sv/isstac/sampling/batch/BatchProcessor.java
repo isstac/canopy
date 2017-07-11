@@ -48,12 +48,14 @@ public class BatchProcessor {
   static {
     DEFAULT_SEED  = new Random().nextInt();
 
-    str2exp.put("mcts2pnc", new MCTSExperiment(true, false, false, Math.sqrt(2)));
-    str2exp.put("mcts5pnc", new MCTSExperiment(true, false, false, 5));
-    str2exp.put("mcts10pnc", new MCTSExperiment(true, false, false, 10));
-    str2exp.put("mcts20pnc", new MCTSExperiment(true, false, false, 20));
-    str2exp.put("mcts50pnc", new MCTSExperiment(true, false, false, 50));
-    str2exp.put("mcts100pnc", new MCTSExperiment(true, false, false, 100));
+    str2exp.put("mcts2pnc", new CachingDecorator(new MCTSExperiment(true, false, false, Math
+        .sqrt(2)), NoCache.class));
+    str2exp.put("mcts5pnc", new CachingDecorator(new MCTSExperiment(true, false, false, 5),
+        NoCache.class));
+    str2exp.put("mcts10pnc", new CachingDecorator(new MCTSExperiment(true, false, false, 10), NoCache.class));
+    str2exp.put("mcts20pnc", new CachingDecorator(new MCTSExperiment(true, false, false, 20), NoCache.class));
+    str2exp.put("mcts50pnc", new CachingDecorator(new MCTSExperiment(true, false, false, 50), NoCache.class));
+    str2exp.put("mcts100pnc", new CachingDecorator(new MCTSExperiment(true, false, false, 100), NoCache.class));
 
 
     str2exp.put("mcts2p", new MCTSExperiment(true, false, false, Math.sqrt(2)));
