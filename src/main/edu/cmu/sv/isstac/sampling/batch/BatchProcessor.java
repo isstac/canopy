@@ -75,15 +75,15 @@ public class BatchProcessor {
 
     str2exp.put("exhaustive", new ExhaustiveExperiment());
 
-    str2exp.put("rl250;05;05", new RLExperiment(true, false, false, 250, 0.5, 0.5));
-    str2exp.put("rl100;05;05", new RLExperiment(true, false, false, 100, 0.5, 0.5));
-    str2exp.put("rl10;05;05", new RLExperiment(true, false, false, 10, 0.5, 0.5));
-    str2exp.put("rl100;01;01", new RLExperiment(true, false, false, 100, 0.1, 0.1));
-    str2exp.put("rl100;09;09", new RLExperiment(true, false, false, 100, 0.9, 0.9));
-    str2exp.put("rl100;09;01", new RLExperiment(true, false, false, 100, 0.9, 0.1));
-    str2exp.put("rl100;01;09", new RLExperiment(true, false, false, 100, 0.1, 0.9));
-    str2exp.put("rl1;01;01", new RLExperiment(true, false, false, 1, 0.1, 0.1));
-    str2exp.put("rl1;05;05", new RLExperiment(true, false, false, 1, 0.5, 0.5));
+    str2exp.put("rl250-05-05", new RLExperiment(true, false, false, 250, 0.5, 0.5));
+    str2exp.put("rl100-05-05", new RLExperiment(true, false, false, 100, 0.5, 0.5));
+    str2exp.put("rl10-05-05", new RLExperiment(true, false, false, 10, 0.5, 0.5));
+    str2exp.put("rl100-01-01", new RLExperiment(true, false, false, 100, 0.1, 0.1));
+    str2exp.put("rl100-09-09", new RLExperiment(true, false, false, 100, 0.9, 0.9));
+    str2exp.put("rl100-09-01", new RLExperiment(true, false, false, 100, 0.9, 0.1));
+    str2exp.put("rl100-01-09", new RLExperiment(true, false, false, 100, 0.1, 0.9));
+    str2exp.put("rl1-01-01", new RLExperiment(true, false, false, 1, 0.1, 0.1));
+    str2exp.put("rl1-05-05", new RLExperiment(true, false, false, 1, 0.5, 0.5));
   }
 
 
