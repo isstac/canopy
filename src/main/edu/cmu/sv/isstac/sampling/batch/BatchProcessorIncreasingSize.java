@@ -39,7 +39,7 @@ public class BatchProcessorIncreasingSize {
   //of course be the same, but also the *order* of the experiments must
   //be the same!
   private static final int DEFAULT_SEED;
-  private static final int SAMPLE_SIZE_PER_EXPERIMENT = 100;//Integer.MAX_VALUE;
+  private static final int SAMPLE_SIZE_PER_EXPERIMENT = 2000;//Integer.MAX_VALUE;
   private static final int DEFAULT_ITERATIONS_PER_EXPERIMENT = 5;
 
   // For increasing input size experiment
@@ -95,7 +95,7 @@ public class BatchProcessorIncreasingSize {
   }
 
   public static void main(String[] args) throws AnalysisCreationException {
-    if(args.length < 2 || args.length > 3) {
+    if(args.length < 2 || args.length > 6) {
       printUsage();
       return;
     }
@@ -284,7 +284,10 @@ public class BatchProcessorIncreasingSize {
                 experiment.getName(), outputFile);
 
             // If the time bound is exceeded, just stop the analysis
-            if (statistics.getTotalAnalysisTime() > exhaustiveTimeBound) {
+            // The - 5 here is extremely ugly, but otherwise we would have to capture that the
+            // bound was exceeded... and im lazy
+            if (experiment instanceof ExhaustiveExperiment &&
+                statistics.getTotalAnalysisTime() > exhaustiveTimeBound - 5) {
               exhaustiveContinue = false;
             }
           }
