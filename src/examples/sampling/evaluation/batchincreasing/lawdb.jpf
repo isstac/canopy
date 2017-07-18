@@ -1,0 +1,8 @@
+@using canopy
+
+symbolic.dp=z3inc
+listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
+
+# analysis setup
+target=sampling.evaluation.lawdb.com.btree.drivers.DriverSearch
+symbolic.method=sampling.evaluation.lawdb.com.btree.BTree.searchRange(con#con)

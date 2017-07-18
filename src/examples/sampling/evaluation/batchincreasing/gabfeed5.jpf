@@ -1,0 +1,14 @@
+@using canopy
+
+target=sampling.evaluation.gabfeed5.drivers.MainSort
+
+symbolic.dp=z3inc
+listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
+#symbolic.bvlength=64
+
+# range: A-Z (65-90)
+symbolic.min_char=65 
+symbolic.max_char=67
+
+symbolic.method=sampling.evaluation.gabfeed5.sort.Sorter.sort(con)
+

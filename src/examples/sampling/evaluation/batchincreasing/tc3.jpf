@@ -1,0 +1,8 @@
+@using canopy
+
+target=sampling.evaluation.tc3.drivers.MainSort
+
+symbolic.dp=z3inc
+listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
+
+symbolic.method=sampling.evaluation.tc3.sort.Sorter.sort(con)
