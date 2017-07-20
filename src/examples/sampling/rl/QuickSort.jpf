@@ -8,21 +8,21 @@ listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
 target=sampling.QuickSortJDK15
 target.args=8
 
-symbolic.security.sampling.rl.samplesperoptimization=100
-symbolic.security.sampling.rl.epsilon=0.3
-symbolic.security.sampling.rl.history=0.3
-symbolic.security.sampling.rl.modelcounting=false
+canopy.rl.samplesperoptimization=100
+canopy.rl.epsilon=0.3
+canopy.rl.history=0.3
+canopy.rl.modelcounting=false
 
-symbolic.security.sampling.modelcounting.problemsettings=${canopy}/src/examples/mcts/quicksort.up
+canopy.modelcounting.problemsettings=${canopy}/src/examples/mcts/quicksort.up
 symbolic.method=sampling.java15.util.Arrays.sort(con)
-#symbolic.security.sampling.measuredmethods=mcts.java15.util.Arrays.sort(con)
+#canopy.measuredmethods=mcts.java15.util.Arrays.sort(con)
 
-#symbolic.security.sampling.choicesstrategy=edu.cmu.sv.isstac.sampling.exploration
+#canopy.choicesstrategy=edu.cmu.sv.isstac.sampling.exploration
 #.AllChoicesStrategy
 
-symbolic.security.sampling.stats=true
-symbolic.security.sampling.livestats=true
+canopy.stats=true
+canopy.livestats=true
 
-symbolic.security.sampling.modelcounting.amplifyrewards=false
+canopy.modelcounting.amplifyrewards=false
 
 

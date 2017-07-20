@@ -16,11 +16,11 @@ symbolic.dp=z3
 symbolic.optimizechoices=false
 
 
-symbolic.security.sampling.stats=true
-symbolic.security.sampling.livestats=true
+canopy.stats=true
+canopy.livestats=true
 
-symbolic.security.sampling.modelcounting.amplifyrewards=false
+canopy.modelcounting.amplifyrewards=false
 
-symbolic.security.sampling.mcts.weightedsampling=false
+canopy.mcts.weightedsampling=false
 
-symbolic.security.sampling.mcts.treevisualizer=false
+canopy.mcts.treevisualizer=false

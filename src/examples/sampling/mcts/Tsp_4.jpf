@@ -10,15 +10,15 @@ shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
 
 symbolic.method=sampling.Tsp$TspSolver.solve()
 
-symbolic.security.sampling.mcts.modelcounting.problemsettings=${canopy}/src/examples/mcts/tsp_4.up
+canopy.mcts.modelcounting.problemsettings=${canopy}/src/examples/mcts/tsp_4.up
 
-symbolic.security.sampling.stats=true
-symbolic.security.sampling.livestats=true
+canopy.stats=true
+canopy.livestats=true
 
-symbolic.security.sampling.modelcounting.amplifyrewards=false
+canopy.modelcounting.amplifyrewards=false
 
-symbolic.security.sampling.mcts.weightedsampling=false
+canopy.mcts.weightedsampling=false
 
-symbolic.security.sampling.mcts.treevisualizer=false
+canopy.mcts.treevisualizer=false
 
 #symbolic.debug=true

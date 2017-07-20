@@ -9,6 +9,6 @@ symbolic.dp=z3
 target=sampling.batch.Tsp
 target.args=4
 
-symbolic.security.sampling.modelcounting.problemsettings=${canopy}/src/examples/sampling/batch/tsp_5.up
+canopy.modelcounting.problemsettings=${canopy}/src/examples/sampling/batch/tsp_5.up
 
 symbolic.method=sampling.batch.Tsp$TspSolver.solve()

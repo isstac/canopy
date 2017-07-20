@@ -16,7 +16,7 @@ import gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener;
  * @author Kasper Luckow
  */
 public class Options {
-  public static final String SAMPLING_CONF_PREFIX = "symbolic.security.sampling";
+  public static final String SAMPLING_CONF_PREFIX = "canopy";
 
   public static final String REWARD_FUNCTION = SAMPLING_CONF_PREFIX + ".rewardfunc";
   public static final String PATH_QUANTIFIER = SAMPLING_CONF_PREFIX + ".pathquantifier";

@@ -12,16 +12,16 @@ symbolic.dp=z3
 target.args=5
 symbolic.method=sampling.BellmanFord.runBellmanFord(con#con#con)
 
-symbolic.security.sampling.modelcounting.problemsettings=${canopy}/src/examples/mcts/bellmanford.up
+canopy.modelcounting.problemsettings=${canopy}/src/examples/mcts/bellmanford.up
 
 symbolic.optimizechoices=true
 
 
-symbolic.security.sampling.stats=true
-symbolic.security.sampling.livestats=true
+canopy.stats=true
+canopy.livestats=true
 
-symbolic.security.sampling.modelcounting.amplifyrewards=false
+canopy.modelcounting.amplifyrewards=false
 
-symbolic.security.sampling.mcts.weightedsampling=false
+canopy.mcts.weightedsampling=false
 
-symbolic.security.sampling.mcts.treevisualizer=false
+canopy.mcts.treevisualizer=false

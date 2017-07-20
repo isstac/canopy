@@ -13,18 +13,18 @@ symbolic.min_int=1
 symbolic.max_int=10
 
 
-symbolic.security.sampling.mcts.uct.bias=5
+canopy.mcts.uct.bias=5
 
 symbolic.method=sampling.BasicSAT.BasicSAT.ReadArray(sym)
 
-#symbolic.security.sampling.choicesstrategy=edu.cmu.sv.isstac.sampling.exploration
+#canopy.choicesstrategy=edu.cmu.sv.isstac.sampling.exploration
 #.AllChoicesStrategy
 
-symbolic.security.sampling.stats=true
-symbolic.security.sampling.livestats=true
+canopy.stats=true
+canopy.livestats=true
 
-symbolic.security.sampling.modelcounting.amplifyrewards=false
+canopy.modelcounting.amplifyrewards=false
 
-symbolic.security.sampling.mcts.weightedsampling=false
+canopy.mcts.weightedsampling=false
 
-symbolic.security.sampling.mcts.treevisualizer=false
+canopy.mcts.treevisualizer=false

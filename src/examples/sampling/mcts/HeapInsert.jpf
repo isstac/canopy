@@ -14,11 +14,11 @@ target.args=12
 symbolic.method=sampling.java15.util.PriorityQueue.add(con),sampling.java15.util.PriorityQueue.addMask(con)
 symbolic.heuristic.measuredmethods=sampling.java15.util.PriorityQueue.add(con)
 
-symbolic.security.sampling.stats=true
-symbolic.security.sampling.livestats=true
+canopy.stats=true
+canopy.livestats=true
 
-symbolic.security.sampling.modelcounting.amplifyrewards=false
+canopy.modelcounting.amplifyrewards=false
 
-symbolic.security.sampling.mcts.weightedsampling=false
+canopy.mcts.weightedsampling=false
 
-symbolic.security.sampling.mcts.treevisualizer=false
+canopy.mcts.treevisualizer=false

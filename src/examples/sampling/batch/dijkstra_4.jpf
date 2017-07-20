@@ -8,5 +8,5 @@ symbolic.min_int=-100
 symbolic.max_int=100
 symbolic.dp=z3
 
-symbolic.security.sampling.modelcounting.problemsettings=${canopy}/src/examples/sampling/batch/dijkstra_5.up
+canopy.modelcounting.problemsettings=${canopy}/src/examples/sampling/batch/dijkstra_5.up
 symbolic.method=sampling.batch.Dijkstra.runDijkstra(con#con#con)

@@ -6,6 +6,6 @@ symbolic.dp=z3
 
 target.args=8
 
-symbolic.security.sampling.modelcounting.problemsettings=${canopy}/src/examples/sampling/batch/sortedlistinsert_8.up
+canopy.modelcounting.problemsettings=${canopy}/src/examples/sampling/batch/sortedlistinsert_8.up
 symbolic.method=sampling.batch.SortList.insert(con),sampling.batch.SortList.insertMask(con)
 symbolic.heuristic.measuredmethods=sampling.batch.SortList.insert(con)

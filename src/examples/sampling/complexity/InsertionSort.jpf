@@ -17,11 +17,11 @@
 @using canopy
 
 shell=edu.cmu.sv.isstac.sampling.complexity.ComplexityAnalysisShell
-symbolic.security.sampling.complexity.type=mcts
-symbolic.security.sampling.complexity.inputrange=1,10
-symbolic.security.sampling.complexity.outputdir=${canopy}/insertionsort_results
+canopy.complexity.type=mcts
+canopy.complexity.inputrange=1,10
+canopy.complexity.outputdir=${canopy}/insertionsort_results
 
-symbolic.security.sampling.termination.samplingsize=200
+canopy.termination.samplingsize=200
 
 target=sampling.InsertionSort
 symbolic.method=sampling.InsertionSort.sort(con)
@@ -32,11 +32,11 @@ listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
 symbolic.optimizechoices=false
 
 
-symbolic.security.sampling.stats=true
-symbolic.security.sampling.livestats=true
+canopy.stats=true
+canopy.livestats=true
 
-symbolic.security.sampling.modelcounting.amplifyrewards=false
+canopy.modelcounting.amplifyrewards=false
 
-symbolic.security.sampling.mcts.weightedsampling=false
+canopy.mcts.weightedsampling=false
 
-symbolic.security.sampling.mcts.treevisualizer=false
+canopy.mcts.treevisualizer=false

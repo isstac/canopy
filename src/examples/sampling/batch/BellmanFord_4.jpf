@@ -10,6 +10,6 @@ symbolic.dp=z3
 
 target.args=4
 
-symbolic.security.sampling.modelcounting.problemsettings=${canopy}/src/examples/sampling/batch/bellmanford_4.up
+canopy.modelcounting.problemsettings=${canopy}/src/examples/sampling/batch/bellmanford_4.up
 
 symbolic.method=sampling.batch.BellmanFord.runBellmanFord(con#con#con)

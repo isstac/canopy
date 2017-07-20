@@ -10,7 +10,7 @@ target=sampling.Simplest
 #search.depth_limit=100
 symbolic.dp=z3
 
-symbolic.security.sampling.modelcounting.problemsettings=${canopy}/src/examples/mcts/simplest.up
+canopy.modelcounting.problemsettings=${canopy}/src/examples/mcts/simplest.up
 
 
 symbolic.method=sampling.Simplest.test(sym)
@@ -18,11 +18,11 @@ symbolic.method=sampling.Simplest.test(sym)
 #symbolic.debug = true
 
 
-symbolic.security.sampling.stats=true
-symbolic.security.sampling.livestats=false
+canopy.stats=true
+canopy.livestats=false
 
-symbolic.security.sampling.modelcounting.amplifyrewards=true
+canopy.modelcounting.amplifyrewards=true
 
-symbolic.security.sampling.mcts.weightedsampling=true
+canopy.mcts.weightedsampling=true
 
-symbolic.security.sampling.mcts.treevisualizer=false
+canopy.mcts.treevisualizer=false

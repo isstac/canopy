@@ -11,14 +11,14 @@ symbolic.dp=z3bitvector
 shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
 
 vm.max_transition_length = 50000000
-#symbolic.security.sampling.rewardfunc=edu.cmu.sv.isstac.sampling.reward.IfRewardFunction
+#canopy.rewardfunc=edu.cmu.sv.isstac.sampling.reward.IfRewardFunction
 #symbolic.optimizechoices=false
 
-symbolic.security.sampling.stats=true
-symbolic.security.sampling.livestats=true
+canopy.stats=true
+canopy.livestats=true
 
-symbolic.security.sampling.modelcounting.amplifyrewards=false
+canopy.modelcounting.amplifyrewards=false
 
-symbolic.security.sampling.mcts.weightedsampling=false
+canopy.mcts.weightedsampling=false
 
-symbolic.security.sampling.mcts.treevisualizer=false
+canopy.mcts.treevisualizer=false

@@ -23,7 +23,7 @@ public class BacktrackingDecorator implements Experiment {
   public AnalysisStrategy createAnalysisStrategy(Config config, int seed)
       throws BatchProcessorException {
     config.setProperty("symbolic.optimizechoices", Boolean.toString(optimizeChoices));
-    config.setProperty("symbolic.security.sampling.backtrackingsearch",
+    config.setProperty("canopy.backtrackingsearch",
         Boolean.toString(useBacktracking));
 
     return this.wrappee.createAnalysisStrategy(config, seed);

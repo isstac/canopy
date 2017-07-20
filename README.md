@@ -86,16 +86,16 @@ Most importantly is that the JPF file contains values for `target` (and possibly
 ### Global Options
 All options are either optional or have default values.
 
-* **symbolic.security.sampling.rewardfunc** An implementation of `edu.cmu.sv.isstac.sampling.reward.RewardFunction` that provides rewards for paths. Default: `edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction`, i.e. reward is based on depth (number of decisions) of paths
-* **symbolic.security.sampling.termination** An implementation of `edu.cmu.sv.isstac.sampling.termination.TerminationStrategy` that specifies when to stop sampling paths. Note that when pruning is used, analysis will terminate after all paths have been explored. Default: `edu.cmu.sv.isstac.sampling.termination.NeverTerminateStrategy`. See option `symbolic.security.sampling.termination.samplingsize` which provides a shortcut for sampling a specific number of paths
-* **symbolic.security.sampling.termination.samplingsize** If `symbolic.security.sampling.termination` is not set, this option can be used to easily specify a termination strategy that samples the specified number of paths
-* **symbolic.security.sampling.livestats** Boolean that controls whether the live view will be shown to the user. If true, this can impact performance slightly. Default: true
-* **symbolic.security.sampling.stats** Boolean that controls whether to output results to std output when the analysis is done. Default: True
-* **symbolic.security.sampling.eventobservers** List of implementations of `edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver`, observers that can be used to monitor the analysis. Optional
-* **symbolic.security.sampling.choicesstrategy** An implementation of `edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy` that provides eligible choices for each state and controls whether a path has been seen before. Is used for implementing path pruning but can be changed by the user through this option. Default: `edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy`. There is also a `edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy` which effectively disables pruning.
-* **symbolic.security.sampling.backtrackingsearch** A boolean that controls whether Canopy should use backtracking whenever it samples an ignored state (happens when Symbolic PathFinder explores updated PC of an infeasible choice). For programs with many infeasible choices, this option has significant performance improvements. Default: True
-* **symbolic.security.sampling.seed** Specify the seed for the random number generators. **Note** If this option is not set, a default seed will be used
-* **symbolic.security.sampling.random** A boolean that controls whether the random number generators are initialized with random seeds. Default: False
+* **canopy.rewardfunc** An implementation of `edu.cmu.sv.isstac.sampling.reward.RewardFunction` that provides rewards for paths. Default: `edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction`, i.e. reward is based on depth (number of decisions) of paths
+* **canopy.termination** An implementation of `edu.cmu.sv.isstac.sampling.termination.TerminationStrategy` that specifies when to stop sampling paths. Note that when pruning is used, analysis will terminate after all paths have been explored. Default: `edu.cmu.sv.isstac.sampling.termination.NeverTerminateStrategy`. See option `canopy.termination.samplingsize` which provides a shortcut for sampling a specific number of paths
+* **canopy.termination.samplingsize** If `canopy.termination` is not set, this option can be used to easily specify a termination strategy that samples the specified number of paths
+* **canopy.livestats** Boolean that controls whether the live view will be shown to the user. If true, this can impact performance slightly. Default: true
+* **canopy.stats** Boolean that controls whether to output results to std output when the analysis is done. Default: True
+* **canopy.eventobservers** List of implementations of `edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver`, observers that can be used to monitor the analysis. Optional
+* **canopy.choicesstrategy** An implementation of `edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy` that provides eligible choices for each state and controls whether a path has been seen before. Is used for implementing path pruning but can be changed by the user through this option. Default: `edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy`. There is also a `edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy` which effectively disables pruning.
+* **canopy.backtrackingsearch** A boolean that controls whether Canopy should use backtracking whenever it samples an ignored state (happens when Symbolic PathFinder explores updated PC of an infeasible choice). For programs with many infeasible choices, this option has significant performance improvements. Default: True
+* **canopy.seed** Specify the seed for the random number generators. **Note** If this option is not set, a default seed will be used
+* **canopy.random** A boolean that controls whether the random number generators are initialized with random seeds. Default: False
 
 There are also options for amplifying rewards with model counting---since this is experimental, we leave out the details here.
 
@@ -110,10 +110,10 @@ shell = edu.cmu.sv.isstac.sampling.mcts.MCTSShell
 
 The Monte Carlo Tree Search strategy can be configured with the following options:
 
-* **symbolic.security.sampling.mcts.selectionpol** An implementation of `edu.cmu.sv.isstac.sampling.mcts.SelectionPolicy` that specifies the policy for selecting a new leaf in the search tree maintained by MCTS. Default is `edu.cmu.sv.isstac.sampling.mcts.UCBPolicy` which uses the UCB criterion for selecting child nodes
-* **symbolic.security.sampling.mcts.simulationpol** An implementation of `edu.cmu.sv.isstac.sampling.policies.SimulationPolicy` that controls how children are selected during the simulation run. Default `edu.cmu.sv.isstac.sampling.mcts.UniformSimulationPolicy` which uniformly, at random, selects children
-* **symbolic.security.sampling.mcts.uct.bias** Controls the UCT bias for the `UCBPolicy` (if used). Default is `Math.sqrt(2)`
-* **symbolic.security.sampling.mcts.treevisualizer** Boolean that controls whether to create a window that shows how nodes are expanded in real time thus visualizing the tree maintained by the MCTS algorithm. Slows down performance significantly. Default: False
+* **canopy.mcts.selectionpol** An implementation of `edu.cmu.sv.isstac.sampling.mcts.SelectionPolicy` that specifies the policy for selecting a new leaf in the search tree maintained by MCTS. Default is `edu.cmu.sv.isstac.sampling.mcts.UCBPolicy` which uses the UCB criterion for selecting child nodes
+* **canopy.mcts.simulationpol** An implementation of `edu.cmu.sv.isstac.sampling.policies.SimulationPolicy` that controls how children are selected during the simulation run. Default `edu.cmu.sv.isstac.sampling.mcts.UniformSimulationPolicy` which uniformly, at random, selects children
+* **canopy.mcts.uct.bias** Controls the UCT bias for the `UCBPolicy` (if used). Default is `Math.sqrt(2)`
+* **canopy.mcts.treevisualizer** Boolean that controls whether to create a window that shows how nodes are expanded in real time thus visualizing the tree maintained by the MCTS algorithm. Slows down performance significantly. Default: False
 
 This analysis can use model counting for amplifying rewards. This feature is currently experimental and is thus not covered here.
 
@@ -128,9 +128,9 @@ Please consult the following paper that describes the analysis and parameters in
 
 The Reinforcement Learning strategy can be configured with the following options:
 
-* **symbolic.security.sampling.rl.samplesperoptimization** Controls how many paths will be sampled before performing the optimization step. Default 100
-* **symbolic.security.sampling.rl.epsilon** Sets the value of the epsilon parameter. Default: 0.5
-* **symbolic.security.sampling.rl.history** Sets the value of the history parameter. Default: 0.5
+* **canopy.rl.samplesperoptimization** Controls how many paths will be sampled before performing the optimization step. Default 100
+* **canopy.rl.epsilon** Sets the value of the epsilon parameter. Default: 0.5
+* **canopy.rl.history** Sets the value of the history parameter. Default: 0.5
 
 This analysis can also use model counting for amplifying rewards. This feature is currently experimental and is thus not covered here.
 
@@ -142,7 +142,7 @@ shell = edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
 
 The Pure Monte Carlo strategy can be configured with the following options:
 
-* **symbolic.security.sampling.montecarlo.simulationpol** An implementation of `edu.cmu.sv.isstac.sampling.policies.SimulationPolicy` that controls how children are selected during the simulation run. Default `edu.cmu.sv.isstac.sampling.mcts.UniformSimulationPolicy` which uniformly, at random, selects children
+* **canopy.montecarlo.simulationpol** An implementation of `edu.cmu.sv.isstac.sampling.policies.SimulationPolicy` that controls how children are selected during the simulation run. Default `edu.cmu.sv.isstac.sampling.mcts.UniformSimulationPolicy` which uniformly, at random, selects children
 
 
 #### Exhaustive
@@ -168,11 +168,11 @@ shell = edu.cmu.sv.isstac.sampling.complexity.ComplexityAnalysisShell
 
 It can be configured using the following options:
 
-* **symbolic.security.sampling.complexity.type** The analysis used for finding the longest path. **MUST** be set to one of `mcts`, `rl`, `mc`, or `exhaustive`
-* **symbolic.security.sampling.complexity.inputrange** The range with which to obtain data points. **MUST** be set to, e.g., `1,10` 
-* **symbolic.security.sampling.complexity.inputincrement** The increment with which to pick inputsizes in the `inputrange`. Default: 1
-* **symbolic.security.sampling.complexity.outputdir** The output dir used for storing results data. Default: ./
-* **symbolic.security.sampling.complexity.visualize** Visualize the data points as they are obtained by the underlying analysis. Default: True
+* **canopy.complexity.type** The analysis used for finding the longest path. **MUST** be set to one of `mcts`, `rl`, `mc`, or `exhaustive`
+* **canopy.complexity.inputrange** The range with which to obtain data points. **MUST** be set to, e.g., `1,10`
+* **canopy.complexity.inputincrement** The increment with which to pick inputsizes in the `inputrange`. Default: 1
+* **canopy.complexity.outputdir** The output dir used for storing results data. Default: ./
+* **canopy.complexity.visualize** Visualize the data points as they are obtained by the underlying analysis. Default: True
 
 
 ## License

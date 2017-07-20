@@ -12,17 +12,17 @@ shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
 symbolic.dp=z3
 target.args=8
 
-symbolic.security.sampling.modelcounting.problemsettings=${canopy}/src/examples/mcts/FIXIXIXIXIX
+canopy.modelcounting.problemsettings=${canopy}/src/examples/mcts/FIXIXIXIXIX
 
 symbolic.method=sampling.rbtree.RedBlackTree.treeSearch(con#sym);sampling.rbtree.RedBlackTree.treeInsert(con)
-symbolic.security.sampling.measuredmethods=sampling.rbtree.RedBlackTree.treeSearch(con#sym)
+canopy.measuredmethods=sampling.rbtree.RedBlackTree.treeSearch(con#sym)
 
-symbolic.security.sampling.stats=true
-symbolic.security.sampling.livestats=true
+canopy.stats=true
+canopy.livestats=true
 
-symbolic.security.sampling.modelcounting.amplifyrewards=false
+canopy.modelcounting.amplifyrewards=false
 
-symbolic.security.sampling.mcts.weightedsampling=false
+canopy.mcts.weightedsampling=false
 
-symbolic.security.sampling.mcts.treevisualizer=false
+canopy.mcts.treevisualizer=false
 

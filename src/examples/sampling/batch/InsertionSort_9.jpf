@@ -7,7 +7,7 @@
 symbolic.dp=z3
 target.args=9
 
-symbolic.security.sampling.modelcounting.problemsettings=${canopy}/src/examples/sampling/batch/insertionSort_9.up
+canopy.modelcounting.problemsettings=${canopy}/src/examples/sampling/batch/insertionSort_9.up
 target=sampling.batch.InsertionSort
 symbolic.method=sampling.batch.InsertionSort.sort(con)
 

@@ -16,25 +16,25 @@ symbolic.max_int=100
 
 shell=edu.cmu.sv.isstac.sampling.reinforcement.ReinforcementLearningShell
 
-symbolic.security.sampling.rl.samplesperoptimization=1
-symbolic.security.sampling.rl.epsilon=0.5
-symbolic.security.sampling.rl.history=0.5
-symbolic.security.sampling.rl.modelcounting=false
+canopy.rl.samplesperoptimization=1
+canopy.rl.epsilon=0.5
+canopy.rl.history=0.5
+canopy.rl.modelcounting=false
 
 
 
-symbolic.security.sampling.choicesstrategy=edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy
+canopy.choicesstrategy=edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy
 
 symbolic.method=sampling.local.test3(sym)
 symbolic.optimizechoices = false
 #symbolic.debug = true
-symbolic.security.sampling.mcts.uct.bias=1
+canopy.mcts.uct.bias=1
 
-symbolic.security.sampling.stats=true
-symbolic.security.sampling.livestats=true
+canopy.stats=true
+canopy.livestats=true
 
-symbolic.security.sampling.modelcounting.amplifyrewards=false
+canopy.modelcounting.amplifyrewards=false
 
-symbolic.security.sampling.mcts.weightedsampling=false
+canopy.mcts.weightedsampling=false
 
-symbolic.security.sampling.mcts.treevisualizer=false
+canopy.mcts.treevisualizer=false

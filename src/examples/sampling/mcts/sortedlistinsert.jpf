@@ -16,11 +16,11 @@ target=sampling.SortedListInsert
 symbolic.method=sampling.SortList.insert(con),sampling.SortList.insertMask(con)
 symbolic.heuristic.measuredmethods=sampling.SortList.insert(con)
 
-symbolic.security.sampling.stats=true
-symbolic.security.sampling.livestats=true
+canopy.stats=true
+canopy.livestats=true
 
-symbolic.security.sampling.modelcounting.amplifyrewards=false
+canopy.modelcounting.amplifyrewards=false
 
-symbolic.security.sampling.mcts.weightedsampling=false
+canopy.mcts.weightedsampling=false
 
-symbolic.security.sampling.mcts.treevisualizer=false
+canopy.mcts.treevisualizer=false

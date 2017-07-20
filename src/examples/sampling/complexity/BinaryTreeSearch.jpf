@@ -5,7 +5,7 @@ target=sampling.BinaryTreeSearch
 #shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
 shell=edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveShell
 
-symbolic.security.sampling.seed=1
+canopy.seed=1
 
 
 symbolic.dp=z3
@@ -15,15 +15,15 @@ target.args=5
 
 symbolic.method=sampling.BinaryTreeSearch$BinaryTree.search(con);sampling.BinaryTreeSearch$BinaryTree.insert(con)
 
-symbolic.security.sampling.termination.samplingsize=2000
+canopy.termination.samplingsize=2000
 
-symbolic.security.sampling.mcts.uct.bias=1.41
+canopy.mcts.uct.bias=1.41
 
-symbolic.security.sampling.stats=true
-symbolic.security.sampling.livestats=true
+canopy.stats=true
+canopy.livestats=true
 
-symbolic.security.sampling.modelcounting.amplifyrewards=false
+canopy.modelcounting.amplifyrewards=false
 
-symbolic.security.sampling.mcts.weightedsampling=false
+canopy.mcts.weightedsampling=false
 
-symbolic.security.sampling.mcts.treevisualizer=false
+canopy.mcts.treevisualizer=false

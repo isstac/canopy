@@ -6,18 +6,18 @@ symbolic.dp=z3
 target=sampling.QuickSortJDK15
 target.args=8
 
-symbolic.security.sampling.modelcounting.problemsettings=${canopy}/src/examples/mcts/quicksort.up
+canopy.modelcounting.problemsettings=${canopy}/src/examples/mcts/quicksort.up
 symbolic.method=sampling.java15.util.Arrays.sort(con)
-#symbolic.security.sampling.measuredmethods=mcts.java15.util.Arrays.sort(con)
+#canopy.measuredmethods=mcts.java15.util.Arrays.sort(con)
 
 
-symbolic.security.sampling.stats=true
-symbolic.security.sampling.livestats=true
+canopy.stats=true
+canopy.livestats=true
 
-symbolic.security.sampling.modelcounting.amplifyrewards=false
+canopy.modelcounting.amplifyrewards=false
 
-symbolic.security.sampling.mcts.weightedsampling=false
+canopy.mcts.weightedsampling=false
 
-symbolic.security.sampling.mcts.treevisualizer=false
+canopy.mcts.treevisualizer=false
 
 

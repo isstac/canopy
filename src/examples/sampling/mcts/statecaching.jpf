@@ -28,16 +28,16 @@ search.multiple_errors=true
 
 #shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
 shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
-symbolic.security.sampling.seed=-30
+canopy.seed=-30
 target=sampling.Exception
-symbolic.security.sampling.livestats=false
+canopy.livestats=false
 
 search.depth_limit=100
 symbolic.dp=z3
 #symbolic.dp=z3inc
 #listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
 
-symbolic.security.sampling.termination.samplingsize=100
+canopy.termination.samplingsize=100
 
 symbolic.method=sampling.Exception.test(sym)
 #symbolic.method=sampling.Exception.infeasible(sym)

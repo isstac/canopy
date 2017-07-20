@@ -9,8 +9,8 @@ target=sampling.batch.RedBlackTreeSearch
 symbolic.dp=z3
 target.args=8
 
-symbolic.security.sampling.modelcounting.problemsettings=${canopy}/src/examples/sampling/batch/rbts_8.up
+canopy.modelcounting.problemsettings=${canopy}/src/examples/sampling/batch/rbts_8.up
 
 symbolic.method=sampling.batch.rbt.RedBlackTree.treeSearch(con#sym);sampling.batch.rbtree.RedBlackTree.treeInsert(con)
-symbolic.security.sampling.measuredmethods=sampling.batch.rbt.RedBlackTree.treeSearch(con#sym)
+canopy.measuredmethods=sampling.batch.rbt.RedBlackTree.treeSearch(con#sym)
 
