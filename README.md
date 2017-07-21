@@ -5,7 +5,7 @@ Canopy is a generic tool that enables experimenting with sampling-based symbolic
 The sampling of paths is governed by a *sampling strategy* that can be used for implementing heuristics for exploring the state space of the program. Currently, Canopy provides three different strategies:
 
 * Monte Carlo Tree Search
-* Reinforcement Learning (modified version of the algorithm in the ASE 2014 paper: (Exact and approximate probabilistic symbolic execution for nondeterministic programs)[http://dl.acm.org/citation.cfm?id=2643011])
+* Reinforcement Learning (modified version of the algorithm in the ASE 2014 paper: ([Exact and approximate probabilistic symbolic execution for nondeterministic programs)[http://dl.acm.org/citation.cfm?id=2643011])
 * Pure Monte Carlo
 
 In addition, there is also support for exhaustive analysis, which reports results in a similar format as the sampling-based approaches.
@@ -200,7 +200,7 @@ It can be configured using the following options:
 * **canopy.complexity.visualize** Visualize the data points as they are obtained by the underlying analysis. Default: True
 
 
-## License
+## LICENSE
 
 Canopy is Copyright (c) 2017, Carnegie Mellon University and is released under the MIT License. See the `LICENSE` file in the root of this project and the headers of the individual files in the `src/` folder for the details.
 
@@ -240,27 +240,13 @@ distribution from above:
 
 In addition, Canopy relies on several other libraries:
 
-* Google Guava, which is distributed under the Apache License, 
-Version 2.0. The license for Google Guava can be found in the file `licenses/COPYING.GUAVA`.
-* Google Guice, which is distributed under the Apache License, 
-Version 2.0. The license for Google Guava can be found in the file `licenses/COPYING.GUICE`.
-* JFreeChart, which is distributed under the GNU Lesser General Public License (LGPL) version 2.1 or later.
- A copy of the license can be found in the file `licenses/licence-LGPL.JFREECHART`.
-* Apache Commons Math3, which is distributed under the Apache License, Version 2.0. A copy of the
- license can be found in the file `licenses/LICENSE.COMMONS_MATH3`. The `NOTICE` file of Apache Commons 
- Math3 can be found in the file `licenses/NOTICE.COMMONS_MATH3`.
-* Apache Commons JCS, which is distributed under the Apache License, Version 2.0. A copy of the
- license can be found in the file `licenses/LICENSE.COMMONS_JCS`. The `NOTICE` file of Apache Commons 
- JCS can be found in the file `licenses/NOTICE.COMMONS_JCS`.
-* Apache Commons IO, which is distributed under the Apache License, Version 2.0. A copy of the
- license can be found in the file `licenses/LICENSE.COMMONS_IO`. The `NOTICE` file of Apache Commons 
- IO can be found in the file `licenses/NOTICE.COMMONS_IO`.
-* Javax-inject, which is distributed under the Apache License, Version 2.0. A copy of the
- license can be found in the file `licenses/LICENSE.JAVAXINJECT`.
-can be found in the file `licenses/NOTICE.JAVAXINJECT`.
-* JGraphX, which is distributed under the BSD 3-Clause License. A copy of the
-  license can be found in the file `licenses/LICENSE.JGRAPHX`.
-* Antlr4, which is distributed under the BSD 3-Clause License. A copy of the
-  license can be found in the file `licenses/LICENSE.ANTLR4`. 
-* Jung2, which is distributed under the BSD 2-Clause License. A copy of the
-  license can be found in the file `licenses/LICENSE.JUNG2`. 
+* Google Guava, which is distributed under the Apache License, Version 2.0. The license for Google Guava can be found in the file `licenses/COPYING.GUAVA`.
+* Google Guice, which is distributed under the Apache License, Version 2.0. The license for Google Guava can be found in the file `licenses/COPYING.GUICE`.
+* JFreeChart, which is distributed under the GNU Lesser General Public License (LGPL) version 2.1 or later. A copy of the license can be found in the file `licenses/licence-LGPL.JFREECHART`.
+* Apache Commons Math3, which is distributed under the Apache License, Version 2.0. A copy of the license can be found in the file `licenses/LICENSE.COMMONS_MATH3`. The `NOTICE` file of Apache Commons Math3 can be found in the file `licenses/NOTICE.COMMONS_MATH3`.
+* Apache Commons JCS, which is distributed under the Apache License, Version 2.0. A copy of the license can be found in the file `licenses/LICENSE.COMMONS_JCS`. The `NOTICE` file of Apache Commons JCS can be found in the file `licenses/NOTICE.COMMONS_JCS`.
+* Apache Commons IO, which is distributed under the Apache License, Version 2.0. A copy of the license can be found in the file `licenses/LICENSE.COMMONS_IO`. The `NOTICE` file of Apache Commons IO can be found in the file `licenses/NOTICE.COMMONS_IO`.
+* Javax-inject, which is distributed under the Apache License, Version 2.0. A copy of the license can be found in the file `licenses/LICENSE.JAVAXINJECT`. can be found in the file `licenses/NOTICE.JAVAXINJECT`.
+* JGraphX, which is distributed under the BSD 3-Clause License. A copy of the license can be found in the file `licenses/LICENSE.JGRAPHX`.
+* Antlr4, which is distributed under the BSD 3-Clause License. A copy of the license can be found in the file `licenses/LICENSE.ANTLR4`. 
+* Jung2, which is distributed under the BSD 2-Clause License. A copy of the license can be found in the file `licenses/LICENSE.JUNG2`. 
