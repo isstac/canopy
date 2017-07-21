@@ -1,4 +1,5 @@
 # Canopy
+
 Canopy is a generic tool that enables experimenting with sampling-based symbolic analyses. It builds on Symbolic PathFinder.
 
 The sampling of paths is governed by a *sampling strategy* that can be used for implementing heuristics for exploring the state space of the program. Currently, Canopy provides three different strategies:
@@ -15,7 +16,9 @@ In addition, Canopy provides notions of reward function, reporting functionaliti
 
 In summary, Canopy provides a unified platform that lets experimenters accurately evaluate and compare different heuristics for path exploration.
 
+
 ## Installation on Local Machine
+
 Before continuing, make sure that `jpf-core` and `jpf-symbc` are installed.
 
 To install Canopy, update your `site.properties` file (usually `~/.jpf/site.properties`) and set the `canopy` variable to point to the directory of your Canopy installation. 
@@ -40,14 +43,19 @@ Now canopy can be built by simply running:
 ```
 $ ant build
 ```
+
+
 ## Usage 
+
 The analysis can be performed by executing the JPF config file that specifies the parameters of the analysis, the constraint solver, the entry point of the system under analysis etc:
 
 ```
 $ ./jpf-core/bin/jpf <path-to-jpf-file>
 ```
 
+
 ### Example
+
 This section shows a couple of examples of using the Monte Carlo Tree Search strategy; the Reinforcement Learning strategy; and the Pure Monte Carlo strategy.
 For all analyses, a window should open showing the live statistics of the results.
 
@@ -71,7 +79,9 @@ To run the exhaustive analysis for Quicksort, execute
 $ ./jpf-core/bin/jpf canopy/src/examples/sampling/exhaustive/QuickSort.jpf
 ```
 
+
 ## Configuration
+
 Canopy has global and analysis local configuration options. Configuration of Canopy happen through the jpf file.
 
 To enable Canopy, the JPF file **must** contain the `@using` directive:
@@ -83,7 +93,9 @@ Canopy relies on the configuration options available in Java PathFinder and Symb
 
 Most importantly is that the JPF file contains values for `target` (and possibly `classpath` if the SUT is not part of Canopy), `symbolic.method`, and `symbolic.dp`.
 
+
 ### Global Options
+
 All options are either optional or have default values.
 
 * **canopy.rewardfunc** An implementation of `edu.cmu.sv.isstac.sampling.reward.RewardFunction` that provides rewards for paths. Default: `edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction`, i.e. reward is based on depth (number of decisions) of paths
@@ -99,10 +111,14 @@ All options are either optional or have default values.
 
 There are also options for amplifying rewards with model counting---since this is experimental, we leave out the details here.
 
+
 ### Analysis Local Options
+
 The analyses are enabled by using the corresponding JPF Shell. Please consult each section below for how to use and configure the analyses.
 
+
 #### Monte Carlo Tree Search
+
 To enable this analysis, put in the JPF file:
 ```
 shell = edu.cmu.sv.isstac.sampling.mcts.MCTSShell
@@ -117,7 +133,9 @@ The Monte Carlo Tree Search strategy can be configured with the following option
 
 This analysis can use model counting for amplifying rewards. This feature is currently experimental and is thus not covered here.
 
+
 #### Reinforcement Learning
+
 To enable this analysis, put in the JPF file:
 ```
 shell = edu.cmu.sv.isstac.sampling.reinforcement.ReinforcementLearningShell
@@ -134,7 +152,9 @@ The Reinforcement Learning strategy can be configured with the following options
 
 This analysis can also use model counting for amplifying rewards. This feature is currently experimental and is thus not covered here.
 
+
 #### Pure Monte Carlo
+
 To enable this analysis, put in the JPF file:
 ```
 shell = edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
@@ -146,6 +166,7 @@ The Pure Monte Carlo strategy can be configured with the following options:
 
 
 #### Exhaustive
+
 To enable this analysis, put in the JPF file:
 ```
 shell = edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveShell
@@ -153,10 +174,14 @@ shell = edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveShell
 
 This analysis does not have additional configuration options.
 
+
 ## Extensions
+
 Some extensions are built on top of Canopy. We outline them here.
 
+
 ### Complexity Analysis
+
 Canopy includes an extension for performing complexity analysis. It works by increasing the input size (e.g., the length of a list to be sorted), and then using any of the analyses described above, to find the *longest* paths for each input size. 
 
 Canopy will live update with a chart showing these data points. The data points are also output to CSV which can be used with regression analysis to estimate the complexity of the analyzed component.
@@ -176,4 +201,66 @@ It can be configured using the following options:
 
 
 ## License
-TBD
+
+Canopy is Copyright (c) 2017, Carnegie Mellon University and is released under the MIT License. See the `LICENSE` file in the root of this project and the headers of the individual files in the `src/` folder for the details.
+
+Canopy uses benchmarks from the WISE project by Jacob Burnim, Sudeep Juvekar, Koushik Sen. 
+The benchmarks are available here [WISE-1.0.tar.gz](https://www.burn.im/pubs/WISE-1.0.tar.gz).
+
+WISE is Copyright (c) 2011, Regents of the University of California,
+and is released under an open-source BSD-style license.  See the
+individual source files under `src/examples/wise` for details. A copy of the `README` file of 
+WISE that includes license details can be found in the file `licenses/README.WISE`.
+
+Benchmark code in `src/examples/sampling/wise/*/*.java` is based on the code obtained from the WISE 
+project. It is Copyright (c) 2011, Regents of the University of California, and is
+released under an open-source BSD-style license.
+
+We repeat here the license details from the `README` file (with file paths adjusted) in the WISE 
+distribution from above:
+
+>The code in `src/examples/sampling/wise/rbtree/` for
+>red-black trees is by Tuomo Saarni, obtained from:
+>
+>    http://users.utu.fi/~tuiisa/Java/index.html
+>
+>
+>under the following license:
+>
+>    Here's some java sources I've made. Most codes are free to
+>    download. If you use some of my sources just remember give me the
+>    credits.
+>
+>The code in src/examples/sampling/wise/java15/{util,lang}/ is
+>originally from the Oracle Java (TM) 2 Platform Standard Edition
+>Development Kit 5.0 Update 22, obtained and redistributed under the
+>Java Research License v1.5 -- please see `licenses/JavaResearchLicense.txt` for
+>details. Use and distribution of this technology is subject to the
+>Java Research License included herein.
+
+In addition, Canopy relies on several other libraries:
+
+* Google Guava, which is distributed under the Apache License, 
+Version 2.0. The license for Google Guava can be found in the file `licenses/COPYING.GUAVA`.
+* Google Guice, which is distributed under the Apache License, 
+Version 2.0. The license for Google Guava can be found in the file `licenses/COPYING.GUICE`.
+* JFreeChart, which is distributed under the GNU Lesser General Public License (LGPL) version 2.1 or later.
+ A copy of the license can be found in the file `licenses/licence-LGPL.JFREECHART`.
+* Apache Commons Math3, which is distributed under the Apache License, Version 2.0. A copy of the
+ license can be found in the file `licenses/LICENSE.COMMONS_MATH3`. The `NOTICE` file of Apache Commons 
+ Math3 can be found in the file `licenses/NOTICE.COMMONS_MATH3`.
+* Apache Commons JCS, which is distributed under the Apache License, Version 2.0. A copy of the
+ license can be found in the file `licenses/LICENSE.COMMONS_JCS`. The `NOTICE` file of Apache Commons 
+ JCS can be found in the file `licenses/NOTICE.COMMONS_JCS`.
+* Apache Commons IO, which is distributed under the Apache License, Version 2.0. A copy of the
+ license can be found in the file `licenses/LICENSE.COMMONS_IO`. The `NOTICE` file of Apache Commons 
+ IO can be found in the file `licenses/NOTICE.COMMONS_IO`.
+* Javax-inject, which is distributed under the Apache License, Version 2.0. A copy of the
+ license can be found in the file `licenses/LICENSE.JAVAXINJECT`.
+can be found in the file `licenses/NOTICE.JAVAXINJECT`.
+* JGraphX, which is distributed under the BSD 3-Clause License. A copy of the
+  license can be found in the file `licenses/LICENSE.JGRAPHX`.
+* Antlr4, which is distributed under the BSD 3-Clause License. A copy of the
+  license can be found in the file `licenses/LICENSE.ANTLR4`. 
+* Jung2, which is distributed under the BSD 2-Clause License. A copy of the
+  license can be found in the file `licenses/LICENSE.JUNG2`. 
