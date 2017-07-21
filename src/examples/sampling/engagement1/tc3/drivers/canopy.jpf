@@ -1,5 +1,5 @@
 @using canopy
-shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
+shell=edu.cmu.sv.isstac.canopy.montecarlo.MonteCarloShell
 #shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
 #shell=edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveShell
 

@@ -8,7 +8,7 @@ target=sampling.regex.Regex
 
 symbolic.dp=z3bitvector
 
-shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+shell=edu.cmu.sv.isstac.canopy.mcts.MCTSShell
 
 vm.max_transition_length = 50000000
 #canopy.rewardfunc=edu.cmu.sv.isstac.sampling.reward.IfRewardFunction

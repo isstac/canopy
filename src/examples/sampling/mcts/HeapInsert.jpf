@@ -4,15 +4,15 @@
 @using canopy
 
 
-target=sampling.HeapInsertJDK15
+target=sampling.wise.HeapInsertJDK15
 
-shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+shell=edu.cmu.sv.isstac.canopy.mcts.MCTSShell
 
 symbolic.dp=z3
 target.args=12
 
-symbolic.method=sampling.java15.util.PriorityQueue.add(con),sampling.java15.util.PriorityQueue.addMask(con)
-symbolic.heuristic.measuredmethods=sampling.java15.util.PriorityQueue.add(con)
+symbolic.method=sampling.wise.java15.util.PriorityQueue.add(con),sampling.java15.util.PriorityQueue.addMask(con)
+symbolic.heuristic.measuredmethods=sampling.wise.java15.util.PriorityQueue.add(con)
 
 canopy.stats=true
 canopy.livestats=true

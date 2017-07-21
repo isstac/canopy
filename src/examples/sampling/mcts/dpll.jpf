@@ -2,7 +2,7 @@
 #@using jpf-symbc
 
 #shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
-shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+shell=edu.cmu.sv.isstac.canopy.mcts.MCTSShell
 #shell=edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveShell
 
 target=sampling.sat.DPLL
@@ -20,7 +20,7 @@ vm.max_transition_length = 50000000
 
 symbolic.method=sampling.sat.DPLL.solveDPLL(con#con)
 
-canopy.rewardfunc=edu.cmu.sv.isstac.sampling.reward.IfRewardFunction
+canopy.rewardfunc=edu.cmu.sv.isstac.canopy.reward.IfRewardFunction
 
 #canopy.choicesstrategy=edu.cmu.sv.isstac.sampling.exploration
 #.AllChoicesStrategy

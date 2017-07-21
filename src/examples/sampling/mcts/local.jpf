@@ -14,7 +14,7 @@ symbolic.max_int=100
 
 
 
-shell=edu.cmu.sv.isstac.sampling.reinforcement.ReinforcementLearningShell
+shell=edu.cmu.sv.isstac.canopy.reinforcement.ReinforcementLearningShell
 
 canopy.rl.samplesperoptimization=1
 canopy.rl.epsilon=0.5
@@ -23,7 +23,7 @@ canopy.rl.modelcounting=false
 
 
 
-canopy.choicesstrategy=edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy
+canopy.choicesstrategy=edu.cmu.sv.isstac.canopy.exploration.AllChoicesStrategy
 
 symbolic.method=sampling.local.test3(sym)
 symbolic.optimizechoices = false

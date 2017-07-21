@@ -4,17 +4,17 @@
 @using canopy
 
 
-shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+shell=edu.cmu.sv.isstac.canopy.mcts.MCTSShell
 #symbolic.dp=choco
 
 symbolic.dp=z3
 target.args=8
 
-target=sampling.SortedListInsert
+target=sampling.wise.SortedListInsert
 
 
-symbolic.method=sampling.SortList.insert(con),sampling.SortList.insertMask(con)
-symbolic.heuristic.measuredmethods=sampling.SortList.insert(con)
+symbolic.method=sampling.wise.SortList.insert(con),sampling.SortList.insertMask(con)
+symbolic.heuristic.measuredmethods=sampling.wise.SortList.insert(con)
 
 canopy.stats=true
 canopy.livestats=true

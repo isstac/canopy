@@ -1,9 +1,9 @@
 @using canopy
 
-target=sampling.BinaryTreeSearch
+target=sampling.wise.BinaryTreeSearch
 
 #shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
-shell=edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveShell
+shell=edu.cmu.sv.isstac.canopy.exhaustive.ExhaustiveShell
 
 canopy.seed=1
 

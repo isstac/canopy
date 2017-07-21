@@ -6,7 +6,7 @@ symbolic.max_int=1000
 
 symbolic.dp=z3
 
-shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+shell=edu.cmu.sv.isstac.canopy.mcts.MCTSShell
 
 target=sampling.safetugs.Main
 

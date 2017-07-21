@@ -4,13 +4,13 @@
 @using canopy
 
 
-target=sampling.BellmanFord
+target=sampling.wise.BellmanFord
 
-shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+shell=edu.cmu.sv.isstac.canopy.mcts.MCTSShell
 
 symbolic.dp=z3
 target.args=5
-symbolic.method=sampling.BellmanFord.runBellmanFord(con#con#con)
+symbolic.method=sampling.wise.BellmanFord.runBellmanFord(con#con#con)
 
 canopy.modelcounting.problemsettings=${canopy}/src/examples/mcts/bellmanford.up
 

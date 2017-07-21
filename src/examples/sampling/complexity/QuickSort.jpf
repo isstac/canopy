@@ -16,7 +16,7 @@
 
 @using canopy
 
-shell=edu.cmu.sv.isstac.sampling.complexity.ComplexityAnalysisShell
+shell=edu.cmu.sv.isstac.canopy.complexity.ComplexityAnalysisShell
 canopy.complexity.type=exhaustive
 canopy.complexity.inputrange=1,20
 
@@ -28,12 +28,12 @@ symbolic.dp=z3inc
 listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
 #symbolic.dp=z3
 
-target=sampling.QuickSortJDK15
+target=sampling.wise.QuickSortJDK15
 target.args=7
 
 canopy.mcts.uct.bias=5
 
-symbolic.method=sampling.java15.util.Arrays.sort(con)
+symbolic.method=sampling.wise.java15.util.Arrays.sort(con)
 
 canopy.seed=-1359243304
 

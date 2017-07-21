@@ -16,15 +16,15 @@
 
 @using canopy
 
-shell=edu.cmu.sv.isstac.sampling.complexity.ComplexityAnalysisShell
+shell=edu.cmu.sv.isstac.canopy.complexity.ComplexityAnalysisShell
 canopy.complexity.type=mcts
 canopy.complexity.inputrange=1,10
 canopy.complexity.outputdir=${canopy}/insertionsort_results
 
 canopy.termination.samplingsize=200
 
-target=sampling.InsertionSort
-symbolic.method=sampling.InsertionSort.sort(con)
+target=sampling.wise.InsertionSort
+symbolic.method=sampling.wise.InsertionSort.sort(con)
 
 symbolic.dp=z3inc
 listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener

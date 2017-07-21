@@ -4,9 +4,9 @@
 @using canopy
 
 
-target=sampling.RedBlackTreeSearch
+target=sampling.wise.RedBlackTreeSearch
 
-shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+shell=edu.cmu.sv.isstac.canopy.mcts.MCTSShell
 #symbolic.dp=choco
 
 symbolic.dp=z3
@@ -14,8 +14,8 @@ target.args=8
 
 canopy.modelcounting.problemsettings=${canopy}/src/examples/mcts/FIXIXIXIXIX
 
-symbolic.method=sampling.rbtree.RedBlackTree.treeSearch(con#sym);sampling.rbtree.RedBlackTree.treeInsert(con)
-canopy.measuredmethods=sampling.rbtree.RedBlackTree.treeSearch(con#sym)
+symbolic.method=sampling.wise.rbtree.RedBlackTree.treeSearch(con#sym);sampling.rbtree.RedBlackTree.treeInsert(con)
+canopy.measuredmethods=sampling.wise.rbtree.RedBlackTree.treeSearch(con#sym)
 
 canopy.stats=true
 canopy.livestats=true

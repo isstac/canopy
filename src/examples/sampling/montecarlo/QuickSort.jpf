@@ -1,10 +1,10 @@
 @using canopy
 
-shell=edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
+shell=edu.cmu.sv.isstac.canopy.montecarlo.MonteCarloShell
 symbolic.dp=z3inc
 listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
 
-target=sampling.QuickSortJDK15
+target=sampling.wise.QuickSortJDK15
 target.args=8
 
-symbolic.method=sampling.java15.util.Arrays.sort(con)
+symbolic.method=sampling.wise.java15.util.Arrays.sort(con)
