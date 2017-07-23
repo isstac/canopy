@@ -95,7 +95,7 @@ public class BatchProcessorIncreasingSize {
   }
 
   public static void main(String[] args) throws AnalysisCreationException {
-    if(args.length < 2 || args.length > 6) {
+    if(args.length < 2 || args.length > 7) {
       printUsage();
       return;
     }
@@ -113,6 +113,7 @@ public class BatchProcessorIncreasingSize {
       startInputSize = Integer.parseInt(args[3]);
       endInputSize = Integer.parseInt(args[4]);
       increment = Integer.parseInt(args[5]);
+      iterations = Integer.parseInt(args[6]);
     } else if(args.length == 2) {
       experiments = createDefaultExperiments();
       outputFolder = new File(args[1]);
@@ -226,7 +227,9 @@ public class BatchProcessorIncreasingSize {
         int iter;
         int samplesPerExp;
         if(experiment instanceof ExhaustiveExperiment) {
-          iter = 1;
+          //set iter to 1 here if not running the incremental solving experiment
+          iter = iterations;
+
           samplesPerExp = Integer.MAX_VALUE;
         } else {
           iter = iterations;
