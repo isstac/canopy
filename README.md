@@ -5,7 +5,7 @@ Canopy is a generic tool that enables experimenting with sampling-based symbolic
 The sampling of paths is governed by a *sampling strategy* that can be used for implementing heuristics for exploring the state space of the program. Currently, Canopy provides three different strategies:
 
 * Monte Carlo Tree Search
-* Reinforcement Learning (modified version of the algorithm in the ASE 2014 paper: ([Exact and approximate probabilistic symbolic execution for nondeterministic programs](http://dl.acm.org/citation.cfm?id=2643011))
+* Reinforcement Learning (modified version of the algorithm in the ASE 2014 paper: [Exact and approximate probabilistic symbolic execution for nondeterministic programs](http://dl.acm.org/citation.cfm?id=2643011).
 * Pure Monte Carlo
 
 In addition, there is also support for exhaustive analysis, which reports results in a similar format as the sampling-based approaches.
