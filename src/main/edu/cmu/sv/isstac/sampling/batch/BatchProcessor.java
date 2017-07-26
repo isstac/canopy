@@ -41,8 +41,8 @@ public class BatchProcessor {
   //be the same!
   private static final int DEFAULT_SEED;
   private static final int SAMPLE_SIZE_PER_EXPERIMENT = 2000;//Integer.MAX_VALUE;
-  private static final int DEFAULT_ITERATIONS_PER_EXPERIMENT = 50;
-  private static final boolean OUTPUT_DATASET = false;
+  private static final int DEFAULT_ITERATIONS_PER_EXPERIMENT = 1;
+  private static final boolean OUTPUT_DATASET = true;
   private static Map<String, Experiment> str2exp = new HashMap<>();
 
   static {
@@ -158,39 +158,39 @@ public class BatchProcessor {
     /*
      * Pruning
      */
-    experiments.add(new MCTSExperiment(true, false, false, Math.sqrt(2)));
+//    experiments.add(new MCTSExperiment(true, false, false, Math.sqrt(2)));
     experiments.add(new MCTSExperiment(true, false, false, 5));
-    experiments.add(new MCTSExperiment(true, false, false, 10));
-    experiments.add(new MCTSExperiment(true, false, false, 20));
-    experiments.add(new MCTSExperiment(true, false, false, 50));
-    experiments.add(new MCTSExperiment(true, false, false, 100));
-
-    experiments.add(new MonteCarloExperiment(true));
-
-    experiments.add(new RLExperiment(true, false, false, 250, 0.5, 0.5));
-    experiments.add(new RLExperiment(true, false, false, 100, 0.5, 0.5));
-    experiments.add(new RLExperiment(true, false, false, 10, 0.5, 0.5));
-    experiments.add(new RLExperiment(true, false, false, 100, 0.1, 0.1));
-    experiments.add(new RLExperiment(true, false, false, 100, 0.9, 0.9));
-    experiments.add(new RLExperiment(true, false, false, 100, 0.9, 0.1));
-    experiments.add(new RLExperiment(true, false, false, 100, 0.1, 0.9));
-    experiments.add(new RLExperiment(true, false, false, 1, 0.1, 0.1));
-    experiments.add(new RLExperiment(true, false, false, 1, 0.5, 0.5));
-
-
-    /*
-     * No pruning
-     */
-    experiments.add(new MCTSExperiment(false, false, false, Math.sqrt(2)));
-    experiments.add(new MCTSExperiment(false, false, false, 5));
-    experiments.add(new MCTSExperiment(false, false, false, 10));
-    experiments.add(new MCTSExperiment(false, false, false, 20));
-    experiments.add(new MCTSExperiment(false, false, false, 50));
-    experiments.add(new MCTSExperiment(false, false, false, 100));
-
-    // Monte Carlo experiment
-    experiments.add(new MonteCarloExperiment(false));
-    experiments.add(new ExhaustiveExperiment());
+//    experiments.add(new MCTSExperiment(true, false, false, 10));
+//    experiments.add(new MCTSExperiment(true, false, false, 20));
+//    experiments.add(new MCTSExperiment(true, false, false, 50));
+//    experiments.add(new MCTSExperiment(true, false, false, 100));
+//
+//    experiments.add(new MonteCarloExperiment(true));
+//
+//    experiments.add(new RLExperiment(true, false, false, 250, 0.5, 0.5));
+//    experiments.add(new RLExperiment(true, false, false, 100, 0.5, 0.5));
+//    experiments.add(new RLExperiment(true, false, false, 10, 0.5, 0.5));
+//    experiments.add(new RLExperiment(true, false, false, 100, 0.1, 0.1));
+//    experiments.add(new RLExperiment(true, false, false, 100, 0.9, 0.9));
+//    experiments.add(new RLExperiment(true, false, false, 100, 0.9, 0.1));
+//    experiments.add(new RLExperiment(true, false, false, 100, 0.1, 0.9));
+//    experiments.add(new RLExperiment(true, false, false, 1, 0.1, 0.1));
+//    experiments.add(new RLExperiment(true, false, false, 1, 0.5, 0.5));
+//
+//
+//    /*
+//     * No pruning
+//     */
+//    experiments.add(new MCTSExperiment(false, false, false, Math.sqrt(2)));
+//    experiments.add(new MCTSExperiment(false, false, false, 5));
+//    experiments.add(new MCTSExperiment(false, false, false, 10));
+//    experiments.add(new MCTSExperiment(false, false, false, 20));
+//    experiments.add(new MCTSExperiment(false, false, false, 50));
+//    experiments.add(new MCTSExperiment(false, false, false, 100));
+//
+//    // Monte Carlo experiment
+//    experiments.add(new MonteCarloExperiment(false));
+//    experiments.add(new ExhaustiveExperiment());
 
     return experiments;
   }

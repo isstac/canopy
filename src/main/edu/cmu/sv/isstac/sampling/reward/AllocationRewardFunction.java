@@ -22,18 +22,19 @@
  * SOFTWARE.
  */
 
-package edu.cmu.sv.isstac.canopy.reward;
+package edu.cmu.sv.isstac.sampling.reward;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import edu.cmu.sv.isstac.canopy.search.SamplingListener;
+import edu.cmu.sv.isstac.sampling.search.SamplingListener;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 
@@ -46,6 +47,7 @@ public class AllocationRewardFunction extends PropertyListenerAdapter implements
   private static final Logger LOGGER = JPFLogger.getLogger(AllocationRewardFunction.class.getName());
 
   private long cost = -4000;
+  private boolean started = false;
   private Map<ChoiceGenerator<?>, Long> costMap = new HashMap<>();
 
   @Override
@@ -55,22 +57,35 @@ public class AllocationRewardFunction extends PropertyListenerAdapter implements
 
   @Override
   public void objectCreated(VM vm, ThreadInfo ti, ElementInfo ei) {
-    this.cost += ei.getHeapSize();
+    if(started)
+      this.cost += ei.getHeapSize();
   }
 
   @Override
   public void newSampleStarted(Search samplingSearch) {
+    started = false;
     cost = 0;
     costMap.clear();
+    //readFormation
+  }
+
+  @Override
+  public void methodEntered(VM vm, ThreadInfo currentThread, MethodInfo enteredMethod) {
+    String meth = enteredMethod.getBaseName();
+    if(meth.contains("readFormation")) {
+      started = true;
+    }
   }
 
   @Override
   public void stateBacktracked(Search search) {
+    if(started)
     this.cost = this.costMap.get(search.getVM().getChoiceGenerator());
   }
 
   @Override
   public void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> currentCG) {
+    if(started)
     this.costMap.put(currentCG, this.cost);
   }
 }
