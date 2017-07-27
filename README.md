@@ -47,7 +47,6 @@ Now canopy can be built by simply running:
 ```
 $ ant build
 ```
-<<<<<<< HEAD
 
 ### Docker
 Assuming you have [Docker](https://www.docker.com/) installed, simply run:
