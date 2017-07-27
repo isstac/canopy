@@ -16,9 +16,13 @@ In addition, Canopy provides notions of reward function, reporting functionaliti
 
 In summary, Canopy provides a unified platform that lets experimenters accurately evaluate and compare different heuristics for path exploration.
 
+## Installation
+There are two ways to install Canopy:
 
-## Installation on Local Machine
+* Installation on local machine by setting up manually Java PathFinder and Symbolic PathFinder
+* Virtual machine with Docker 
 
+## Local Machine
 Before continuing, make sure that `jpf-core` and `jpf-symbc` are installed.
 
 To install Canopy, update your `site.properties` file (usually `~/.jpf/site.properties`) and set the `canopy` variable to point to the directory of your Canopy installation. 
@@ -43,7 +47,18 @@ Now canopy can be built by simply running:
 ```
 $ ant build
 ```
+<<<<<<< HEAD
 
+### Docker
+Assuming you have [Docker](https://www.docker.com/) installed, simply run:
+
+```bash
+$ docker build -t canopy .
+# Will take some time to build the image...
+$ docker run -it canopy
+```
+
+**Note** that, because there is no X11 available, the live views that can optionally be enabled for Canopy do not work. The results are still produced for the user to inspect.
 
 ## Usage 
 
