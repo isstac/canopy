@@ -67,7 +67,7 @@ WORKDIR ${TOOLS_ROOT}/jpf-symbc
 #RUN hg update -r613
 RUN ant
 
-# Finally, get SPF-WCA
+# Finally, get Canopy
 # TODO: When we host this publicly, just clone it
 WORKDIR ${TOOLS_ROOT}
 # Kind of a hack: copy current dir (canopy) into $TOOLS_ROOT
