@@ -30,7 +30,7 @@ To install Canopy, update your `site.properties` file (usually `~/.jpf/site.prop
 canopy=/path/to/canopy
 ```
 
-**Don't** add `canopy` to the `extensions` variable.
+Do **not** add `canopy` to the `extensions` variable.
 
 Make sure you have `Ivy` installed on your system. To bootstrap the Ivy ant task, you can run:
 ```
