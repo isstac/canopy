@@ -22,46 +22,44 @@
  * SOFTWARE.
  */
 
-package edu.cmu.sv.isstac.canopy.complexity;
+package edu.cmu.sv.isstac.canopy.sidechannel;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
-import edu.cmu.sv.isstac.canopy.analysis.AbstractAnalysisProcessor;
-import edu.cmu.sv.isstac.canopy.analysis.GenericLiveChart;
+import edu.cmu.sv.isstac.canopy.analysis.AnalysisEventObserver;
 import edu.cmu.sv.isstac.canopy.analysis.SamplingResult;
-import edu.cmu.sv.isstac.canopy.analysis.SamplingResult.ResultContainer;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.util.JPFLogger;
 
 /**
  * @author Kasper Luckow
- *
  */
-public class ComplexityChartUpdater extends AbstractAnalysisProcessor {
+public class ChannelCapacityListener implements AnalysisEventObserver {
 
-  public static final Logger logger = JPFLogger.getLogger(edu.cmu.sv.isstac.canopy.complexity
-      .ComplexityChartUpdater.class.getName());
+  public static Logger logger = JPFLogger.getLogger(ChannelCapacityListener.class.getName());
 
-  private final int inputSize;
-
-  private GenericLiveChart chart;
-
-  public ComplexityChartUpdater(GenericLiveChart chart, int inputSize) {
-    this.inputSize = inputSize;
-    this.chart = chart;
-  }
+  private final Set<Long> observables = new HashSet<>();
 
   @Override
-  public void sampleDone(Search searchState, long samples, long propagatedReward,
-                         long pathVolume, ResultContainer currentBestResult,
-                         boolean hasBeenExplored) { }
+  public void sampleDone(Search searchState, long samples, long propagatedReward, long pathVolume,
+                         SamplingResult.ResultContainer currentBestResult,
+                         boolean hasBeenExplored) {
+    observables.add(propagatedReward);
+  }
 
   @Override
   public void analysisDone(SamplingResult result) {
-    chart.update(inputSize, result.getMaxSuccResult().getReward());
+    logger.info("Timing channel capacity is " + getChannelCapacity() + " bits");
   }
 
   @Override
-  public void analysisStarted(Search search) { }
+  public void analysisStarted(Search search) {
 
+  }
+
+  public double getChannelCapacity() {
+    return Math.log(observables.size()) / Math.log(2);
+  }
 }

@@ -228,20 +228,6 @@ public class SamplingAnalysisListener extends PropertyListenerAdapter implements
     this.analysisStrategy.newSampleStarted(samplingSearch);
   }
 
-//  @Override
-//  public void stateAdvanced(Search search) {
-//    if(search.isEndState()) {
-//      logger.fine("Successful termination.");
-//      pathTerminated(TerminationType.SUCCESS, search);
-//    }
-//  }
-//
-//  @Override
-//  public void searchConstraintHit(Search search) {
-//    logger.severe("Search constraint hit.");
-//    pathTerminated(TerminationType.CONSTRAINT_HIT, search);
-//  }
-
   public Collection<AnalysisEventObserver> getEventObservers() {
     return this.observers;
   }

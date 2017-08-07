@@ -36,6 +36,7 @@ import edu.cmu.sv.isstac.canopy.AnalysisCreationException;
 import edu.cmu.sv.isstac.canopy.Options;
 import edu.cmu.sv.isstac.canopy.SamplingAnalysis;
 import edu.cmu.sv.isstac.canopy.analysis.AnalysisFactory;
+import edu.cmu.sv.isstac.canopy.analysis.GenericLiveChart;
 import edu.cmu.sv.isstac.canopy.analysis.SampleStatistics;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.util.JPFLogger;
@@ -53,7 +54,7 @@ public class ComplexityAnalyzer {
   private final int increment;
   private final boolean visualize;
   private final Config config;
-  private ComplexityChart chart = null;
+  private GenericLiveChart chart = null;
   private final Random seedGen;
 
   private final File outputFile;
@@ -79,7 +80,8 @@ public class ComplexityAnalyzer {
     this.seedGen = new Random(Options.getSeed(config));
 
     if(visualize) {
-      chart = new ComplexityChart();
+      chart = new GenericLiveChart("Complexity Live Chart", "Input Size",
+          "Reward");
       //Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
       chart.setPreferredSize(new Dimension(1024, 768));
       chart.pack();

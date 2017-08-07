@@ -22,46 +22,28 @@
  * SOFTWARE.
  */
 
-package edu.cmu.sv.isstac.canopy.complexity;
+package edu.cmu.sv.isstac.canopy.sidechannel;
 
-import java.util.logging.Logger;
-
-import edu.cmu.sv.isstac.canopy.analysis.AbstractAnalysisProcessor;
-import edu.cmu.sv.isstac.canopy.analysis.GenericLiveChart;
 import edu.cmu.sv.isstac.canopy.analysis.SamplingResult;
-import edu.cmu.sv.isstac.canopy.analysis.SamplingResult.ResultContainer;
-import gov.nasa.jpf.search.Search;
-import gov.nasa.jpf.util.JPFLogger;
+import edu.cmu.sv.isstac.canopy.termination.TerminationStrategy;
+import gov.nasa.jpf.vm.VM;
 
 /**
  * @author Kasper Luckow
- *
  */
-public class ComplexityChartUpdater extends AbstractAnalysisProcessor {
+public class CapacityBoundedTerminationStrategy implements TerminationStrategy {
 
-  public static final Logger logger = JPFLogger.getLogger(edu.cmu.sv.isstac.canopy.complexity
-      .ComplexityChartUpdater.class.getName());
+  private final double k;
+  private final ChannelCapacityListener ccListener;
 
-  private final int inputSize;
-
-  private GenericLiveChart chart;
-
-  public ComplexityChartUpdater(GenericLiveChart chart, int inputSize) {
-    this.inputSize = inputSize;
-    this.chart = chart;
+  public CapacityBoundedTerminationStrategy(double k, ChannelCapacityListener ccListener) {
+    this.k = k;
+    this.ccListener = ccListener;
   }
 
-  @Override
-  public void sampleDone(Search searchState, long samples, long propagatedReward,
-                         long pathVolume, ResultContainer currentBestResult,
-                         boolean hasBeenExplored) { }
 
   @Override
-  public void analysisDone(SamplingResult result) {
-    chart.update(inputSize, result.getMaxSuccResult().getReward());
+  public boolean terminate(VM vm, SamplingResult currentResult) {
+    return ccListener.getChannelCapacity() >= k;
   }
-
-  @Override
-  public void analysisStarted(Search search) { }
-
 }

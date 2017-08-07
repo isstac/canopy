@@ -28,6 +28,7 @@ import static edu.cmu.sv.isstac.canopy.structure.CGClassification.isNondetermini
 import static edu.cmu.sv.isstac.canopy.structure.CGClassification.isPCNode;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.cmu.sv.isstac.canopy.AnalysisStrategy;
@@ -68,8 +69,10 @@ public class MonteCarloStrategy implements AnalysisStrategy {
       cg.select(choice);
     } else {
       String msg = "Unexpected CG: " + cg.getClass().getName();
-      logger.severe(msg);
-      throw new MonteCarloAnalysisException(msg);
+      if(logger.isLoggable(Level.SEVERE)) {
+        logger.severe(msg);
+      }
+//      throw new MonteCarloAnalysisException(msg);
     }
   }
 

@@ -24,13 +24,18 @@
 
 package edu.cmu.sv.isstac.canopy.montecarlo;
 
+import java.util.logging.Logger;
+
 import edu.cmu.sv.isstac.canopy.AnalysisCreationException;
+import edu.cmu.sv.isstac.canopy.AnalysisException;
 import edu.cmu.sv.isstac.canopy.JPFSamplerFactory;
 import edu.cmu.sv.isstac.canopy.SamplingAnalysis;
 import edu.cmu.sv.isstac.canopy.quantification.ModelCounterCreationException;
 import edu.cmu.sv.isstac.canopy.policies.SimulationPolicy;
 import gov.nasa.jpf.Config;
+import gov.nasa.jpf.JPFListener;
 import gov.nasa.jpf.JPFShell;
+import gov.nasa.jpf.util.JPFLogger;
 
 /**
  * @author Kasper Luckow
@@ -38,22 +43,37 @@ import gov.nasa.jpf.JPFShell;
  */
 public class MonteCarloShell implements JPFShell {
 
-  private final SamplingAnalysis samplingAnalysis;
-  
+
+  private final Logger logger = JPFLogger.getLogger(edu.cmu.sv.isstac.canopy.montecarlo
+      .MonteCarloShell.class.getName());
+
+  private final SamplingAnalysis.Builder samplingAnalysisBuilder;
+  private final SimulationPolicy simulationPolicy;
+  private final Config config;
+
   //ctor required for jpf shell
-  public MonteCarloShell(Config config) throws ModelCounterCreationException,
-      AnalysisCreationException {
+  public MonteCarloShell(Config config) throws ModelCounterCreationException {
 
-    SimulationPolicy simulationPolicy = Utils.createSimulationPolicy(config);
+    simulationPolicy = Utils.createSimulationPolicy(config);
+    this.config = config;
+    samplingAnalysisBuilder = new SamplingAnalysis.Builder();
+  }
 
-    SamplingAnalysis.Builder samplingAnalysisBuilder = new SamplingAnalysis.Builder();
-
-    this.samplingAnalysis = samplingAnalysisBuilder.build(config, new MonteCarloStrategy
-        (simulationPolicy), new JPFSamplerFactory());
+  public void addListener(JPFListener listener) {
+    this.samplingAnalysisBuilder.addListener(listener);
   }
 
   @Override
   public void start(String[] args) {
+
+    SamplingAnalysis samplingAnalysis = null;
+    try {
+      samplingAnalysis = samplingAnalysisBuilder.build(config, new MonteCarloStrategy
+          (simulationPolicy), new JPFSamplerFactory());
+    } catch (AnalysisCreationException e) {
+      logger.severe(e.getMessage());
+      throw new AnalysisException(e);
+    }
     samplingAnalysis.run();
   }
 }

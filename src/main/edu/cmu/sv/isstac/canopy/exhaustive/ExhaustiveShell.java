@@ -24,33 +24,51 @@
 
 package edu.cmu.sv.isstac.canopy.exhaustive;
 
+import java.util.logging.Logger;
+
 import edu.cmu.sv.isstac.canopy.AnalysisCreationException;
+import edu.cmu.sv.isstac.canopy.AnalysisException;
 import edu.cmu.sv.isstac.canopy.AnalysisStrategy;
 import edu.cmu.sv.isstac.canopy.SamplingAnalysis;
 import edu.cmu.sv.isstac.canopy.quantification.ModelCounterCreationException;
 import gov.nasa.jpf.Config;
+import gov.nasa.jpf.JPFListener;
 import gov.nasa.jpf.JPFShell;
+import gov.nasa.jpf.util.JPFLogger;
 
 /**
  * @author Kasper Luckow
  */
 public class ExhaustiveShell implements JPFShell {
 
-  private final SamplingAnalysis samplingAnalysis;
+  private final Logger logger = JPFLogger.getLogger(edu.cmu.sv.isstac.canopy
+      .exhaustive.ExhaustiveShell.class.getName());
+
+  private final SamplingAnalysis.Builder samplingAnalysisBuilder;
+  private final Config config;
 
   //ctor required for jpf shell
   public ExhaustiveShell(Config config) throws AnalysisCreationException, ModelCounterCreationException {
+    this.config = config;
 
-    // Create dummy strategy
-    AnalysisStrategy strategy = new ExhaustiveStrategy();
+    samplingAnalysisBuilder = new SamplingAnalysis.Builder();
+  }
 
-    SamplingAnalysis.Builder analysisBuilder =
-        new SamplingAnalysis.Builder();
-    this.samplingAnalysis = analysisBuilder.build(config, strategy, new JPFExhaustiveFactory());
+  public void addListener(JPFListener listener) {
+    this.samplingAnalysisBuilder.addListener(listener);
   }
 
   @Override
   public void start(String[] args) {
-    this.samplingAnalysis.run();
+    AnalysisStrategy strategy = new ExhaustiveStrategy();
+    SamplingAnalysis samplingAnalysis;
+    try {
+      samplingAnalysis = samplingAnalysisBuilder.build(config, strategy, new
+          JPFExhaustiveFactory());
+    } catch (AnalysisCreationException e) {
+      logger.severe(e.getMessage());
+      throw new AnalysisException(e);
+    }
+    samplingAnalysis.run();
   }
 }

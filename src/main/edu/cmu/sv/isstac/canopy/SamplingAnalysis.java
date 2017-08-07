@@ -64,6 +64,7 @@ public class SamplingAnalysis {
 
   public static class Builder {
     private Collection<AnalysisEventObserver> eventObservers = new HashSet<>();
+    private Collection<JPFListener> listeners = new HashSet<>();
     private ChoicesStrategy choicesStrategy = null;
     private Collection<TerminationStrategy> terminationStrategies = new HashSet<>();
     private PathQuantifier pathQuantifier = null;
@@ -73,6 +74,11 @@ public class SamplingAnalysis {
 
     public Builder setRewardFunction(RewardFunction rewardFunction) {
       this.rewardFunction = rewardFunction;
+      return this;
+    }
+
+    public Builder addListener(JPFListener listener) {
+      this.listeners.add(listener);
       return this;
     }
 
@@ -228,6 +234,11 @@ public class SamplingAnalysis {
             pathQuantifier, terminationStrategy, choicesStrategy, stateCache, eventObservers));
       }
 
+      //Add additional listeners
+      for(JPFListener l : listeners) {
+        jpfListeners.add(l);
+      }
+
       SamplingAnalysis samplingAnalysis = new SamplingAnalysis(jpfConfig, jpfListeners, jpfFactory);
 
       return samplingAnalysis;
@@ -251,6 +262,11 @@ public class SamplingAnalysis {
 
     this.jpf = jpfFactory.buildInstance(config);
     this.config = config;
+    // Sang: clear all JPF outputs
+//    boolean verbose = config.getProperty("sidechannel.verbose", "false").trim().equals("true");
+//    if (!verbose) {
+//      jpf.getReporter().getPublishers().clear();
+//    }
     jpfListeners.forEach(e -> this.jpf.addListener(e));
   }
 
