@@ -1,7 +1,31 @@
+#
+# MIT License
+#
+# Copyright (c) 2017 Carnegie Mellon University.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
 
 @using canopy
 
-shell=edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+shell=edu.cmu.sv.isstac.canopy.mcts.MCTSShell
 
 
 #symbolic.dp=z3bitvector
@@ -17,20 +41,20 @@ target.args=7
 target=sampling.engagement1.tc3.drivers.MainSort
 symbolic.method=sampling.engagement1.tc3.sort.Sorter.sort(con)
 
-symbolic.security.sampling.mcts.uct.bias=5
+canopy.mcts.uct.bias=5
 
-symbolic.security.sampling.termination.samplingsize=2000
-symbolic.security.sampling.seed=-1359243304
+canopy.termination.samplingsize=2000
+canopy.seed=-1359243304
 
 #symbolic.optimizechoices=false
-symbolic.security.sampling.stats=true
-symbolic.security.sampling.livestats=true
+canopy.stats=true
+canopy.livestats=true
 
-symbolic.security.sampling.modelcounting.amplifyrewards=false
+canopy.modelcounting.amplifyrewards=false
 
-symbolic.security.sampling.mcts.weightedsampling=false
+canopy.mcts.weightedsampling=false
 
-symbolic.security.sampling.mcts.treevisualizer=false
+canopy.mcts.treevisualizer=false
 
 #max reward 63
 

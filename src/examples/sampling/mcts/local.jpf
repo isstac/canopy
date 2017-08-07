@@ -1,3 +1,27 @@
+#
+# MIT License
+#
+# Copyright (c) 2017 Carnegie Mellon University.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
 @using canopy
 
 
@@ -14,27 +38,27 @@ symbolic.max_int=100
 
 
 
-shell=edu.cmu.sv.isstac.sampling.reinforcement.ReinforcementLearningShell
+shell=edu.cmu.sv.isstac.canopy.reinforcement.ReinforcementLearningShell
 
-symbolic.security.sampling.rl.samplesperoptimization=1
-symbolic.security.sampling.rl.epsilon=0.5
-symbolic.security.sampling.rl.history=0.5
-symbolic.security.sampling.rl.modelcounting=false
+canopy.rl.samplesperoptimization=1
+canopy.rl.epsilon=0.5
+canopy.rl.history=0.5
+canopy.rl.modelcounting=false
 
 
 
-symbolic.security.sampling.choicesstrategy=edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy
+canopy.choicesstrategy=edu.cmu.sv.isstac.canopy.exploration.AllChoicesStrategy
 
 symbolic.method=sampling.local.test3(sym)
 symbolic.optimizechoices = false
 #symbolic.debug = true
-symbolic.security.sampling.mcts.uct.bias=1
+canopy.mcts.uct.bias=1
 
-symbolic.security.sampling.stats=true
-symbolic.security.sampling.livestats=true
+canopy.stats=true
+canopy.livestats=true
 
-symbolic.security.sampling.modelcounting.amplifyrewards=false
+canopy.modelcounting.amplifyrewards=false
 
-symbolic.security.sampling.mcts.weightedsampling=false
+canopy.mcts.weightedsampling=false
 
-symbolic.security.sampling.mcts.treevisualizer=false
+canopy.mcts.treevisualizer=false

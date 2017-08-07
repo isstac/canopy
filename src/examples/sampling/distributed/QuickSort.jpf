@@ -24,33 +24,33 @@
 
 @using canopy
 
-shell=edu.cmu.sv.isstac.sampling.distributed.FrontierShell
+shell=edu.cmu.sv.isstac.canopy.distributed.FrontierShell
 
 #symbolic.dp=z3
 #symbolic.optimizechoices=false
 symbolic.dp=z3inc
 listener=gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
 
-target=sampling.QuickSortJDK15
+target=sampling.wise.QuickSortJDK15
 target.args=8
 
-symbolic.security.sampling.dist.type=mcts
+canopy.dist.type=mcts
 
-symbolic.security.sampling.mcts.uct.bias=5
+canopy.mcts.uct.bias=5
 
-symbolic.security.sampling.termination.samplingsize=2000
-symbolic.security.sampling.seed=-1359243304
+canopy.termination.samplingsize=2000
+canopy.seed=-1359243304
 
 
-symbolic.method=sampling.java15.util.Arrays.sort(con)
+symbolic.method=sampling.wise.java15.util.Arrays.sort(con)
 
-symbolic.security.sampling.stats=true
-symbolic.security.sampling.livestats=true
+canopy.stats=true
+canopy.livestats=true
 
-symbolic.security.sampling.modelcounting.amplifyrewards=false
+canopy.modelcounting.amplifyrewards=false
 
-symbolic.security.sampling.mcts.weightedsampling=false
+canopy.mcts.weightedsampling=false
 
-symbolic.security.sampling.mcts.treevisualizer=false
+canopy.mcts.treevisualizer=false
 
 
