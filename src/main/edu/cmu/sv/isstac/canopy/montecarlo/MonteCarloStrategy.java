@@ -44,46 +44,45 @@ import gov.nasa.jpf.vm.VM;;
  *
  */
 public class MonteCarloStrategy implements AnalysisStrategy {
-  private static final Logger logger = JPFLogger.getLogger(MonteCarloStrategy.class.getName());
+    private static final Logger logger = JPFLogger.getLogger(edu.cmu.sv.isstac.canopy.montecarlo
+        .MonteCarloStrategy.class.getName());
 
-  private final SimulationPolicy simulationPolicy;
-  
-  public MonteCarloStrategy(SimulationPolicy simulationPolicy) {
-    this.simulationPolicy = simulationPolicy;
-  }
+    private final SimulationPolicy simulationPolicy;
 
-  @Override
-  public void makeStateChoice(VM vm, ChoiceGenerator<?> cg, ArrayList<Integer> eligibleChoices) {
-    if(isPCNode(cg) || isNondeterministicChoice(cg)) {
-
-      // If empty, we entered an invalid state
-      if(eligibleChoices.isEmpty()) {
-        String msg = "Entered invalid state: No eligible choices";
-        logger.severe(msg);
-        throw new MonteCarloAnalysisException(msg);
-      }
-
-      // Select a choice according to the simulation
-      // strategy, e.g., randomized selection
-      int choice = simulationPolicy.selectChoice(vm, cg, eligibleChoices);
-      cg.select(choice);
-    } else {
-      String msg = "Unexpected CG: " + cg.getClass().getName();
-      if(logger.isLoggable(Level.SEVERE)) {
-        logger.severe(msg);
-      }
-//      throw new MonteCarloAnalysisException(msg);
+    public MonteCarloStrategy(SimulationPolicy simulationPolicy) {
+      this.simulationPolicy = simulationPolicy;
     }
-  }
 
-  @Override
-  public void newSampleStarted(Search samplingSearch) {
+    @Override
+    public void makeStateChoice(VM vm, ChoiceGenerator<?> cg, ArrayList<Integer> eligibleChoices) {
+      if(isPCNode(cg) || isNondeterministicChoice(cg)) {
 
-  }
+        // If empty, we entered an invalid state
+        if(eligibleChoices.isEmpty()) {
+          String msg = "Entered invalid state: No eligible choices";
+          logger.severe(msg);
+          throw new MonteCarloAnalysisException(msg);
+        }
 
-  @Override
-  public void pathTerminated(TerminationType termType, long reward, long pathVolume, long
-      amplifiedReward, Search searchState, boolean hasBeenExploredBefore) {
-    // We don't do anything when a sample terminates
-  }
+        // Select a choice according to the simulation
+        // strategy, e.g., randomized selection
+        int choice = simulationPolicy.selectChoice(vm, cg, eligibleChoices);
+        cg.select(choice);
+      } else {
+        String msg = "Unexpected CG: " + cg.getClass().getName();
+        logger.severe(msg);
+//      throw new MonteCarloAnalysisException(msg);
+      }
+    }
+
+    @Override
+    public void newSampleStarted(Search samplingSearch) {
+
+    }
+
+    @Override
+    public void pathTerminated(TerminationType termType, long reward, long pathVolume, long
+        amplifiedReward, Search searchState, boolean hasBeenExploredBefore) {
+      // We don't do anything when a sample terminates
+    }
 }

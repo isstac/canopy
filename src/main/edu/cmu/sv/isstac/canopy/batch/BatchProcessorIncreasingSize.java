@@ -45,17 +45,17 @@ import edu.cmu.sv.isstac.canopy.Options;
 import edu.cmu.sv.isstac.canopy.SamplingAnalysis;
 import edu.cmu.sv.isstac.canopy.analysis.RewardDataSetGenerator;
 import edu.cmu.sv.isstac.canopy.analysis.SampleStatistics;
-import edu.cmu.sv.isstac.canopy.exploration.cache.HashingCache;
 import edu.cmu.sv.isstac.canopy.exploration.cache.NoCache;
 import edu.cmu.sv.isstac.canopy.termination.SampleSizeTerminationStrategy;
+import edu.cmu.sv.isstac.canopy.termination.TimeBoundedTerminationStrategy;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.util.JPFLogger;
 
 /**
  * @author Kasper Luckow
  */
-public class BatchProcessor {
-  public static final Logger logger = JPFLogger.getLogger(BatchProcessor.class.getName());
+public class BatchProcessorIncreasingSize {
+  public static final Logger logger = JPFLogger.getLogger(BatchProcessorIncreasingSize.class.getName());
 
   //This one is important: it determines the initial
   //seed for the rng that will generate seeds for the experiments
@@ -64,8 +64,15 @@ public class BatchProcessor {
   //be the same!
   private static final int DEFAULT_SEED;
   private static final int SAMPLE_SIZE_PER_EXPERIMENT = 2000;//Integer.MAX_VALUE;
-  private static final int DEFAULT_ITERATIONS_PER_EXPERIMENT = 1;
-  private static final boolean OUTPUT_DATASET = true;
+  private static final int DEFAULT_ITERATIONS_PER_EXPERIMENT = 5;
+
+  // For increasing input size experiment
+  private static int defaultStartInputSize = 1;
+  private static int defaultEndInputSize = 30;
+  private static int defaultIncrement = 1;
+  private static final int exhaustiveTimeBound = 10; //seconds
+
+  private static final boolean OUTPUT_DATASET = false;
   private static Map<String, Experiment> str2exp = new HashMap<>();
 
   static {
@@ -111,21 +118,26 @@ public class BatchProcessor {
     str2exp.put("rl1-05-05", new RLExperiment(true, false, false, 1, 0.5, 0.5));
   }
 
-
   public static void main(String[] args) throws AnalysisCreationException {
-    if(args.length < 2 || args.length > 3) {
+    if(args.length < 2 || args.length > 7) {
       printUsage();
       return;
     }
     int iterations = DEFAULT_ITERATIONS_PER_EXPERIMENT;
     File input = new File(args[0]);
     File outputFolder = null;
+    int startInputSize = defaultStartInputSize;
+    int endInputSize = defaultEndInputSize;
+    int increment = defaultIncrement;
 
     List<Experiment> experiments = null;
-    if(args.length == 3) {
+    if(args.length == 6) {
       outputFolder = new File(args[1]);
       experiments = createExperimentsFromCLI(args[2]);
-
+      startInputSize = Integer.parseInt(args[3]);
+      endInputSize = Integer.parseInt(args[4]);
+      increment = Integer.parseInt(args[5]);
+      iterations = Integer.parseInt(args[6]);
     } else if(args.length == 2) {
       experiments = createDefaultExperiments();
       outputFolder = new File(args[1]);
@@ -151,7 +163,8 @@ public class BatchProcessor {
       }
     }
 
-    performBatchProcessing(jpfConfigs, outputFolder, iterations, experiments, DEFAULT_SEED);
+    performBatchProcessing(jpfConfigs, outputFolder, iterations, experiments, DEFAULT_SEED,
+        startInputSize, endInputSize, increment);
   }
 
   private static List<Experiment> createExperimentsFromCLI(String arg) {
@@ -181,45 +194,47 @@ public class BatchProcessor {
     /*
      * Pruning
      */
-//    experiments.add(new MCTSExperiment(true, false, false, Math.sqrt(2)));
+    experiments.add(new MCTSExperiment(true, false, false, Math.sqrt(2)));
     experiments.add(new MCTSExperiment(true, false, false, 5));
-//    experiments.add(new MCTSExperiment(true, false, false, 10));
-//    experiments.add(new MCTSExperiment(true, false, false, 20));
-//    experiments.add(new MCTSExperiment(true, false, false, 50));
-//    experiments.add(new MCTSExperiment(true, false, false, 100));
-//
+    experiments.add(new MCTSExperiment(true, false, false, 10));
+    experiments.add(new MCTSExperiment(true, false, false, 20));
+    experiments.add(new MCTSExperiment(true, false, false, 50));
+    experiments.add(new MCTSExperiment(true, false, false, 100));
+
     experiments.add(new MonteCarloExperiment(true));
-//
-//    experiments.add(new RLExperiment(true, false, false, 250, 0.5, 0.5));
-//    experiments.add(new RLExperiment(true, false, false, 100, 0.5, 0.5));
-//    experiments.add(new RLExperiment(true, false, false, 10, 0.5, 0.5));
-//    experiments.add(new RLExperiment(true, false, false, 100, 0.1, 0.1));
-//    experiments.add(new RLExperiment(true, false, false, 100, 0.9, 0.9));
-//    experiments.add(new RLExperiment(true, false, false, 100, 0.9, 0.1));
-//    experiments.add(new RLExperiment(true, false, false, 100, 0.1, 0.9));
-//    experiments.add(new RLExperiment(true, false, false, 1, 0.1, 0.1));
-//    experiments.add(new RLExperiment(true, false, false, 1, 0.5, 0.5));
-//
-//
-//    /*
-//     * No pruning
-//     */
-//    experiments.add(new MCTSExperiment(false, false, false, Math.sqrt(2)));
-//    experiments.add(new MCTSExperiment(false, false, false, 5));
-//    experiments.add(new MCTSExperiment(false, false, false, 10));
-//    experiments.add(new MCTSExperiment(false, false, false, 20));
-//    experiments.add(new MCTSExperiment(false, false, false, 50));
-//    experiments.add(new MCTSExperiment(false, false, false, 100));
-//
-//    // Monte Carlo experiment
-//    experiments.add(new MonteCarloExperiment(false));
-//    experiments.add(new ExhaustiveExperiment());
+
+    experiments.add(new RLExperiment(true, false, false, 250, 0.5, 0.5));
+    experiments.add(new RLExperiment(true, false, false, 100, 0.5, 0.5));
+    experiments.add(new RLExperiment(true, false, false, 10, 0.5, 0.5));
+    experiments.add(new RLExperiment(true, false, false, 100, 0.1, 0.1));
+    experiments.add(new RLExperiment(true, false, false, 100, 0.9, 0.9));
+    experiments.add(new RLExperiment(true, false, false, 100, 0.9, 0.1));
+    experiments.add(new RLExperiment(true, false, false, 100, 0.1, 0.9));
+    experiments.add(new RLExperiment(true, false, false, 1, 0.1, 0.1));
+    experiments.add(new RLExperiment(true, false, false, 1, 0.5, 0.5));
+
+
+    /*
+     * No pruning
+     */
+    experiments.add(new MCTSExperiment(false, false, false, Math.sqrt(2)));
+    experiments.add(new MCTSExperiment(false, false, false, 5));
+    experiments.add(new MCTSExperiment(false, false, false, 10));
+    experiments.add(new MCTSExperiment(false, false, false, 20));
+    experiments.add(new MCTSExperiment(false, false, false, 50));
+    experiments.add(new MCTSExperiment(false, false, false, 100));
+
+    // Monte Carlo experiment
+    experiments.add(new MonteCarloExperiment(false));
+    experiments.add(new ExhaustiveExperiment());
 
     return experiments;
   }
 
   public static void performBatchProcessing(Collection<File> jpfConfigs, File resultsFolder, int
-      iterations, List<Experiment> experiments, long initSeed) throws AnalysisCreationException {
+      iterations, List<Experiment> experiments, long initSeed, int startInputSize, int
+      endInputSize, int increment) throws
+      AnalysisCreationException {
     Random rng = new Random(initSeed);
 
     Stopwatch stopwatch = Stopwatch.createStarted();
@@ -236,46 +251,73 @@ public class BatchProcessor {
         int iter;
         int samplesPerExp;
         if(experiment instanceof ExhaustiveExperiment) {
-          iter = 1;
+          //set iter to 1 here if not running the incremental solving experiment
+          iter = iterations;
+
           samplesPerExp = Integer.MAX_VALUE;
         } else {
           iter = iterations;
           samplesPerExp = SAMPLE_SIZE_PER_EXPERIMENT;
         }
+        boolean exhaustiveContinue = true;
 
-        for (int iteration = 1; iteration <= iter; iteration++) {
-          logger.info("Processing jpf file " + jpfFile.getName() + " Experiment " + experiment
-              .getName() + " iteration " + iteration);
-
-          int seed = rng.nextInt();
-
-          Config conf = new Config(new String[] { jpfFile.getAbsolutePath() });
-          conf.setProperty(Options.SHOW_LIVE_STATISTICS, Boolean.toString(false));
-          conf.setProperty(Options.SHOW_STATISTICS, Boolean.toString(false));
-
-          SamplingAnalysis.Builder analysisBuilder = new SamplingAnalysis.Builder();
-          AnalysisStrategy analysisStrategy = experiment.createAnalysisStrategy(conf, seed);
-
-          //Add the statistics reporter
-          SampleStatistics statistics = new SampleStatistics();
-          analysisBuilder.addEventObserver(statistics);
-
-          //Output dataset
-          if(OUTPUT_DATASET) {
-            String dataSetFileName = outputFile.replace(".csv", "_dataset.csv");
-            RewardDataSetGenerator rwGen = new RewardDataSetGenerator(dataSetFileName);
-            analysisBuilder.addEventObserver(rwGen);
+        for(int inputSize = startInputSize; inputSize <= endInputSize; inputSize += increment) {
+          if(!exhaustiveContinue) {
+            break;
           }
 
-          analysisBuilder.addTerminationStrategy(
-              new SampleSizeTerminationStrategy(samplesPerExp));
-          SamplingAnalysis analysis =
-              analysisBuilder.build(conf, analysisStrategy, experiment.getJPFFactory());
+          for (int iteration = 1; iteration <= iter; iteration++) {
+            logger.info("Processing jpf file " + jpfFile.getName() + " Experiment " + experiment
+                .getName() + " iteration " + iteration);
 
-          analysis.run();
+            int seed = rng.nextInt();
 
-          writeStatisticsToFile(statistics, iteration, seed, targetName, experiment.getName(),
-              outputFile);
+            Config conf = new Config(new String[]{jpfFile.getAbsolutePath()});
+
+            conf.setProperty("target.args", Integer.toString(inputSize));
+            conf.setProperty(Options.SHOW_LIVE_STATISTICS, Boolean.toString(false));
+            conf.setProperty(Options.SHOW_STATISTICS, Boolean.toString(false));
+
+            SamplingAnalysis.Builder analysisBuilder = new SamplingAnalysis.Builder();
+            AnalysisStrategy analysisStrategy = experiment.createAnalysisStrategy(conf, seed);
+
+            //Add the statistics reporter
+            SampleStatistics statistics = new SampleStatistics();
+            analysisBuilder.addEventObserver(statistics);
+
+            //Output dataset
+            if (OUTPUT_DATASET) {
+              String dataSetFileName = outputFile.replace(".csv", "_dataset.csv");
+              RewardDataSetGenerator rwGen = new RewardDataSetGenerator(dataSetFileName);
+              analysisBuilder.addEventObserver(rwGen);
+            }
+
+
+            if (experiment instanceof ExhaustiveExperiment) {
+              analysisBuilder.addTerminationStrategy(new TimeBoundedTerminationStrategy
+                  (exhaustiveTimeBound, TimeUnit.SECONDS));
+            } else {
+              analysisBuilder.addTerminationStrategy(
+                  new SampleSizeTerminationStrategy(samplesPerExp));
+            }
+
+
+            SamplingAnalysis analysis =
+                analysisBuilder.build(conf, analysisStrategy, experiment.getJPFFactory());
+
+            analysis.run();
+
+            writeStatisticsToFile(inputSize, statistics, iteration, seed, targetName,
+                experiment.getName(), outputFile);
+
+            // If the time bound is exceeded, just stop the analysis
+            // The - 5 here is extremely ugly, but otherwise we would have to capture that the
+            // bound was exceeded... and im lazy
+            if (experiment instanceof ExhaustiveExperiment &&
+                statistics.getTotalAnalysisTime() > exhaustiveTimeBound - 5) {
+              exhaustiveContinue = false;
+            }
+          }
         }
       }
     }
@@ -285,8 +327,8 @@ public class BatchProcessor {
     logger.info("Batch processing done. Took " + stopwatch.elapsed(TimeUnit.SECONDS) + "s");
   }
 
-  private static void writeStatisticsToFile(SampleStatistics statistics, int iteration, long seed,
-                                            String target, String experimentName, String outputFile) {
+  private static void writeStatisticsToFile(int inputSize, SampleStatistics statistics, int
+      iteration, long seed, String target, String experimentName, String outputFile) {
 
     final DecimalFormat doubleFormat = new DecimalFormat("#.##");
     File csvFile = new File(outputFile);
@@ -301,6 +343,7 @@ public class BatchProcessor {
       try(FileWriter fw = new FileWriter(csvFile, true)) {
         fw.write("Target," +
             "experiment," +
+            "inputSize," +
             "iteration," +
             "minReward," +
             "bestReward," +
@@ -324,6 +367,7 @@ public class BatchProcessor {
     StringBuilder sb = new StringBuilder();
     sb.append(target).append(',')
         .append(experimentName).append(',')
+        .append(inputSize).append(',')
         .append(iteration).append(',')
         .append(statistics.getMinReward()).append(',')
         .append(statistics.getBestReward()).append(',')

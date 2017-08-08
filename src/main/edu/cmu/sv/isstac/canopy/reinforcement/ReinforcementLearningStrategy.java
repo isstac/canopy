@@ -110,7 +110,7 @@ public class ReinforcementLearningStrategy implements AnalysisStrategy {
     } else {
       String msg = "Unexpected CG: " + cg.getClass().getName();
       logger.severe(msg);
-      throw new RLAnalysisException(msg);
+     // throw new RLAnalysisException(msg);
     }
   }
 
