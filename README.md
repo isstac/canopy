@@ -22,7 +22,7 @@ There are two ways to install Canopy:
 * Installation on local machine by setting up manually Java PathFinder and Symbolic PathFinder
 * Virtual machine with Docker 
 
-## Local Machine
+### Local Machine
 Before continuing, make sure that `jpf-core` and `jpf-symbc` are installed.
 
 To install Canopy, update your `site.properties` file (usually `~/.jpf/site.properties`) and set the `canopy` variable to point to the directory of your Canopy installation. 
@@ -112,13 +112,13 @@ Most importantly is that the JPF file contains values for `target` (and possibly
 
 All options are either optional or have default values.
 
-* **canopy.rewardfunc** An implementation of `edu.cmu.sv.isstac.sampling.reward.RewardFunction` that provides rewards for paths. Default: `edu.cmu.sv.isstac.sampling.reward.DepthRewardFunction`, i.e. reward is based on depth (number of decisions) of paths
-* **canopy.termination** An implementation of `edu.cmu.sv.isstac.sampling.termination.TerminationStrategy` that specifies when to stop sampling paths. Note that when pruning is used, analysis will terminate after all paths have been explored. Default: `edu.cmu.sv.isstac.sampling.termination.NeverTerminateStrategy`. See option `canopy.termination.samplingsize` which provides a shortcut for sampling a specific number of paths
+* **canopy.rewardfunc** An implementation of `edu.cmu.sv.isstac.canopy.reward.RewardFunction` that provides rewards for paths. Default: `edu.cmu.sv.isstac.canopy.reward.DepthRewardFunction`, i.e. reward is based on depth (number of decisions) of paths
+* **canopy.termination** An implementation of `edu.cmu.sv.isstac.canopy.termination.TerminationStrategy` that specifies when to stop sampling paths. Note that when pruning is used, analysis will terminate after all paths have been explored. Default: `edu.cmu.sv.isstac.canopy.termination.NeverTerminateStrategy`. See option `canopy.termination.samplingsize` which provides a shortcut for sampling a specific number of paths
 * **canopy.termination.samplingsize** If `canopy.termination` is not set, this option can be used to easily specify a termination strategy that samples the specified number of paths
 * **canopy.livestats** Boolean that controls whether the live view will be shown to the user. If true, this can impact performance slightly. Default: true
 * **canopy.stats** Boolean that controls whether to output results to std output when the analysis is done. Default: True
-* **canopy.eventobservers** List of implementations of `edu.cmu.sv.isstac.sampling.analysis.AnalysisEventObserver`, observers that can be used to monitor the analysis. Optional
-* **canopy.choicesstrategy** An implementation of `edu.cmu.sv.isstac.sampling.exploration.ChoicesStrategy` that provides eligible choices for each state and controls whether a path has been seen before. Is used for implementing path pruning but can be changed by the user through this option. Default: `edu.cmu.sv.isstac.sampling.exploration.PruningChoicesStrategy`. There is also a `edu.cmu.sv.isstac.sampling.exploration.AllChoicesStrategy` which effectively disables pruning.
+* **canopy.eventobservers** List of implementations of `edu.cmu.sv.isstac.canopy.analysis.AnalysisEventObserver`, observers that can be used to monitor the analysis. Optional
+* **canopy.choicesstrategy** An implementation of `edu.cmu.sv.isstac.canopy.exploration.ChoicesStrategy` that provides eligible choices for each state and controls whether a path has been seen before. Is used for implementing path pruning but can be changed by the user through this option. Default: `edu.cmu.sv.isstac.canopy.exploration.PruningChoicesStrategy`. There is also a `edu.cmu.sv.isstac.canopy.exploration.AllChoicesStrategy` which effectively disables pruning.
 * **canopy.backtrackingsearch** A boolean that controls whether Canopy should use backtracking whenever it samples an ignored state (happens when Symbolic PathFinder explores updated PC of an infeasible choice). For programs with many infeasible choices, this option has significant performance improvements. Default: True
 * **canopy.seed** Specify the seed for the random number generators. **Note** If this option is not set, a default seed will be used
 * **canopy.random** A boolean that controls whether the random number generators are initialized with random seeds. Default: False
@@ -135,13 +135,13 @@ The analyses are enabled by using the corresponding JPF Shell. Please consult ea
 
 To enable this analysis, put in the JPF file:
 ```
-shell = edu.cmu.sv.isstac.sampling.mcts.MCTSShell
+shell = edu.cmu.sv.isstac.canopy.mcts.MCTSShell
 ```
 
 The Monte Carlo Tree Search strategy can be configured with the following options:
 
-* **canopy.mcts.selectionpol** An implementation of `edu.cmu.sv.isstac.sampling.mcts.SelectionPolicy` that specifies the policy for selecting a new leaf in the search tree maintained by MCTS. Default is `edu.cmu.sv.isstac.sampling.mcts.UCBPolicy` which uses the UCB criterion for selecting child nodes
-* **canopy.mcts.simulationpol** An implementation of `edu.cmu.sv.isstac.sampling.policies.SimulationPolicy` that controls how children are selected during the simulation run. Default `edu.cmu.sv.isstac.sampling.mcts.UniformSimulationPolicy` which uniformly, at random, selects children
+* **canopy.mcts.selectionpol** An implementation of `edu.cmu.sv.isstac.canopy.mcts.SelectionPolicy` that specifies the policy for selecting a new leaf in the search tree maintained by MCTS. Default is `edu.cmu.sv.isstac.canopy.mcts.UCBPolicy` which uses the UCB criterion for selecting child nodes
+* **canopy.mcts.simulationpol** An implementation of `edu.cmu.sv.isstac.canopy.policies.SimulationPolicy` that controls how children are selected during the simulation run. Default `edu.cmu.sv.isstac.canopy.mcts.UniformSimulationPolicy` which uniformly, at random, selects children
 * **canopy.mcts.uct.bias** Controls the UCT bias for the `UCBPolicy` (if used). Default is `Math.sqrt(2)`
 * **canopy.mcts.treevisualizer** Boolean that controls whether to create a window that shows how nodes are expanded in real time thus visualizing the tree maintained by the MCTS algorithm. Slows down performance significantly. Default: False
 
@@ -152,7 +152,7 @@ This analysis can use model counting for amplifying rewards. This feature is cur
 
 To enable this analysis, put in the JPF file:
 ```
-shell = edu.cmu.sv.isstac.sampling.reinforcement.ReinforcementLearningShell
+shell = edu.cmu.sv.isstac.canopy.reinforcement.ReinforcementLearningShell
 ```
 Please consult the following paper that describes the analysis and parameters in detail:
 > Kasper Luckow, Corina Pasareanu, Matthew Dwyer, Antonio Filieri, Willem Visser, **Exact and approximate probabilistic symbolic execution for nondeterministic programs**, Proceedings of the 29th ACM/IEEE international conference on Automated software engineering (ASE 2014), \[[pdf](https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20150000116.pdf)\] \[[bibtex](https://scholar.googleusercontent.com/citations?view_op=export_citations&user=RnfTeq8AAAAJ&s=RnfTeq8AAAAJ:Tyk-4Ss8FVUC&citsig=AMstHGQAAAAAWN2bHZRaRn27c88nNLU7InV3I6kibiju&hl=en&cit_fmt=0)\].
@@ -171,19 +171,19 @@ This analysis can also use model counting for amplifying rewards. This feature i
 
 To enable this analysis, put in the JPF file:
 ```
-shell = edu.cmu.sv.isstac.sampling.montecarlo.MonteCarloShell
+shell = edu.cmu.sv.isstac.canopy.montecarlo.MonteCarloShell
 ```
 
 The Pure Monte Carlo strategy can be configured with the following options:
 
-* **canopy.montecarlo.simulationpol** An implementation of `edu.cmu.sv.isstac.sampling.policies.SimulationPolicy` that controls how children are selected during the simulation run. Default `edu.cmu.sv.isstac.sampling.mcts.UniformSimulationPolicy` which uniformly, at random, selects children
+* **canopy.montecarlo.simulationpol** An implementation of `edu.cmu.sv.isstac.canopy.policies.SimulationPolicy` that controls how children are selected during the simulation run. Default `edu.cmu.sv.isstac.canopy.mcts.UniformSimulationPolicy` which uniformly, at random, selects children
 
 
 #### Exhaustive
 
 To enable this analysis, put in the JPF file:
 ```
-shell = edu.cmu.sv.isstac.sampling.exhaustive.ExhaustiveShell
+shell = edu.cmu.sv.isstac.canopy.exhaustive.ExhaustiveShell
 ```
 
 This analysis does not have additional configuration options.
@@ -202,7 +202,7 @@ Canopy will live update with a chart showing these data points. The data points 
 
 To use it, simply set:
 ```
-shell = edu.cmu.sv.isstac.sampling.complexity.ComplexityAnalysisShell
+shell = edu.cmu.sv.isstac.canopy.complexity.ComplexityAnalysisShell
 ```
 
 It can be configured using the following options:
