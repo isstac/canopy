@@ -34,6 +34,7 @@ import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 
@@ -45,7 +46,7 @@ public class AllocationRewardFunction extends PropertyListenerAdapter implements
 
   private static final Logger LOGGER = JPFLogger.getLogger(AllocationRewardFunction.class.getName());
 
-  private long cost = -4000;
+  private long cost = 0;
   private Map<ChoiceGenerator<?>, Long> costMap = new HashMap<>();
 
   @Override
