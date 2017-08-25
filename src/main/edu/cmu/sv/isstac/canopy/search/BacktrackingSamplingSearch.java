@@ -279,6 +279,7 @@ public class BacktrackingSamplingSearch extends Search {
   private void resetJPFState() {
     depth = 0;
     vm.restoreState(initState);
+    notifyStateRestored();
     vm.resetNextCG();
     // Reset the variable counter for SPF
     BytecodeUtils.clearSymVarCounter();
