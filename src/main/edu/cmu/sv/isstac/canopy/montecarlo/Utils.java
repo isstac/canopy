@@ -25,9 +25,12 @@
 package edu.cmu.sv.isstac.canopy.montecarlo;
 
 import edu.cmu.sv.isstac.canopy.Options;
+import edu.cmu.sv.isstac.canopy.policies.CountWeightedSimulationPolicy;
 import edu.cmu.sv.isstac.canopy.policies.SimulationPolicy;
 import edu.cmu.sv.isstac.canopy.policies.UniformSimulationPolicy;
 import edu.cmu.sv.isstac.canopy.quantification.ModelCounterCreationException;
+import edu.cmu.sv.isstac.canopy.quantification.ModelCounterFactory;
+import edu.cmu.sv.isstac.canopy.quantification.SPFModelCounter;
 import gov.nasa.jpf.Config;
 
 /**
@@ -39,14 +42,26 @@ public class Utils {
 
   public static final String SIMULATION_POLICY = MC_CONF_PRFX + ".simulationpol";
 
+  public static final String USE_MODELCOUNT_WEIGHTED_SIMULATION = MC_CONF_PRFX +
+      ".weightedsampling";
+  public static final boolean DEFAULT_USE_MODELCOUNT_WEIGHTED_SIMULATION = false;
+
+
   public static SimulationPolicy createSimulationPolicy(Config conf)
       throws ModelCounterCreationException {
-    if (conf.hasValue(SIMULATION_POLICY)) {
+    if(conf.hasValue(SIMULATION_POLICY)) {
       return conf.getInstance(SIMULATION_POLICY, SimulationPolicy.class);
     }
 
     long seed = Options.getSeed(conf);
-    return new UniformSimulationPolicy(seed);
+    if(conf.getBoolean(USE_MODELCOUNT_WEIGHTED_SIMULATION,
+        DEFAULT_USE_MODELCOUNT_WEIGHTED_SIMULATION)) {
+      SPFModelCounter modelCounter = ModelCounterFactory.getInstance(conf);
+      return new CountWeightedSimulationPolicy(modelCounter, seed);
+    }
+    else {
+      return new UniformSimulationPolicy(seed);
+    }
   }
 
 }
