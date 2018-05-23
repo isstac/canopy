@@ -2,6 +2,12 @@
 
 Canopy is a generic tool that enables experimenting with sampling-based symbolic analyses. It builds on Symbolic PathFinder.
 
+To cite Canopy, please use the most recent paper that was accepted at SEFM 2018:
+> Kasper Luckow, Corina Pasareanu, Villem Wisser, **Monte Carlo Tree Search for Finding Costly Paths in Programs**, to appear in Proceedings of Software Engineering and Formal Methods (SEFM 2018).
+
+Please visit [https://bitbucket.org/anonresearcher/sefm2018] for supplementary material to the paper including a Canopy distribution for reproducing the results and a paper appendix containing the full results tables etc.
+
+## Overview
 The sampling of paths is governed by a *sampling strategy* that can be used for implementing heuristics for exploring the state space of the program. Currently, Canopy provides three different strategies:
 
 * Monte Carlo Tree Search
