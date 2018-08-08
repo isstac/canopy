@@ -129,8 +129,15 @@ All options are either optional or have default values.
 * **canopy.seed** Specify the seed for the random number generators. **Note** If this option is not set, a default seed will be used
 * **canopy.random** A boolean that controls whether the random number generators are initialized with random seeds. Default: False
 
-There are also options for amplifying rewards with model counting---since this is experimental, we leave out the details here.
+#### Model Counting options
+There are also options for amplifying rewards with model counting---this is experimental, if you want to try it you must set following options.
 
+* **canopy.modelcounting.amplifyrewards** Boolean that controls whether to use model counting or not when computing the reward. Default: `false`.
+* **canopy.modelcounting.omegaPath** Should contain the `/path/to/omega/calculator`. You can find the Omega calculator [here](https://github.com/davewathaverford/the-omega-project).
+* **canopy.modelcounting.lattePath** Should contain the `/path/to/LattE/count`. LattE is a Model Counter and you can find it [here](https://www.math.ucdavis.edu/~latte/software.php).
+* **canopy.modelcounting.tmpDir** Should contain the `/path/to/tmp`, a temporary directory to be used by model counting. **This directory and all its content will be deleted once Canopy terminates**.
+
+This is not an exhaustive list of Model Counting options but should be enough to get you started.
 
 ### Analysis Local Options
 
